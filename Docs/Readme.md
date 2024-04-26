@@ -2,6 +2,7 @@
 
 ## Qt
 -
+-
 
 ## Databases
 - https://www.opennet.ru/docs/RUS/qt3_prog/c5694.html
