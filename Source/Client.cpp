@@ -1,6 +1,18 @@
-// #include <>
+// // #include <>
+//
+// int main()
+// {
+//     return 0;
+// }
 
-int main()
+#include <QCoreApplication>
+#include <QTcpSocket>
+
+int main(int argc, char *argv[])
 {
-    return 0;
+    QCoreApplication a(argc, argv);
+
+
+
+    return a.exec();
 }

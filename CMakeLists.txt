@@ -15,7 +15,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 find_package(Qt5 COMPONENTS Core Network REQUIRED)
 
 add_executable(server ./Source/Server.cpp)
-add_executable(client ./Source/Client.cpp)
+# add_executable(client ./Source/Client.cpp)
+
+target_include_directories(server PRIVATE ./Include)
+# target_include_directories(server PRIVATE ./Include)
 
 target_link_libraries(server Qt5::Core Qt5::Network)
-target_link_libraries(client Qt5::Core Qt5::Network)
+# target_link_libraries(client Qt5::Core Qt5::Network)

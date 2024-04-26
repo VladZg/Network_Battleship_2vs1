@@ -1,27 +1,54 @@
 #include <QCoreApplication>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QUrl>
-#include <QDebug>
+#include "Server.h"
+
+Server::Server() {}
+Server::~Server() {}
+
+void Server::startServer()
+{
+    if (this->listen(QHostAddress::Any, 5555))
+    {
+        qDebug() << "Listening";
+    }
+    else
+    {
+        qDebug() << "Not listening";
+    }
+}
+
+void Server::incomingConnection(qintptr socketDescriptor)
+{
+    socket = new QTcpSocket(this);
+    socket->setSocketDescriptor(socketDescriptor);
+
+    connect(socket, SIGNAL(readyRead()), this, SLOT(sockReady()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(sockDisc()));
+
+    qDebug() << socketDescriptor << " client connected";
+
+    socket->write("You are connected");
+    qDebug() << "Send client connection status - YES";
+}
+
+void Server::sockReady()
+{
+
+
+}
+
+void Server::sockDisc()
+{
+    qDebug() << "Disconnect";
+    socket->deleteLater();
+}
+
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);
+    QCoreApplication a(argc, argv);
 
-    QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl("https://www.google.com"));
-    QNetworkReply *reply = manager.get(request);
+    Server server;
+    server.startServer();
 
-    QObject::connect(reply, &QNetworkReply::finished, [&](){
-        if (reply->error() == QNetworkReply::NoError) {
-            QByteArray data = reply->readAll();
-            qDebug() << "Response:" << data;
-        } else {
-            qDebug() << "Error:" << reply->errorString();
-        }
-        app.quit();
-    });
-
-    return app.exec();
+    return a.exec();
 }
