@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,20 +18,23 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QString ip, int port, QWidget *parent = nullptr);
     ~MainWindow();
 
 private:
+    QString ip_;
+    int port_;
     QTcpSocket* socket; // socket for interacting with server
-    QByteArray Data;    // data from socket and for socket
+    QByteArray data;    // data from socket and for socket
     bool is_logined;    // flag sets True after user is logined
 
 public slots:
+    void sockConnect();
     void sockReady();
-    void sockDisc();
+    void sockDisconnect();
+    void sockError(QAbstractSocket::SocketError error);
 
 private slots:
-    void onDataRecieved();
     void on_pushButton_clicked();
     void on_plainTextEdit_blockCountChanged(int newBlockCount);
 

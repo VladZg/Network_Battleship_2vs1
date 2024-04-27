@@ -1,17 +1,21 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QString ip, int port, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , ip_(ip)
+    , port_(port)
 {
     ui->setupUi(this);
 
     socket = new QTcpSocket(this);
     is_logined = false;
 
-    connect(socket, SIGNAL(readyRead()), this, SLOT(sockReady()));
-    connect(socket, SIGNAL(readChannelFinished()), this, SLOT(sockDisc()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(sockError(QAbstractSocket::SocketError)));  // handles socket errors
+    connect(socket, SIGNAL(connected())   , this, SLOT(sockConnect())   );  // when socket connected, sockConnect slot runs
+    connect(socket, SIGNAL(readyRead())   , this, SLOT(sockReady())     );  // when new network data comes, sockReady slot runs
+    connect(socket, SIGNAL(disconnected()), this, SLOT(sockDisconnect()));  // when socket disconnected, sockDisconnect slot runs
 }
 
 MainWindow::~MainWindow()
@@ -26,7 +30,13 @@ void MainWindow::on_pushButton_clicked()    // authorization button
         return;
 
     qDebug() << "Connect button pushed";
-    socket->connectToHost("127.0.0.1", 12345);
+    socket->connectToHost(ip_, port_);
+
+    if (!socket->waitForConnected(500))
+    {
+        qDebug() << "Cannot connect";
+        return;
+    }
 
     QString login_entered = ui->plainTextEdit->toPlainText();
 
@@ -39,12 +49,13 @@ void MainWindow::on_pushButton_clicked()    // authorization button
         // TODO: check if login is already used
         // if (is_available) return;
 
-        if (!socket->waitForReadyRead(5000)) return;    // if don't have server answer
+        if (!socket->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
+        {
+            qDebug() << "Server don't answer";
+            return;
+        }
 
-        Data = socket->readAll();
-        qDebug() << "server: " << Data;
-
-        QString answer = QString::fromUtf8(Data).trimmed();
+        QString answer = QString::fromUtf8(data).trimmed();
         if (answer.startsWith("AUTH_SUCCESS"))
         {
             is_logined = true;
@@ -55,28 +66,29 @@ void MainWindow::on_pushButton_clicked()    // authorization button
     }
 }
 
-void MainWindow::sockDisc()
+void MainWindow::sockConnect()
+{
+
+}
+
+void MainWindow::sockDisconnect()
 {
     socket->deleteLater();
 }
 
+void MainWindow::sockError(QAbstractSocket::SocketError error)
+{
+    qDebug() << "Socket error " << error;
+}
+
 void MainWindow::sockReady()
 {
-    if (socket->waitForConnected(500))
-    {
-        socket->waitForReadyRead(500);
-        Data = socket->readAll();
-        qDebug() << "server: " << Data;
-    }
+//    socket->waitForReadyRead(500);
+    data = socket->readAll();
+    qDebug() << "server: " << data;
 }
 
-void MainWindow::onDataRecieved()
-{
-//    Data = socket->readAll();
-//    qDebug() << "Data: " << Data;
-}
-
-void MainWindow::on_plainTextEdit_blockCountChanged(int newBlockCount)
+void MainWindow::on_plainTextEdit_blockCountChanged(int)
 {
 
 }
