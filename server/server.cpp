@@ -1,5 +1,7 @@
 #include "server.h"
 #include "client.h"
+#include <QString>
+#include <QStringList>
 
 Server::Server(quint16 port) :
     port_(port)
@@ -76,6 +78,18 @@ void Server::handleData(const QByteArray& data, int clientId)
         }
     }
 
+    else if (request.startsWith("USERS_LIST"))
+    {
+        const char* answer = ("USERS_LIST " + logins_.values().join(" ")).toUtf8();
+
+        foreach (const Client& client, clients_)
+        {
+            client.socket_->write(answer); // sending to all clients list of all user logins
+        }
+
+        qDebug() << answer;
+    }
+
     // TODO: add more handlers
 }
 
@@ -105,3 +119,10 @@ bool Server::checkLogin(QString& login) // check if login available
 
     return false;
 }
+
+//void Server::sendUsersList()
+//{
+//    const char* answer = ("USERS_LIST " + logins_.values().join(" ")).toUtf8();
+//    cit->socket_->write(answer); // sending to client list of all user logins
+//    qDebug() << answer;
+//}

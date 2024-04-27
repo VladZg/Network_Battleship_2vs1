@@ -14,6 +14,8 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     is_logined = false;
     is_connected = false;
 
+    userLogins_ = {}; // list of user logins
+
     stateUpdate(ST_DISCONNECTED);
 
     connect(socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
@@ -81,7 +83,7 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
         qDebug() << "Connect button pushed";
         socket_->connectToHost(ip_, port_);
 
-        if (!socket_->waitForConnected(500))
+        if (!socket_->waitForConnected(2500))
         {
             qDebug() << "Cannot connect";
             QMessageBox::warning(this, "ERROR!", "Cannot connect user to server...");
@@ -92,6 +94,7 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
 //        qDebug() << "Connected";
     }
 
+    ui->connectToServerButton->setText("Авторизоваться на сервере");
     stateUpdate(ST_CONNECTED);
 
     QString login_entered = ui->loginLabel->text();
@@ -117,9 +120,20 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
             is_logined = true;
             stateUpdate(ST_AUTHORIZED);
 
+            ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
+
+//            QString login = login_entered.trimmed();
+//            ui->usersList->addAction(login);
+
             ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
 
             qDebug() << "loggining confirmed!";
+
+            ui->connectToServerButton->setText("Вы успешно авторизованы!");
+            ui->connectToServerButton->setEnabled(false);   // turn the button off
+
+            // TODO: get list of users from server
+            usersListUpdate();
         }
 
          else // didn't connected
@@ -127,6 +141,10 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
             ui->loginLabel->setStyleSheet("background-color: red;\n color: white;");
             QMessageBox::warning(this, "ERROR!", "Login is already in use");
         }
+    }
+    else
+    {
+        QMessageBox::warning(this, "ERROR!", "Cannot authorize user on server...");
     }
 }
 
@@ -150,10 +168,49 @@ void MainWindow::on_receiveData()
 //    socket->waitForReadyRead(500);
     data_ = socket_->readAll();
     qDebug() << "server: " << data_;
+
+    handleData();
+}
+
+void MainWindow::handleData()
+{
+//    if (data_.startsWith("USERS_LIST"))
+}
+
+void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList
+{
+    socket_->write(((QString)"USERS_LIST ").toUtf8());
+    socket_->waitForReadyRead(500);
+
+    QStringList logins = QString::fromUtf8(data_.trimmed().mid(11)).split(" ", Qt::SkipEmptyParts); // getting list of string logins from the request
+
+    ui->usersList->clear();
+
+    foreach (const QString& login, logins)
+    {
+        ui->usersList->addAction(login);
+        qDebug() << "User " << login;
+
+        // TODO: add smarter check
+    }
+
+    qDebug() << ui->usersList->actions();
 }
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
 {
 
+}
+
+void MainWindow::updateAll()
+{
+    stateUpdate(state_);
+    usersListUpdate();
+    screenUpdate();
+}
+
+void MainWindow::on_updateButton_clicked()
+{
+    updateAll();
 }
 

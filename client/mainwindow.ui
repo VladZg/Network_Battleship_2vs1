@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>401</width>
-    <height>217</height>
+    <width>578</width>
+    <height>416</height>
    </rect>
   </property>
   <property name="font">
@@ -82,16 +82,35 @@
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="updateButton">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>220</y>
+      <width>80</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Update</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>401</width>
+     <width>578</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="usersList">
+    <property name="title">
+     <string>Пользователи</string>
+    </property>
+   </widget>
+   <addaction name="usersList"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">

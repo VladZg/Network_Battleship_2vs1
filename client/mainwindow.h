@@ -8,6 +8,7 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QString>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,6 +34,7 @@ public:
     ~MainWindow();
     void screenUpdate();
     void stateUpdate(ClientState new_state);
+    void updateAll();
 
 private:
     ClientState state_;
@@ -43,6 +45,11 @@ private:
     bool is_connected;
     bool is_logined;    // flag sets True after user is logined
 
+public:
+    QStringList userLogins_;
+    void handleData();
+    void usersListUpdate();
+
 public slots:
     void on_sockConnect();
     void on_receiveData();
@@ -51,9 +58,11 @@ public slots:
 
 private slots:
     void on_connectToServerButton_clicked();
-    void on_loginLabel_cursorPositionChanged(int arg1, int arg2);
+    void on_loginLabel_cursorPositionChanged(int arg1, int arg2);        
+    void on_updateButton_clicked();
 
 private:
     Ui::MainWindow *ui;
 };
+
 #endif // MAINWINDOW_H
