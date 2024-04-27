@@ -1,6 +1,8 @@
 #include "server.h"
+#include "client.h"
 
-Server::Server(int port) : port_(port)
+Server::Server(quint16 port) :
+    port_(port)
 {
 
 }
@@ -22,71 +24,84 @@ void Server::startServer()
 
 void Server::incomingConnection(qintptr socketDescriptor)
 {
-    socket = new QTcpSocket(this);
-    socket->setSocketDescriptor(socketDescriptor);
+    Client client;
+//    client.socket_ = this->nextPendingConnection();
+    client.socket_ = new QTcpSocket(this);
+    client.socket_->setSocketDescriptor(socketDescriptor);
+    client.status_ = Client::ST_CONNECTED;
+//    client.playingWith = clients_.end();
+    int clientId = client.socket_->socketDescriptor();
 
-    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(sockError(QAbstractSocket::SocketError)));  // handles socket errors
-    connect(socket, SIGNAL(connected())   , this, SLOT(sockConnect())   );  // when socket connected, sockConnect slot runs
-    connect(socket, SIGNAL(readyRead())   , this, SLOT(sockReady())     );  // when new network data comes, sockReady slot runs
-    connect(socket, SIGNAL(disconnected()), this, SLOT(sockDisconnect()));  // when socket disconnected, sockDisconnect slot runs
+//    socket_ = new QTcpSocket(this);
+//    socket_->setSocketDescriptor(socketDescriptor);
+
+    connect(client.socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
+    connect(client.socket_, SIGNAL(connected())   , this, SLOT(on_sockConnect())   );  // when new socket connected, sockConnect slot runs
+    connect(client.socket_, SIGNAL(readyRead())   , this, SLOT(on_receiveData())     );  // when new network data comes, sockReady slot runs
+    connect(client.socket_, SIGNAL(disconnected()), this, SLOT(on_sockDisconnect()));  // when socket disconnected, sockDisconnect slot run
+
+    clients_.insert(clientId, client);
 }
 
-bool Server::checkLoginRequest(QString& request)
+void Server::on_receiveData()
 {
-    QString login = request.mid(5); // get login from the 1st line of request
-    // TODO: Check login and send answer to the client
-    if (true) //checkLogin(login)) {
-    {
-        qDebug() << "client " << login << " connected";
-        return true;
-    }
-
-    return false;
+    socket_ = (QTcpSocket*)sender();
+    data_ = socket_->readAll();
+    qDebug() << "client" << socket_->socketDescriptor() << ": " << data_;
+    handleData(data_, socket_->socketDescriptor());
 }
 
-void Server::sockReady()
-{
-    data = socket->readAll();
-    qDebug() << "client: " << data;
-    handleData();
-}
-
-void Server::handleData()
+void Server::handleData(const QByteArray& data, int clientId)
 {
     QString request = QString::fromUtf8(data).trimmed();
 //    qDebug() << "client: " << request;
 
+    ClientsIterator cit = clients_.find(clientId);
+
     if (request.startsWith("AUTH"))
     {
-        qDebug() << "AUTH!!!";
-
-        // TODO: check if login is available
-        if (checkLoginRequest(request))
+        QString login = request.mid(5); // get login from the 1st line of request
+        if (checkLogin(login))   // check if login valid
         {
-            socket->write("AUTH_SUCCESS");
+            logins_.insert(cit->socket_->socketDescriptor(), login);
+
+            cit->socket_->write("AUTH_SUCCESS");
+            qDebug() << "AUTH SUCCESS!!!";
             qDebug() << "Send client connection status - YES";
         }
         else
         {
-            socket->write("AUTH_UNSUCCESS");
+            qDebug() << "AUTH UNSUCCESS... Already have " << login << " login";
+            cit->socket_->write("AUTH_UNSUCCESS");
         }
     }
 
     // TODO: add more handlers
 }
 
-void Server::sockConnect()
+void Server::on_sockConnect()
 {
     qDebug() << "Connect";
 }
 
-void Server::sockDisconnect()
+void Server::on_sockDisconnect()
 {
     qDebug() << "Disconnect";
-    socket->deleteLater();
+//    socket_->deleteLater();
 }
 
-void Server::sockError(QAbstractSocket::SocketError error)
+void Server::on_sockError(QAbstractSocket::SocketError error)
 {
     qDebug() << "Socket error " << error;
+}
+
+bool Server::checkLogin(QString& login) // check if login available
+{
+    if (!logins_. values().contains(login))
+    {
+        qDebug() << "client " << login << " connected";
+        return true;
+    }
+
+    return false;
 }

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>401</width>
+    <height>217</height>
    </rect>
   </property>
   <property name="font">
@@ -17,38 +17,70 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Network_Battleship_2vs1</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QWidget" name="formLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>330</y>
-      <width>361</width>
-      <height>61</height>
+      <x>0</x>
+      <y>0</y>
+      <width>401</width>
+      <height>171</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>18</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Соединиться с сервером</string>
-    </property>
-   </widget>
-   <widget class="QPlainTextEdit" name="plainTextEdit">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>200</y>
-      <width>361</width>
-      <height>111</height>
-     </rect>
-    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinimumSize</enum>
+     </property>
+     <property name="labelAlignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="formAlignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="loginLabel">
+       <property name="font">
+        <font>
+         <family>Unispace</family>
+         <pointsize>10</pointsize>
+         <weight>9</weight>
+         <italic>true</italic>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 75 italic 10pt &quot;Unispace&quot;;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="connectToServerButton">
+       <property name="font">
+        <font>
+         <family>Ubuntu Condensed</family>
+         <pointsize>10</pointsize>
+         <weight>9</weight>
+         <italic>true</italic>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 75 italic 10pt &quot;Ubuntu Condensed&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Соединиться с сервером</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -56,7 +88,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>401</width>
      <height>21</height>
     </rect>
    </property>
