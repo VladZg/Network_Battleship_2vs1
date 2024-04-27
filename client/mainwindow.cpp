@@ -12,6 +12,9 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
     socket_ = new QTcpSocket(this);
     is_logined = false;
+    is_connected = false;
+
+    stateUpdate(ST_DISCONNECTED);
 
     connect(socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
     connect(socket_, SIGNAL(connected())   , this, SLOT(on_sockConnect())   );  // when socket connected, sockConnect slot runs
@@ -24,20 +27,72 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::stateUpdate(ClientState new_state)
+{
+    switch (new_state)
+    {
+        case ST_DISCONNECTED:
+        {
+            ui->statusbar->showMessage("status: ST_DISCONNECTED");
+            break;
+        }
+        case ST_CONNECTED:
+        {
+            ui->statusbar->showMessage("status: ST_CONNECTED");
+            break;
+        }
+        case ST_AUTHORIZED:
+        {
+            ui->statusbar->showMessage("status: ST_AUTHORIZED");
+            break;
+        }
+        case ST_MAKING_STEP:
+        {
+            ui->statusbar->showMessage("status: ST_MAKING_STEP");
+            break;
+        }
+        case ST_WAITING_STEP:
+        {
+            ui->statusbar->showMessage("status: ST_WAITING_STEP");
+            break;
+        }
+        case ST_READY:
+        {
+            ui->statusbar->showMessage("status: ST_READY");
+            break;
+        }
+    }
+
+    state_ = new_state;
+}
+
+void MainWindow::screenUpdate()
+{
+
+}
 
 void MainWindow::on_connectToServerButton_clicked()    // authorization button
 {
     if (is_logined)
         return;
 
-    qDebug() << "Connect button pushed";
-    socket_->connectToHost(ip_, port_);
-
-    if (!socket_->waitForConnected(500))
+    if (!is_connected)
     {
-        qDebug() << "Cannot connect";
-        return;
+        qDebug() << "Connect button pushed";
+        socket_->connectToHost(ip_, port_);
+
+        if (!socket_->waitForConnected(500))
+        {
+            qDebug() << "Cannot connect";
+            QMessageBox::warning(this, "ERROR!", "Cannot connect user to server...");
+            return;
+        }
+
+        is_connected = true;
+//        qDebug() << "Connected";
     }
+
+    stateUpdate(ST_CONNECTED);
 
     QString login_entered = ui->loginLabel->text();
 
@@ -60,6 +115,7 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
         if (answer.startsWith("AUTH_SUCCESS"))
         {
             is_logined = true;
+            stateUpdate(ST_AUTHORIZED);
 
             ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
 
@@ -69,7 +125,7 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
          else // didn't connected
         {
             ui->loginLabel->setStyleSheet("background-color: red;\n color: white;");
-            QMessageBox::warning(this, "OOPS", "Login is already in use");
+            QMessageBox::warning(this, "ERROR!", "Login is already in use");
         }
     }
 }

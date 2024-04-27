@@ -13,11 +13,14 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-enum State  // states of client
+enum ClientState  // states of client
 {
-    ST_PLACING_SHIPS,
-    ST_MAKING_STEP  ,
-    ST_WAITING_STEP ,
+    ST_DISCONNECTED = 0,
+    ST_CONNECTED       ,
+    ST_AUTHORIZED      ,
+    ST_READY           ,
+    ST_WAITING_STEP    ,
+    ST_MAKING_STEP     ,
     // more
 };
 
@@ -28,13 +31,16 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QString ip, quint16 port, QWidget *parent = nullptr);
     ~MainWindow();
-    void update();
+    void screenUpdate();
+    void stateUpdate(ClientState new_state);
 
 private:
+    ClientState state_;
     QString ip_;
     int port_;
     QTcpSocket* socket_; // socket for interacting with server
     QByteArray data_;    // data from socket and for socket
+    bool is_connected;
     bool is_logined;    // flag sets True after user is logined
 
 public slots:

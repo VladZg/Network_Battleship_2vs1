@@ -93,7 +93,21 @@
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="font">
+    <font>
+     <family>Ubuntu Mono</family>
+     <pointsize>10</pointsize>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 10pt &quot;Ubuntu Mono&quot;;
+color: rgb(220, 138, 221);</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
