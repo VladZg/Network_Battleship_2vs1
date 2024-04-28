@@ -44,11 +44,13 @@ private:
     QByteArray data_;    // data from socket and for socket
     bool is_connected;
     bool is_logined;    // flag sets True after user is logined
+    QString login_;
 
 public:
     QStringList userLogins_;
     void handleData();
     void usersListUpdate();
+    void sendMessage();
 
 public slots:
     void on_sockConnect();
@@ -60,6 +62,8 @@ private slots:
     void on_connectToServerButton_clicked();
     void on_loginLabel_cursorPositionChanged(int arg1, int arg2);        
     void on_updateButton_clicked();
+
+    void on_sendMessageButton_clicked();
 
 private:
     Ui::MainWindow *ui;

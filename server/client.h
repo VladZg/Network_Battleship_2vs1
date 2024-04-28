@@ -23,6 +23,7 @@ public:
         // more
     };
 
+    void setLogin(const QString& login);
     QString getLogin();
 
 public:

@@ -119,6 +119,7 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
         {
             is_logined = true;
             stateUpdate(ST_AUTHORIZED);
+            login_ = login_entered;
 
             ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
 
@@ -174,10 +175,20 @@ void MainWindow::on_receiveData()
 
 void MainWindow::handleData()
 {
-//    if (data_.startsWith("USERS_LIST"))
+    if (data_.startsWith("MESSAGE_FROM"))
+    {
+        QStringList message_request = QString::fromUtf8(data_).split(":");
+        QString sender_login = message_request[1];
+        QString message = message_request[2];
+
+        if (sender_login == login_) // if message from myself
+            return;
+
+        ui->messager->append(sender_login + "> " + message);    // show received message
+    }
 }
 
-void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList
+void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
     socket_->write(((QString)"USERS_LIST ").toUtf8());
     socket_->waitForReadyRead(500);
@@ -186,15 +197,21 @@ void MainWindow::usersListUpdate() // requests list of users and add connected/r
 
     ui->usersList->clear();
 
+    ui->messageRecieversOptionList->clear();
+    ui->messageRecieversOptionList->addItem("all");
+    ui->messageRecieversOptionList->setCurrentRow(0);   // set message to all at default
+
     foreach (const QString& login, logins)
     {
         ui->usersList->addAction(login);
+        ui->messageRecieversOptionList->addItem(login);
+
         qDebug() << "User " << login;
 
-        // TODO: add smarter check
+        // TODO: add smarter checkMESSAGE_FROM
     }
 
-    qDebug() << ui->usersList->actions();
+//    qDebug() << ui->usersList->actions();
 }
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
@@ -212,5 +229,45 @@ void MainWindow::updateAll()
 void MainWindow::on_updateButton_clicked()
 {
     updateAll();
+}
+
+void MainWindow::sendMessage()
+{
+    QString message = ui->messageEdit->toPlainText();
+
+    if (message.isEmpty())
+    {
+        qDebug() << "empty message";
+        return;
+    }
+
+    QListWidgetItem* currentItem = ui->messageRecieversOptionList->currentItem();
+
+    if (currentItem)
+    {
+        QString receiver_login = currentItem->text();
+        qDebug() << "Sending message to:" << receiver_login;
+
+        if (receiver_login == login_)
+            return;
+
+        QString request = "MESSAGE_TO:" + receiver_login + ":" + message;  // format:  MESSAGE_TO:receiver_login:message
+        qDebug() << request;
+
+        ui->messager->append(login_ + "< " + message);    // show sended message
+        socket_->write(request.toUtf8());   // send message through the server
+        ui->messageEdit->clear();
+    }
+    else
+    {
+        QMessageBox::warning(this, "ERROR!", "No reciever selected");
+        qDebug() << "No reciever selected";
+    }
+}
+
+
+void MainWindow::on_sendMessageButton_clicked()
+{
+    sendMessage();
 }
 
