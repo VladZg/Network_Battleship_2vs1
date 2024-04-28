@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>794</width>
-    <height>416</height>
+    <width>763</width>
+    <height>478</height>
    </rect>
   </property>
   <property name="font">
@@ -95,26 +95,6 @@
      <string>Update</string>
     </property>
    </widget>
-   <widget class="QListWidget" name="messageRecieversOptionList">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>0</y>
-      <width>101</width>
-      <height>171</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="messager">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>0</y>
-      <width>231</width>
-      <height>131</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="sendMessageButton">
     <property name="geometry">
      <rect>
@@ -138,13 +118,43 @@
      </rect>
     </property>
    </widget>
+   <widget class="QWidget" name="messageRecieversOptionsListWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>0</y>
+      <width>131</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <widget class="QListWidget" name="messageRecieversOptionList">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>131</width>
+       <height>171</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="chatWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>0</y>
+      <width>231</width>
+      <height>131</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>794</width>
+     <width>763</width>
      <height>21</height>
     </rect>
    </property>

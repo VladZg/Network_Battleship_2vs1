@@ -9,6 +9,9 @@
 #include <QPushButton>
 #include <QString>
 #include <QStringList>
+#include <QListWidget>
+#include <QTextBrowser>
+#include <QStackedWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -62,11 +65,17 @@ private slots:
     void on_connectToServerButton_clicked();
     void on_loginLabel_cursorPositionChanged(int arg1, int arg2);        
     void on_updateButton_clicked();
-
     void on_sendMessageButton_clicked();
+    void on_messageRecieversOptionList_itemSelectionChanged();
+    void createTextBrowser(QListWidgetItem* user);
 
 private:
-    Ui::MainWindow *ui;
+    QListWidget* receiversListWidget;    // user from the list who we want to send the message
+    QStackedWidget* receiverBrowserStackedWidget;  // browser (chat) with this user
+    QMap<QListWidgetItem*, QTextBrowser*> browserMap;   // map of the user logins and chats with them
+
+private:
+    Ui::MainWindow* ui;
 };
 
 #endif // MAINWINDOW_H

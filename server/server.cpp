@@ -73,37 +73,38 @@ void Server::handleData(const QByteArray& data, int clientId)
         {
             for (ClientsIterator receiver_it = clients_.begin(); receiver_it != clients_.end(); ++receiver_it)
             {
-                QString message_answer = "MESSAGE_FROM:" + sender_login + ":" + message;
+                QString message_answer = "ALL:" + sender_login + ":" + message;
                 receiver_it->socket_->write(message_answer.toUtf8());
 
                 qDebug() << message_answer;
             }
         }
 
-        else
+        else    // NOT IMPLEMENTED YET
         {
-            quintptr receiver_socketDescriptor = 0;
+//            quintptr receiver_socketDescriptor = 0;
 
-            for (auto it = logins_.begin(); it != logins_.end(); ++it)
-            {
-                if (it.value() == receiver_login)
-                {
-                    receiver_socketDescriptor = it.key();
-                    break;
-                }
-            }
+//            for (auto it = logins_.begin(); it != logins_.end(); ++it)
+//            {
+//                if (it.value() == receiver_login)
+//                {
+//                    receiver_socketDescriptor = it.key();
+//                    break;
+//                }
+//            }
 
-            if (!receiver_socketDescriptor)
-            {
-                qDebug() << "User not found";
-                return;
-            }
+//            if (!receiver_socketDescriptor)
+//            {
+//                qDebug() << "User not found";
+//                return;
+//            }
 
-            ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
-            QString message_answer = "MESSAGE_FROM:" + sender_login + ":" + message;
-            receiver_it->socket_->write(message_answer.toUtf8());
+//            ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
+//            QString message_answer = "MESSAGE_FROM:" + sender_login + ":" + message;
+//            receiver_it->socket_->write(message_answer.toUtf8());
 
-            qDebug() << message_answer;
+//            qDebug() << message_answer;
+            qDebug() << "NOT IMPLEMENTED YET";
         }
     }
 
