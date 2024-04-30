@@ -8,12 +8,17 @@ Field::Field() :
     clear();
 }
 
-Field::~Field()
+Field::Field(QString field)
 {
 
 }
 
-Cell Field::getCell(int x, int y)
+Field::~Field()
+{
+    field_.clear();
+}
+
+Cell Field::getCell(int x, int y) const
 {
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
     {
@@ -57,7 +62,7 @@ void Field::setField(QString field)
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
         if ((*cell_it) < (QChar)CELL_EMPTY || (*cell_it) > (QChar)CELL_MARK)
-        field.push_back(QString(*cell_it));
+            field_.push_back((Cell)cell_it->digitValue());
     }
 }
 
@@ -73,3 +78,15 @@ void Field::clear()
 {
     field_.fill(CELL_EMPTY, area_);
 }
+
+int Field::getWidth() const
+{
+    return width_;
+}
+
+int Field::getHeight() const
+{
+    return height_;
+}
+
+

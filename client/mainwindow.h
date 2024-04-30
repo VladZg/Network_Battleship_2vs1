@@ -8,10 +8,14 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QString>
+#include <QImage>
 #include <QStringList>
 #include <QListWidget>
 #include <QTextBrowser>
 #include <QStackedWidget>
+#include "./config.h"
+#include "field.h"
+#include "model.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,8 +27,6 @@ enum ClientState  // states of client
     ST_CONNECTED       ,
     ST_AUTHORIZED      ,
     ST_READY           ,
-    ST_WAITING_STEP    ,
-    ST_MAKING_STEP     ,
     // more
 };
 
@@ -46,6 +48,10 @@ private:
     QTcpSocket* socket_; // socket for interacting with server
     QByteArray data_;    // data from socket and for socket
     QString login_;
+    Model* model_;
+
+protected:
+    void paintEvent( QPaintEvent* event );
 
 public:
     QStringList userLogins_;
@@ -57,6 +63,8 @@ public:
     void handleMessage();
     void handleUsersListUpdate();
     void updateChats();
+
+    QImage getFieldImage(const Field& field) const;
 
 public slots:
     void on_sockConnect();

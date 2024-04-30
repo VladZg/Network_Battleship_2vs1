@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "images.h"
 #include <QMessageBox>
 #include <QWidget>
+#include <QGraphicsView>
 #include <QTextBrowser>
 #include <QTextCharFormat>
+#include <QPainter>
 
 MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     : QMainWindow(parent)
@@ -31,6 +34,9 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
     userLogins_ = {}; // list of user logins
 
+    pictures.load();        // loading all the images for the game
+    model_ = new Model();   // game model with fields
+
     stateUpdate(ST_DISCONNECTED);
 
     connect(socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
@@ -41,6 +47,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete model_;
     delete ui;
 }
 
@@ -61,16 +68,6 @@ void MainWindow::stateUpdate(ClientState new_state)
         case ST_AUTHORIZED:
         {
             ui->statusbar->showMessage("status: ST_AUTHORIZED");
-            break;
-        }
-        case ST_MAKING_STEP:
-        {
-            ui->statusbar->showMessage("status: ST_MAKING_STEP");
-            break;
-        }
-        case ST_WAITING_STEP:
-        {
-            ui->statusbar->showMessage("status: ST_WAITING_STEP");
             break;
         }
         case ST_READY:
@@ -184,6 +181,8 @@ void MainWindow::on_receiveData()
     qDebug() << "server: " << data_;
 
     handleData();
+
+    this->update();
 }
 
 void MainWindow::handleData()
@@ -444,3 +443,64 @@ void MainWindow::createTextBrowser(QListWidgetItem* receiver)
     qDebug() << "Create chat for " << login_ << " and " << receiver->text();
 }
 
+QImage MainWindow::getFieldImage(const Field& field) const
+{
+    QImage image(FIELD_IMG_WIDTH_DEFAULT, FIELD_IMG_HEIGHT_DEFAULT, QImage::Format_ARGB32);
+    Cell cell;
+    image.fill(0);  // empty image
+    QPainter painter(&image);
+
+    double cfx = 1.0 * FIELD_IMG_WIDTH_DEFAULT  / FIELD_WIDTH_DEFAULT ;
+    double cfy = 1.0 * FIELD_IMG_HEIGHT_DEFAULT / FIELD_HEIGHT_DEFAULT;
+
+    int width = field.getWidth();
+    int height = field.getHeight();
+
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+        {
+            cell = field.getCell(i, j);
+
+            switch(cell)
+            {
+            case CELL_DOT:
+                painter.drawImage(i*cfx, j*cfy, pictures.get("dot"));
+                break;
+
+            case CELL_PART:
+                painter.drawImage(i*cfx, j*cfy, pictures.get("part"));
+                break;
+
+            case CELL_KILL:
+                painter.drawImage(i*cfx, j*cfy, pictures.get("kill"));
+                break;
+
+            case CELL_MARK:
+                painter.drawImage(i*cfx, j*cfy, pictures.get("mark"));
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+
+    return image;
+}
+
+void MainWindow::paintEvent(QPaintEvent* event) // calls when interface redraws
+{
+    Q_UNUSED(event);
+
+//    const int deltaY = this->centralWidget()->y();
+
+    model_->setMyField("3000000000000100100320000220000000000000000000000111100000000000000000000202002000022000000000000003"); // just for test
+
+    QPainter painter(this);
+    painter.drawImage(200, 100, pictures.get("background"));    // TODO: сделать норм автомаитческий рассчёт размеров и параметров изображений
+    painter.drawImage(240, 139, getFieldImage(model_->getMyField()));
+
+//    ui->fieldsLabel->setPixmap(QPixmap::fromImage(pictures.get("background")));
+//    ui->fieldsLabel->setPixmap(QPixmap::fromImage(getFieldImage(model_->getMyField())));
+}

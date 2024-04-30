@@ -23,5 +23,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     client.h \
+    config.h \
     field.h \
     server.h

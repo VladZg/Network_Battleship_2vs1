@@ -12,12 +12,17 @@ TARGET = client
 
 SOURCES += \
     field.cpp \
+    images.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    model.cpp
 
 HEADERS += \
+    config.h \
     field.h \
-    mainwindow.h
+    images.h \
+    mainwindow.h \
+    model.h
 
 FORMS += \
     mainwindow.ui
@@ -26,3 +31,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    images.qrc

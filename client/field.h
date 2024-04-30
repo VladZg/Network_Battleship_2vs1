@@ -4,9 +4,7 @@
 #include <QVector>
 #include <QDebug>
 #include <QString>
-
-#define FIELD_WIDTH_DEFAULT  10
-#define FIELD_HEIGHT_DEFAULT 10
+#include "./config.h"
 
 enum Cell
 {
@@ -24,12 +22,15 @@ public:
     Field(QString field);
     ~Field();
 
-    Cell getCell(int x, int y);
+    Cell getCell(int x, int y) const;
     void setCell(int x, int y, Cell cell);
     QString getFieldStr();
     void setField(QString field);
     void setField(QVector<Cell> field);
     void clear();
+
+    int getWidth() const;
+    int getHeight() const;
 
 private:
     int width_;

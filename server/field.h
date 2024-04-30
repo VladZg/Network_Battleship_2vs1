@@ -4,9 +4,7 @@
 #include <QVector>
 #include <QDebug>
 #include <QString>
-
-#define FIELD_WIDTH_DEFAULT  10
-#define FIELD_HEIGHT_DEFAULT 10
+#include "./config.h"
 
 enum Cell
 {
