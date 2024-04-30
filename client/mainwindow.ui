@@ -26,7 +26,7 @@
       <x>0</x>
       <y>0</y>
       <width>161</width>
-      <height>51</height>
+      <height>57</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -58,6 +58,9 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>Введите логин</string>
        </property>
       </widget>
      </item>
@@ -92,7 +95,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Update</string>
+     <string>Обновить</string>
     </property>
    </widget>
    <widget class="QPushButton" name="sendMessageButton">
@@ -105,7 +108,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Send</string>
+     <string>Отправить</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="messageEdit">
@@ -116,6 +119,12 @@
       <width>151</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="placeholderText">
+     <string>Введите сообщение</string>
     </property>
    </widget>
    <widget class="QWidget" name="messageRecieversOptionsListWidget" native="true">

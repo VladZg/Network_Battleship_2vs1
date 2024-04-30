@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QWidget>
 #include <QTextBrowser>
+#include <QTextCharFormat>
 
 MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     : QMainWindow(parent)
@@ -141,7 +142,7 @@ void MainWindow::on_connectToServerButton_clicked()    // connection+authorizati
                 ui->connectToServerButton->setEnabled(false);   // turn the button off
 
                 // TODO: get list of users from server
-                usersListUpdate();
+                requestUsersListUpdate();
             }
 
              else // didn't authorized
@@ -184,57 +185,7 @@ void MainWindow::handleData()
 {
     if (data_.startsWith("MESSAGE"))
     {
-        QStringList message_request = QString::fromUtf8(data_).split(":");
-
-        if (message_request.length() < 2)
-        {
-            qDebug() << "ERROR";
-            return;
-        }
-
-        QString chat_with = message_request[1];
-        QList<QListWidgetItem*> sendersList = ui->messageRecieversOptionList->findItems(chat_with, Qt::MatchExactly);
-
-        if (sendersList.isEmpty())
-        {
-            qDebug() << "No such chat in messageRecieversOptionList";
-            return;
-        }
-
-        QListWidgetItem* sender = sendersList.first();  // specific sender from the messageRecieversOptionList
-//        qDebug() << sender;
-        QTextBrowser* chat = browserMap.value(sender);    // look for specific chat
-
-        if (!chat)
-        {
-//            qDebug() << "Error: no such chat in browserMap";
-//            return;
-
-            createTextBrowser(sender);
-            chat = browserMap.value(sender);
-        }
-
-        int shift = 0;
-
-        if (message_request[1]=="all")
-        {
-            shift = 1;
-        }
-
-        QString sender_login = message_request[1+shift];
-        QString message = message_request[2+shift];
-
-        if (sender_login == login_) // if message from myself
-            return;
-
-        chat->append(sender_login + "> " + message);    // show received message in common chat (all)
-
-        if (ui->messageRecieversOptionList->currentItem() != sender)   // if message to not a current chat then we set a flag to unchecked (then change the color)
-        {
-            sender->setBackground(QBrush(QColor("green")));
-            sender->setForeground(QBrush(QColor("white")));
-            sender->setData(Qt::UserRole, true); // new flag means about new message not read yet
-        }
+        handleMessage();
     }
 
     else if(data_.startsWith("USERS"))
@@ -248,15 +199,79 @@ void MainWindow::handleData()
     }
 }
 
-void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
+// TODO: create a method that updates (creates/removes) all chat QTextBrowser's
+
+void MainWindow::handleMessage()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.length() < 2)
+    {
+        qDebug() << "ERROR";
+        return;
+    }
+
+    QString chat_with = message_request[1];
+    QList<QListWidgetItem*> sendersList = ui->messageRecieversOptionList->findItems(chat_with, Qt::MatchExactly);
+
+    if (sendersList.isEmpty())
+    {
+        qDebug() << "No such chat in messageRecieversOptionList";
+        return;
+    }
+
+    QListWidgetItem* sender = sendersList.first();  // specific sender from the messageRecieversOptionList
+//        qDebug() << sender;
+    QTextBrowser* chat = browserMap.value(sender);    // look for specific chat
+
+    if (!chat)
+    {
+//            qDebug() << "Error: no such chat in browserMap";
+//            return;
+
+        createTextBrowser(sender);
+        chat = browserMap.value(sender);
+    }
+
+    int shift = 0;
+
+    if (message_request[1]=="all")
+    {
+        shift = 1;
+    }
+
+    QString sender_login = message_request[1+shift];
+    QString message = message_request[2+shift];
+
+    if (sender_login == login_) // if message from myself
+        return;
+
+    QTextCharFormat receiver_format;
+    QTextCharFormat message_format;
+
+    receiver_format.setForeground(QColor("green"));
+    message_format.setForeground(QColor("black"));
+
+    chat->textCursor().insertText(sender_login + "> ", receiver_format); // show received message in corresponding chat
+    chat->textCursor().insertText(message + "\n", message_format);
+
+//        chat->append(sender_login + "> " + message);    // show received message in common chat (all)
+
+    if (ui->messageRecieversOptionList->currentItem() != sender)   // if message to not a current chat then we set a flag to unchecked (then change the color)
+    {
+        sender->setBackground(QBrush(QColor("green")));
+        sender->setForeground(QBrush(QColor("white")));
+        sender->setData(Qt::UserRole, true); // new flag means about new message not read yet
+    }
+}
+
+void MainWindow::requestUsersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
     socket_->write(((QString)"USERS:").toUtf8());
     socket_->waitForReadyRead(500);
 
     handleUsersListUpdate();
 }
-
-// TODO: create a method that updates (creates/removes) all chat QTextBrowser's
 
 void MainWindow::handleUsersListUpdate()
 {
@@ -303,7 +318,7 @@ void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
 void MainWindow::updateAll()
 {
     stateUpdate(state_);
-    usersListUpdate();
+    requestUsersListUpdate();
     screenUpdate();
 }
 
@@ -340,8 +355,17 @@ void MainWindow::sendMessage()
             return;
         }
 
-        chat->append(login_ + "< " + message);    // show sended message
-        qDebug() << login_ + "< " + message ;
+//        chat->append(login_ + "< " + message);    // show sended message
+//        qDebug() << login_ + "< " + message ;
+
+        QTextCharFormat sender_format;
+        QTextCharFormat message_format;
+
+        sender_format.setForeground(QColor("blue"));
+        message_format.setForeground(QColor("black"));
+
+        chat->textCursor().insertText(login_ + "> ", sender_format);
+        chat->textCursor().insertText(message + "\n", message_format);
 
         socket_->write(request.toUtf8());   // send message through the server
         ui->messageEdit->clear();

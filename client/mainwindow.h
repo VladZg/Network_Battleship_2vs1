@@ -50,8 +50,9 @@ private:
 public:
     QStringList userLogins_;
     void handleData();
-    void usersListUpdate();
+    void requestUsersListUpdate();
     void sendMessage();
+    void handleMessage();
     void handleUsersListUpdate();
     void updateChats();
 
