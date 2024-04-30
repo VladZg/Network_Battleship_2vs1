@@ -60,7 +60,7 @@ void Server::handleData(const QByteArray& data, int clientId)
 
     ClientsIterator cit = clients_.find(clientId);
 
-    if (request.startsWith("MESSAGE_TO"))
+    if (request.startsWith("MESSAGE"))
     {
         QString sender_login = cit->getLogin();
         QStringList message_request = request.split(":");
@@ -73,38 +73,37 @@ void Server::handleData(const QByteArray& data, int clientId)
         {
             for (ClientsIterator receiver_it = clients_.begin(); receiver_it != clients_.end(); ++receiver_it)
             {
-                QString message_answer = "ALL:" + sender_login + ":" + message;
+                QString message_answer = "MESSAGE:all:" + sender_login + ":" + message;
                 receiver_it->socket_->write(message_answer.toUtf8());
 
                 qDebug() << message_answer;
             }
         }
 
-        else    // NOT IMPLEMENTED YET
+        else if (is_logined(receiver_login))
         {
-//            quintptr receiver_socketDescriptor = 0;
+            quintptr receiver_socketDescriptor = 0;
 
-//            for (auto it = logins_.begin(); it != logins_.end(); ++it)
-//            {
-//                if (it.value() == receiver_login)
-//                {
-//                    receiver_socketDescriptor = it.key();
-//                    break;
-//                }
-//            }
+            for (auto it = logins_.begin(); it != logins_.end(); ++it)
+            {
+                if (it.value() == receiver_login)
+                {
+                    receiver_socketDescriptor = it.key();
+                    break;
+                }
+            }
 
-//            if (!receiver_socketDescriptor)
-//            {
-//                qDebug() << "User not found";
-//                return;
-//            }
+            ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
+            QString message_answer = "MESSAGE:" + sender_login + ":" + message;
+            receiver_it->socket_->write(message_answer.toUtf8());
 
-//            ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
-//            QString message_answer = "MESSAGE_FROM:" + sender_login + ":" + message;
-//            receiver_it->socket_->write(message_answer.toUtf8());
+            qDebug() << message_answer;
+        }
 
-//            qDebug() << message_answer;
-            qDebug() << "NOT IMPLEMENTED YET";
+        else
+        {
+            // TODO: add error answer to the client
+            qDebug() << "No such user";
         }
     }
 
@@ -116,30 +115,45 @@ void Server::handleData(const QByteArray& data, int clientId)
             logins_.insert(cit->socket_->socketDescriptor(), login);
             cit->setLogin(login);
 
-            cit->socket_->write("AUTH_SUCCESS");
+            cit->socket_->write("AUTH:SUCCESS");
             qDebug() << "AUTH SUCCESS!!!";
             qDebug() << "Send client connection status - YES";
+
+            handleUsersRequest();
+            qDebug() << "Update client list for all users - YES";
         }
         else
         {
             qDebug() << "AUTH UNSUCCESS... Already have " << login << " login";
-            cit->socket_->write("AUTH_UNSUCCESS");
+
+            cit->socket_->write("AUTH:UNSUCCESS");
+            qDebug() << "Send client connection status - YES";
         }
     }
 
-    else if (request.startsWith("USERS_LIST"))
+    else if (request.startsWith("USERS:"))
     {
-        const char* answer = ("USERS_LIST " + logins_.values().join(" ")).toUtf8();
-
-        foreach (const Client& client, clients_)
-        {
-            client.socket_->write(answer); // sending to all clients list of all user logins
-        }
-
-        qDebug() << answer;
+        handleUsersRequest();
     }
 
     // TODO: add more handlers
+}
+
+//void handleMessageRequest(ClientsIterator cit)
+//{
+
+//}
+
+void Server::handleUsersRequest()
+{
+    const char* answer = ("USERS:" + logins_.values().join(" ")).toUtf8();
+
+    foreach (const Client& client, clients_)
+    {
+        client.socket_->write(answer); // sending to all clients list of all user logins
+    }
+
+    qDebug() << answer;
 }
 
 void Server::clientDisconnect()
@@ -163,6 +177,11 @@ void Server::on_sockError(QAbstractSocket::SocketError error)
     qDebug() << "Socket error " << error;
 }
 
+bool Server::is_logined(QString& login) // check if login available
+{
+    return logins_.values().contains(login);
+}
+
 bool Server::checkLogin(QString& login) // check if login available
 {
     if (!logins_.values().contains(login))
@@ -173,10 +192,3 @@ bool Server::checkLogin(QString& login) // check if login available
 
     return false;
 }
-
-//void Server::sendUsersList()
-//{
-//    const char* answer = ("USERS_LIST " + logins_.values().join(" ")).toUtf8();
-//    cit->socket_->write(answer); // sending to client list of all user logins
-//    qDebug() << answer;
-//}

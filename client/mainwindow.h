@@ -45,8 +45,6 @@ private:
     int port_;
     QTcpSocket* socket_; // socket for interacting with server
     QByteArray data_;    // data from socket and for socket
-    bool is_connected;
-    bool is_logined;    // flag sets True after user is logined
     QString login_;
 
 public:
@@ -54,6 +52,8 @@ public:
     void handleData();
     void usersListUpdate();
     void sendMessage();
+    void handleUsersListUpdate();
+    void updateChats();
 
 public slots:
     void on_sockConnect();

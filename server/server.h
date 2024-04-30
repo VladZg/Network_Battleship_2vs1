@@ -16,8 +16,10 @@ public:
     ~Server();
 
     bool checkLogin(QString& login);
+    bool is_logined(QString& login);
     void handleData(const QByteArray& data, int clientId);
     void clientDisconnect();
+    void handleUsersRequest();
 
 private:
     quint16 port_; // QSerialPort

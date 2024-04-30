@@ -15,15 +15,18 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     receiverBrowserStackedWidget = new QStackedWidget(this);
 
     QHBoxLayout* chatWidgetLayout = new QHBoxLayout(this);
-    chatWidgetLayout->addWidget(ui->messageRecieversOptionList);
+    QVBoxLayout* receiverListWidgetLayout = new QVBoxLayout(this);
+
     chatWidgetLayout->addWidget(receiverBrowserStackedWidget);
+    receiverListWidgetLayout->addWidget(ui->messageRecieversOptionList);
+
+    chatWidgetLayout->setGeometry(ui->chatWidget->geometry());
     ui->chatWidget->setLayout(chatWidgetLayout);
+    ui->messageRecieversOptionsListWidget->setLayout(receiverListWidgetLayout);
 
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
     socket_ = new QTcpSocket(this);
-    is_logined = false;
-    is_connected = false;
 
     userLogins_ = {}; // list of user logins
 
@@ -84,12 +87,9 @@ void MainWindow::screenUpdate()
 
 }
 
-void MainWindow::on_connectToServerButton_clicked()    // authorization button
+void MainWindow::on_connectToServerButton_clicked()    // connection+authorization button
 {
-    if (is_logined)
-        return;
-
-    if (!is_connected)
+    if (state_ == ST_DISCONNECTED)
     {
         qDebug() << "Connect button pushed";
         socket_->connectToHost(ip_, port_);
@@ -101,63 +101,59 @@ void MainWindow::on_connectToServerButton_clicked()    // authorization button
             return;
         }
 
-        is_connected = true;
+        stateUpdate(ST_CONNECTED);
+        ui->connectToServerButton->setText("Авторизоваться на сервере");
 //        qDebug() << "Connected";
     }
 
-    ui->connectToServerButton->setText("Авторизоваться на сервере");
-    stateUpdate(ST_CONNECTED);
-
-    QString login_entered = ui->loginLabel->text();
-
-    if (!login_entered.isEmpty())
+    if (state_ == ST_CONNECTED)
     {
-        qDebug() << "trying to connect to server with login " << login_entered << "";
+        QString login_entered = ui->loginLabel->text();
 
-        socket_->write(("AUTH " + login_entered).toUtf8());
-
-        // TODO: check if login is already used
-        // if (is_available) return;
-
-        if (!socket_->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
+        if (!login_entered.isEmpty())
         {
-            qDebug() << "Server don't answer";
-            return;
-        }
+            qDebug() << "trying to connect to server with login " << login_entered << "";
 
-        QString answer = QString::fromUtf8(data_).trimmed();
-        if (answer.startsWith("AUTH_SUCCESS"))
-        {
-            is_logined = true;
-            stateUpdate(ST_AUTHORIZED);
-            login_ = login_entered;
+            socket_->write(("AUTH:" + login_entered).toUtf8()); // request for authorization
 
-            ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
+            if (!socket_->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
+            {
+                qDebug() << "Server don't answer";
+                return;
+            }
 
-//            QString login = login_entered.trimmed();
-//            ui->usersList->addAction(login);
+            QString answer = QString::fromUtf8(data_).trimmed();    // gettin g server answer
+            if (answer.startsWith("AUTH:SUCCESS"))
+            {
+                stateUpdate(ST_AUTHORIZED);
+                login_ = login_entered;
 
-            ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
+                ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
 
-            qDebug() << "loggining confirmed!";
+    //            QString login = login_entered.trimmed();
+    //            ui->usersList->addAction(login);
 
-            ui->connectToServerButton->setText("Вы успешно авторизованы!");
-            ui->connectToServerButton->setEnabled(false);   // turn the button off
+                ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
 
-            // TODO: get list of users from server
-            usersListUpdate();
-        }
+                qDebug() << "loggining confirmed!";
 
-         else // didn't connected
-        {
-            ui->loginLabel->setStyleSheet("background-color: red;\n color: white;");
-            QMessageBox::warning(this, "ERROR!", "Login is already in use");
+                ui->connectToServerButton->setText("Вы успешно авторизованы!");
+                ui->connectToServerButton->setEnabled(false);   // turn the button off
+
+                // TODO: get list of users from server
+                usersListUpdate();
+            }
+
+             else // didn't authorized
+            {
+                ui->loginLabel->setStyleSheet("background-color: red;\n color: white;");
+                QMessageBox::warning(this, "ERROR!", "Login is already in use");
+            }
         }
     }
-    else
-    {
-        QMessageBox::warning(this, "ERROR!", "Cannot authorize user on server...");
-    }
+
+//    if (state_ == ST_AUTHORIZED)
+//        return;
 }
 
 void MainWindow::on_sockConnect()
@@ -186,20 +182,22 @@ void MainWindow::on_receiveData()
 
 void MainWindow::handleData()
 {
-    if (data_.startsWith("ALL"))
+    if (data_.startsWith("MESSAGE"))
     {
         QStringList message_request = QString::fromUtf8(data_).split(":");
-        QString sender_login = message_request[1];
-        QString message = message_request[2];
 
-        if (sender_login == login_) // if message from myself
+        if (message_request.length() < 2)
+        {
+            qDebug() << "ERROR";
             return;
+        }
 
-        QList<QListWidgetItem *> sendersList = ui->messageRecieversOptionList->findItems("all", Qt::MatchContains);
+        QString chat_with = message_request[1];
+        QList<QListWidgetItem*> sendersList = ui->messageRecieversOptionList->findItems(chat_with, Qt::MatchExactly);
 
         if (sendersList.isEmpty())
         {
-            qDebug() << "No all in the list";
+            qDebug() << "No such chat in messageRecieversOptionList";
             return;
         }
 
@@ -209,73 +207,93 @@ void MainWindow::handleData()
 
         if (!chat)
         {
-            qDebug() << "Error";
-            return;
+//            qDebug() << "Error: no such chat in browserMap";
+//            return;
+
+            createTextBrowser(sender);
+            chat = browserMap.value(sender);
         }
 
-//        QTextBrowser* chat = browserMap.value(ui->messageRecieversOptionList->findItems("all", Qt::MatchContains).first());
+        int shift = 0;
+
+        if (message_request[1]=="all")
+        {
+            shift = 1;
+        }
+
+        QString sender_login = message_request[1+shift];
+        QString message = message_request[2+shift];
+
+        if (sender_login == login_) // if message from myself
+            return;
+
         chat->append(sender_login + "> " + message);    // show received message in common chat (all)
+
+        if (ui->messageRecieversOptionList->currentItem() != sender)   // if message to not a current chat then we set a flag to unchecked (then change the color)
+        {
+            sender->setBackground(QBrush(QColor("green")));
+            sender->setForeground(QBrush(QColor("white")));
+            sender->setData(Qt::UserRole, true); // new flag means about new message not read yet
+        }
     }
-    else if (data_.startsWith("MESSAGE_FROM"))   // NOT IMPLEMENTED YET
+
+    else if(data_.startsWith("USERS"))
     {
-//        QStringList message_request = QString::fromUtf8(data_).split(":");
-//        QString sender_login = message_request[1];
-//        QString message = message_request[2];
+        handleUsersListUpdate();
+    }
 
-//        if (sender_login == login_) // if message from myself
-//            return;
+    else
+    {
 
-//        QList<QListWidgetItem *> sendersList = ui->messageRecieversOptionList->findItems(sender_login, Qt::MatchContains);
-//        qDebug() << ui->messageRecieversOptionList << "\n" << sendersList << "\n" << sender_login;
-
-//        if (sendersList.isEmpty())
-//        {
-//            qDebug() << "No user with this login in the list";
-//            return;
-//        }
-
-//        QListWidgetItem* sender = sendersList.first();  // specific sender from the messageRecieversOptionList
-//        qDebug() << sender;
-//        QTextBrowser* chat = browserMap.value(sender);    // look for specific chat
-
-//        if (!chat)
-//        {
-//            qDebug() << "Error";
-//            return;
-//        }
-
-//        QTextBrowser* chat = browserMap.value(ui->messageRecieversOptionList->findItems("all", Qt::MatchContains).first());
-//        chat->append(sender_login + "> " + message);    // show received message
     }
 }
 
 void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
-    socket_->write(((QString)"USERS_LIST ").toUtf8());
+    socket_->write(((QString)"USERS:").toUtf8());
     socket_->waitForReadyRead(500);
 
-    QStringList logins = QString::fromUtf8(data_.trimmed().mid(11)).split(" ", Qt::SkipEmptyParts); // getting list of string logins from the request
+    handleUsersListUpdate();
+}
+
+// TODO: create a method that updates (creates/removes) all chat QTextBrowser's
+
+void MainWindow::handleUsersListUpdate()
+{
+//    qDebug() << "HANDLE";
+
+    QStringList logins = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of string logins from the request
+    QString cur_login = "";
+
+    QListWidgetItem* cur_user = ui->messageRecieversOptionList->currentItem();
+    if (cur_user)
+        cur_login = cur_user->text();
 
     ui->usersList->clear();
-
     ui->messageRecieversOptionList->clear();
+
     ui->messageRecieversOptionList->addItem("all");
-    ui->messageRecieversOptionList->setCurrentRow(0);   // set message to all at default
+    int cur_row_index = 0;
+    int new_cur_row_index = cur_row_index;
 
     foreach (const QString& login, logins)
     {
         ui->usersList->addAction(login);
         ui->messageRecieversOptionList->addItem(login);
+        cur_row_index++;
 
         qDebug() << "User " << login;
 
-        // TODO: add smarter check MESSAGE_FROM
+        if (cur_login == login)
+            new_cur_row_index = cur_row_index;
+
+//        // TODO: add smarter user chats update, because char now are removed and then created again
     }
 
-//    qDebug() << ui->usersList->actions();
-}
+    ui->messageRecieversOptionList->setCurrentRow(new_cur_row_index);   // set message to all at default
 
-// TODO: create a method that updates (creates/removes) all chat QTextBrowser's
+//    updateChats();
+}
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
 {
@@ -311,33 +329,19 @@ void MainWindow::sendMessage()
         QString receiver_login = currentItem->text();
         qDebug() << "Sending message to:" << receiver_login;
 
-//        if (receiver_login == login_)
-//            return;
-
-        QString request = "MESSAGE_TO:" + receiver_login + ":" + message;  // format:  MESSAGE_TO:receiver_login:message
+        QString request = "MESSAGE:" + receiver_login + ":" + message;  // format:  MESSAGE:<receiver_login>:message
         qDebug() << request;
 
-        // now it doesn't work if you want to send messages in private chat
-        if (receiver_login != "all")
+        QTextBrowser* chat = browserMap.value(ui->messageRecieversOptionList->findItems(receiver_login, Qt::MatchExactly).first());    // choose chat with the receiver
+
+        if (!chat)
         {
-            qDebug() << "NOT IMPLEMENTED FEATURE YET";
+            qDebug() << "Chat not found";
             return;
-
-            //        QList<QListWidgetItem *> recieversList = ui->messageRecieversOptionList->findItems(receiver_login, Qt::MatchContains);
-            //        qDebug() << ui->messageRecieversOptionList << recieversList << receiver_login;
-
-            //        if (recieversList.isEmpty())
-            //        {
-            //            qDebug() << "No user with this login in the list";
-            //            return;
-            //        }
-
-            //        QListWidgetItem* reciever = recieversList.first();  // specific sender from the messageRecieversOptionList
-            //        QTextBrowser* chat = browserMap.value(reciever);    // look for specific chat
         }
 
-        QTextBrowser* chat = browserMap.value(ui->messageRecieversOptionList->findItems("all", Qt::MatchContains).first());
         chat->append(login_ + "< " + message);    // show sended message
+        qDebug() << login_ + "< " + message ;
 
         socket_->write(request.toUtf8());   // send message through the server
         ui->messageEdit->clear();
@@ -355,18 +359,44 @@ void MainWindow::on_sendMessageButton_clicked()
     sendMessage();
 }
 
+void MainWindow::updateChats()
+{
+    QList<QListWidgetItem*> receiversList;
+    foreach (QListWidgetItem* receiver, receiversList)
+    {
+        QTextBrowser* chat = browserMap.value(receiver);
+
+        if (!chat)
+        {
+            createTextBrowser(receiver);
+        }
+    }
+
+    // TODO: add remove chats function
+}
+
 void MainWindow::on_messageRecieversOptionList_itemSelectionChanged()
 {
     QListWidgetItem* receiver = ui->messageRecieversOptionList->currentItem();
+
+    if (receiver->data(Qt::UserRole).toBool())  // if had new unread messages
+    {
+//        receiver->setCheckState(Qt::CheckState::Checked);
+        receiver->setBackground(QBrush(QColor("white")));
+        receiver->setForeground(QBrush(QColor("black")));
+        receiver->setData(Qt::UserRole, true);
+    }
+
     QTextBrowser* browser = browserMap.value(receiver);
+    qDebug() << login_<< " + " << receiver->text() << " - chat selected";
 
     if (!browser)
     {
+//        qDebug() << "No such chat!";
         createTextBrowser(receiver);
-//        browser = browserMap.value(receiver);
     }
 
-    int index = receiver->listWidget()->row(receiver);
+    int index = receiverBrowserStackedWidget->indexOf(browser);
     receiverBrowserStackedWidget->setCurrentIndex(index);   // set corresponding browser widget
 }
 
@@ -377,5 +407,6 @@ void MainWindow::createTextBrowser(QListWidgetItem* receiver)
 //    browser->setText(QString("Chat for %1 and %2").arg(login_, receiver->text()));
     receiverBrowserStackedWidget->addWidget(browser);
     browserMap.insert(receiver, browser);
+    qDebug() << "Create chat for " << login_ << " and " << receiver->text();
 }
 
