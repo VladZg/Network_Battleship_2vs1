@@ -11,10 +11,12 @@ CONFIG += c++11
 TARGET = client
 
 SOURCES += \
+    field.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    field.h \
     mainwindow.h
 
 FORMS += \

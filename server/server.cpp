@@ -1,5 +1,6 @@
 #include "server.h"
 #include "client.h"
+#include "field.h"
 #include <QString>
 #include <QStringList>
 
@@ -9,7 +10,10 @@ Server::Server(quint16 port) :
 
 }
 
-Server::~Server(){}
+Server::~Server()
+{
+
+}
 
 void Server::startServer()
 {

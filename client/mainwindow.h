@@ -49,6 +49,8 @@ private:
 
 public:
     QStringList userLogins_;
+    void connectUser();
+    void authenticateUser();
     void handleData();
     void requestUsersListUpdate();
     void sendMessage();

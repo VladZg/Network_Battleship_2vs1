@@ -83,78 +83,83 @@ void MainWindow::stateUpdate(ClientState new_state)
     state_ = new_state;
 }
 
-void MainWindow::screenUpdate()
-{
-
-}
-
 void MainWindow::on_connectToServerButton_clicked()    // connection+authorization button
 {
     if (state_ == ST_DISCONNECTED)
     {
-        qDebug() << "Connect button pushed";
-        socket_->connectToHost(ip_, port_);
-
-        if (!socket_->waitForConnected(2500))
-        {
-            qDebug() << "Cannot connect";
-            QMessageBox::warning(this, "ERROR!", "Cannot connect user to server...");
-            return;
-        }
-
-        stateUpdate(ST_CONNECTED);
-        ui->connectToServerButton->setText("Авторизоваться на сервере");
-//        qDebug() << "Connected";
+        connectUser();
     }
 
     if (state_ == ST_CONNECTED)
     {
-        QString login_entered = ui->loginLabel->text();
-
-        if (!login_entered.isEmpty())
-        {
-            qDebug() << "trying to connect to server with login " << login_entered << "";
-
-            socket_->write(("AUTH:" + login_entered).toUtf8()); // request for authorization
-
-            if (!socket_->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
-            {
-                qDebug() << "Server don't answer";
-                return;
-            }
-
-            QString answer = QString::fromUtf8(data_).trimmed();    // gettin g server answer
-            if (answer.startsWith("AUTH:SUCCESS"))
-            {
-                stateUpdate(ST_AUTHORIZED);
-                login_ = login_entered;
-
-                ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
-
-    //            QString login = login_entered.trimmed();
-    //            ui->usersList->addAction(login);
-
-                ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
-
-                qDebug() << "loggining confirmed!";
-
-                ui->connectToServerButton->setText("Вы успешно авторизованы!");
-                ui->connectToServerButton->setEnabled(false);   // turn the button off
-
-                // TODO: get list of users from server
-                requestUsersListUpdate();
-            }
-
-             else // didn't authorized
-            {
-                ui->loginLabel->setStyleSheet("background-color: red;\n color: white;");
-                QMessageBox::warning(this, "ERROR!", "Login is already in use");
-            }
-        }
+        authenticateUser();
     }
 
 //    if (state_ == ST_AUTHORIZED)
 //        return;
+}
+
+void MainWindow::connectUser()
+{
+    qDebug() << "Connect button pushed";
+    socket_->connectToHost(ip_, port_);
+
+    if (!socket_->waitForConnected(2500))
+    {
+        qDebug() << "Cannot connect";
+        QMessageBox::warning(this, "ERROR!", "Cannot connect user to server...");
+        return;
+    }
+
+    stateUpdate(ST_CONNECTED);
+    ui->connectToServerButton->setText("Авторизоваться на сервере");
+//        qDebug() << "Connected";
+}
+
+void MainWindow::authenticateUser()
+{
+    QString login_entered = ui->loginLabel->text();
+
+    if (!login_entered.isEmpty())
+    {
+        qDebug() << "trying to connect to server with login " << login_entered << "";
+
+        socket_->write(("AUTH:" + login_entered).toUtf8()); // request for authorization
+
+        if (!socket_->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
+        {
+            qDebug() << "Server don't answer";
+            return;
+        }
+
+        QString answer = QString::fromUtf8(data_).trimmed();    // gettin g server answer
+        if (answer.startsWith("AUTH:SUCCESS"))
+        {
+            stateUpdate(ST_AUTHORIZED);
+            login_ = login_entered;
+
+            ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
+
+//            QString login = login_entered.trimmed();
+//            ui->usersList->addAction(login);
+
+            ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
+
+            qDebug() << "loggining confirmed!";
+
+            ui->connectToServerButton->setText("Вы успешно авторизованы!");
+            ui->connectToServerButton->setEnabled(false);   // turn the button off
+
+            // TODO: get list of users from server
+            requestUsersListUpdate();
+        }
+
+         else // didn't authorized
+        {
+            ui->loginLabel->setStyleSheet("background-color: red;\n color: white;");
+            QMessageBox::warning(this, "ERROR!", "Login is already in use");
+        }
+    }
 }
 
 void MainWindow::on_sockConnect()
@@ -311,6 +316,11 @@ void MainWindow::handleUsersListUpdate()
 }
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
+{
+
+}
+
+void MainWindow::screenUpdate()
 {
 
 }

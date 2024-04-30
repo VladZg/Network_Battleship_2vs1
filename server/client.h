@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QTcpSocket>
+#include "field.h"
 
 class Client
 {
@@ -26,11 +27,18 @@ public:
     void setLogin(const QString& login);
     QString getLogin();
 
+    void initField();
+    void initField(QString field);
+    QString getFieldStr();
+
 public:
     QTcpSocket*  socket_;
     ClientStatus status_;
 //    ClientIterator playingWith;
     QString login_;
+
+private:
+    Field* field_;
 };
 
 typedef QMap<int, Client> Clients;
