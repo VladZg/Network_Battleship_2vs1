@@ -101,7 +101,7 @@ void MainWindow::connectUser()
     qDebug() << "Connect button pushed";
     socket_->connectToHost(ip_, port_);
 
-    if (!socket_->waitForConnected(2500))
+    if (!socket_->waitForConnected(200))
     {
         qDebug() << "Cannot connect";
         QMessageBox::warning(this, "ERROR!", "Cannot connect user to server...");
@@ -148,7 +148,7 @@ void MainWindow::authenticateUser()
             ui->connectToServerButton->setEnabled(false);   // turn the button off
 
             // TODO: get list of users from server
-            requestUsersListUpdate();
+//            usersListUpdate();
         }
 
          else // didn't authorized
@@ -187,14 +187,19 @@ void MainWindow::on_receiveData()
 
 void MainWindow::handleData()
 {
-    if (data_.startsWith("MESSAGE"))
+    if (data_.startsWith("MESSAGE:"))
     {
-        handleMessage();
+        handleMessageRequest();
     }
 
-    else if(data_.startsWith("USERS"))
+    else if(data_.startsWith("USERS:"))
     {
-        handleUsersListUpdate();
+        handleUsersRequest();
+    }
+
+    else if(data_.startsWith("PING:"))
+    {
+        handlePingRequest();
     }
 
     else
@@ -205,7 +210,13 @@ void MainWindow::handleData()
 
 // TODO: create a method that updates (creates/removes) all chat QTextBrowser's
 
-void MainWindow::handleMessage()
+
+void MainWindow::handlePingRequest()
+{
+    socket_->write(((QString)"PONG:").toUtf8());
+}
+
+void MainWindow::handleMessageRequest()
 {
     QStringList message_request = QString::fromUtf8(data_).split(":");
 
@@ -269,15 +280,15 @@ void MainWindow::handleMessage()
     }
 }
 
-void MainWindow::requestUsersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
+void MainWindow::handleUsersRequest() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
     socket_->write(((QString)"USERS:").toUtf8());
     socket_->waitForReadyRead(500);
 
-    handleUsersListUpdate();
+    usersListUpdate();
 }
 
-void MainWindow::handleUsersListUpdate()
+void MainWindow::usersListUpdate()
 {
 //    qDebug() << "HANDLE";
 
@@ -327,7 +338,7 @@ void MainWindow::screenUpdate()
 void MainWindow::updateAll()
 {
     stateUpdate(state_);
-    requestUsersListUpdate();
+    usersListUpdate();
     screenUpdate();
 }
 

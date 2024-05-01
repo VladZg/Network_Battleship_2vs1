@@ -60,10 +60,11 @@ public:
     void connectUser();
     void authenticateUser();
     void handleData();
-    void requestUsersListUpdate();
+    void usersListUpdate();
     void sendMessage();
-    void handleMessage();
-    void handleUsersListUpdate();
+    void handleMessageRequest();
+    void handleUsersRequest();
+    void handlePingRequest();
     void updateChats();
 
     QImage getFieldImage(const Field& field) const;

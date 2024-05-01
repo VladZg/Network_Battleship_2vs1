@@ -75,7 +75,7 @@ void Server::handleData(const QByteArray& data, int clientId)
 
     ClientsIterator cit = clients_.find(clientId);
 
-    if (request.startsWith("MESSAGE"))
+    if (request.startsWith("MESSAGE:"))
     {
         QString sender_login = cit->getLogin();
         QStringList message_request = request.split(":");
@@ -116,7 +116,7 @@ void Server::handleData(const QByteArray& data, int clientId)
         }
     }
 
-    else if (request.startsWith("AUTH"))
+    else if (request.startsWith("AUTH:"))
     {
         QString login = request.mid(5); // get login from the 1st line of request
         if (checkLogin(login))   // check if login valid
@@ -124,7 +124,8 @@ void Server::handleData(const QByteArray& data, int clientId)
             logins_.insert(cit->socket_->socketDescriptor(), login);
             cit->setLogin(login);
 
-            cit->socket_->write("AUTH:SUCCESS");
+            cit->socket_->write(((QString)"AUTH:SUCCESS").toUtf8());
+            cit->socket_->flush();
             qDebug() << "AUTH SUCCESS!!!";
             qDebug() << "Send client connection status - YES";
 
@@ -135,7 +136,7 @@ void Server::handleData(const QByteArray& data, int clientId)
         {
             qDebug() << "AUTH UNSUCCESS... Already have " << login << " login";
 
-            cit->socket_->write("AUTH:UNSUCCESS");
+            cit->socket_->write(((QString)"AUTH:UNSUCCESS").toUtf8());
             qDebug() << "Send client connection status - YES";
         }
     }
@@ -165,6 +166,7 @@ void Server::handleUsersRequest()
     foreach (const Client& client, clients_)
     {
         client.socket_->write(answer); // sending to all clients list of all user logins
+        client.socket_->flush();
     }
 
     qDebug() << answer;
@@ -173,14 +175,28 @@ void Server::handleUsersRequest()
 void Server::handleExitRequest()
 {
     qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
+    ClientsIterator cit = clients_.find(cId);
 
-    clientDisconnect(cId);
+    QString login = cit->login_;
+
+    clientDisconnect(cit);
+    clients_.remove(cId);
+    logins_.remove(cId);
+
+    if (clients_.find(cId)==clients_.end() && logins_.find(cId)==logins_.end())
+        qDebug() << "User " << login << " is really deleted";
+
+    // TODO: send to users message about this client has disconnected
     sendMessageToAll("EXIT:");
 }
 
-void Server::clientDisconnect(qintptr cId)
+void Server::clientDisconnect(ClientsIterator& cit)
 {
-    // TODO: NAPISAT KOD
+    cit->socket_->disconnectFromHost();
+    cit->status_ = Client::ST_DISCONNECTED;
+    cit->socket_->close();
+
+    qDebug() << "User" << cit->login_ << "is disconnected";
 }
 
 void Server::on_sockConnect()
@@ -190,8 +206,8 @@ void Server::on_sockConnect()
 
 void Server::on_sockDisconnect()
 {
-    qDebug() << "Disconnect";
-//    socket_->deleteLater();
+    qDebug() << "Disconnect socket";
+    socket_->deleteLater();
 }
 
 void Server::on_sockError(QAbstractSocket::SocketError error)
@@ -217,20 +233,36 @@ bool Server::checkLogin(QString& login) // check if login available
 
 void Server::timerEvent(QTimerEvent* event)
 {
-    Q_UNUSED( event );
-//    qDebug() << "Отладочное сообщение таймера\n";/
+//    Q_UNUSED( event );
+//    qDebug() << "Отладочное сообщение таймера";
 
-    ClientsIterator freeClient = clients_.end();
+//    ClientsIterator freeClient = clients_.end();
 
-    for(ClientsIterator cit = clients_.begin(); cit != clients_.end(); cit++)
-    {
-        if(cit->status_ == Client::ST_DISCONNECTED)
-        {
-           if(freeClient == cit)
-              freeClient = clients_.end();
+//    for(ClientsIterator cit = clients_.begin(); cit != clients_.end(); cit++)
+//    {
+//        if(cit->status_ == Client::ST_DISCONNECTED)
+//        {
+//           if(freeClient == cit)
+//              freeClient = clients_.end();
 
-           cit = clients_.erase( cit );
-           continue;
-        }
-    }
+//           cit = clients_.erase(cit);
+//           continue;
+//        }
+
+//        if(cit->socket_->write("PING:") != -1)
+//        {
+//            if(!cit->socket_->waitForReadyRead(1000))
+//            {
+//                qDebug() << "Client " << cit->login_ <<  " don't answer.";
+//                cit = clients_.erase(cit);
+//                continue;
+//            }
+//        }
+//        else
+//        {
+//            qDebug() << "Client " << cit->login_ <<  " exited urgently.";
+//        }
+
+
+//    }
 }

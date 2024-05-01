@@ -18,7 +18,7 @@ public:
     bool checkLogin(QString& login);
     bool is_logined(QString& login);
     void handleData(const QByteArray& data, int clientId);
-    void clientDisconnect(qintptr cId);
+    void clientDisconnect(ClientsIterator& cit);
     void handleUsersRequest();
     void handleExitRequest();
     void sendMessageToAll(const QString& message);
