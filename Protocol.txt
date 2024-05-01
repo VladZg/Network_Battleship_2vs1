@@ -25,4 +25,17 @@ C: AUTH:UNSUCCESS	(в случае неудачной авторизации)
 
 С: MESSAGE:all:<sender_login>:<message>
 
+Ответ сервера об ошибке:
+
+С: ERROR:<errortype>
+
+Клиент выходит из программы:
+
+К: EXIT:
+
+Пинг клиентов:
+
+C: PING:
+
+К: PONG:
 

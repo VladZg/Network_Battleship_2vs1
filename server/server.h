@@ -18,8 +18,10 @@ public:
     bool checkLogin(QString& login);
     bool is_logined(QString& login);
     void handleData(const QByteArray& data, int clientId);
-    void clientDisconnect();
+    void clientDisconnect(qintptr cId);
     void handleUsersRequest();
+    void handleExitRequest();
+    void sendMessageToAll(const QString& message);
 
 private:
     quint16 port_; // QSerialPort

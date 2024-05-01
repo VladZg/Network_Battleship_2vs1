@@ -57,6 +57,15 @@ void Server::on_receiveData()
     handleData(data_, socket_->socketDescriptor());
 }
 
+void Server::sendMessageToAll(const QString& message)
+{
+    for (ClientsIterator receiver_it = clients_.begin(); receiver_it != clients_.end(); ++receiver_it)
+    {
+        receiver_it->socket_->write(message.toUtf8());
+        qDebug() << message;
+    }
+}
+
 void Server::handleData(const QByteArray& data, int clientId)
 {
     QString request = QString::fromUtf8(data).trimmed();
@@ -75,13 +84,7 @@ void Server::handleData(const QByteArray& data, int clientId)
 
         if (receiver_login == "all")
         {
-            for (ClientsIterator receiver_it = clients_.begin(); receiver_it != clients_.end(); ++receiver_it)
-            {
-                QString message_answer = "MESSAGE:all:" + sender_login + ":" + message;
-                receiver_it->socket_->write(message_answer.toUtf8());
-
-                qDebug() << message_answer;
-            }
+            sendMessageToAll("MESSAGE:all:" + sender_login + ":" + message);
         }
 
         else if (is_logined(receiver_login))
@@ -140,6 +143,11 @@ void Server::handleData(const QByteArray& data, int clientId)
         handleUsersRequest();
     }
 
+    else if (request.startsWith("EXIT:"))
+    {
+        handleExitRequest();
+    }
+
     // TODO: add more handlers
 }
 
@@ -160,9 +168,17 @@ void Server::handleUsersRequest()
     qDebug() << answer;
 }
 
-void Server::clientDisconnect()
+void Server::handleExitRequest()
 {
+    qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
 
+    clientDisconnect(cId);
+    sendMessageToAll("EXIT:");
+}
+
+void Server::clientDisconnect(qintptr cId)
+{
+    // TODO: NAPISAT KOD
 }
 
 void Server::on_sockConnect()

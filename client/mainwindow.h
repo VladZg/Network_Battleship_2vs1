@@ -40,6 +40,7 @@ public:
     void screenUpdate();
     void stateUpdate(ClientState new_state);
     void updateAll();
+    void exitFromServer();
 
 private:
     ClientState state_;
@@ -51,7 +52,8 @@ private:
     Model* model_;
 
 protected:
-    void paintEvent( QPaintEvent* event );
+    void paintEvent(QPaintEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 public:
     QStringList userLogins_;

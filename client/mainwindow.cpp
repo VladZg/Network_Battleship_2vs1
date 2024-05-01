@@ -166,7 +166,7 @@ void MainWindow::on_sockConnect()
 
 void MainWindow::on_sockDisconnect()
 {
-    socket_->deleteLater();
+    socket_->deleteLater();     // delete socket
 }
 
 void MainWindow::on_sockError(QAbstractSocket::SocketError error)
@@ -503,4 +503,22 @@ void MainWindow::paintEvent(QPaintEvent* event) // calls when interface redraws
 
 //    ui->fieldsLabel->setPixmap(QPixmap::fromImage(pictures.get("background")));
 //    ui->fieldsLabel->setPixmap(QPixmap::fromImage(getFieldImage(model_->getMyField())));
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    qDebug() << "exit from the programm";
+
+    if (state_ != ST_DISCONNECTED)
+        exitFromServer();
+
+    event->accept();
+}
+
+void MainWindow::exitFromServer()
+{
+    socket_->write("EXIT:");    // send server message about user disconnect
+    qDebug() << "EXIT:";
+
+    socket_->close();
 }
