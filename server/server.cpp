@@ -26,6 +26,8 @@ void Server::startServer()
     {
         qDebug() << "Not listening";
     }
+
+    startTimer(DEFAULT_SEARCH_INTERVAL);
 }
 
 void Server::incomingConnection(qintptr socketDescriptor)
@@ -211,4 +213,24 @@ bool Server::checkLogin(QString& login) // check if login available
     }
 
     return false;
+}
+
+void Server::timerEvent(QTimerEvent* event)
+{
+    Q_UNUSED( event );
+//    qDebug() << "Отладочное сообщение таймера\n";/
+
+    ClientsIterator freeClient = clients_.end();
+
+    for(ClientsIterator cit = clients_.begin(); cit != clients_.end(); cit++)
+    {
+        if(cit->status_ == Client::ST_DISCONNECTED)
+        {
+           if(freeClient == cit)
+              freeClient = clients_.end();
+
+           cit = clients_.erase( cit );
+           continue;
+        }
+    }
 }
