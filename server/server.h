@@ -28,6 +28,10 @@ private:
     Clients clients_;
     QMap<quintptr, QString> logins_;
 
+protected:
+    void timerEvent(QTimerEvent* event);
+
+
 public slots:
     void startServer();
     void incomingConnection(qintptr socketDescriptor);
