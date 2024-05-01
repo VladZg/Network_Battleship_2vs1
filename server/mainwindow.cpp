@@ -28,13 +28,13 @@ void MainWindow::on_startButton_clicked()
 
 void MainWindow::on_stopButton_clicked()
 {
-    QMessageBox::information(this, "info!", "Server stopped...");
     this->close();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     server_.stopServer();
+    QMessageBox::information(this, "info!", "Server stopped...");
     event->accept();
 }
 

@@ -47,6 +47,7 @@ private:
     Clients clients_;
     QMap<quintptr, QString> logins_;
     ServerState state_;
+    int timerId_;
 
 protected:
     void timerEvent(QTimerEvent* event);

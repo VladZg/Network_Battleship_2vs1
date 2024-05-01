@@ -54,11 +54,13 @@ void Server::startServer(QTextBrowser* textBrowser)
                                "background-image: url(:/images/images/background.jpg);"\
                                "color: rgb(255, 255, 177);");
 
-    startTimer(DEFAULT_SEARCH_INTERVAL);
+    timerId_ = startTimer(DEFAULT_SEARCH_INTERVAL);
 }
 
 void Server::stopServer()
 {
+    killTimer(timerId_);
+
     sendMessageToAll("STOP:");
     PRINT("server: STOP: to all clients")
     updateState(ST_STOPPED);
