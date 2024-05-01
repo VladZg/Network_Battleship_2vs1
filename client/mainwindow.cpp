@@ -43,10 +43,14 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     connect(socket_, SIGNAL(connected())   , this, SLOT(on_sockConnect())   );  // when socket connected, sockConnect slot runs
     connect(socket_, SIGNAL(readyRead())   , this, SLOT(on_receiveData())     );  // when new network data comes, sockReady slot runs
     connect(socket_, SIGNAL(disconnected()), this, SLOT(on_sockDisconnect()));  // when socket disconnected, sockDisconnect slot runs
+
+    timerId_ = startTimer(2000);
 }
 
 MainWindow::~MainWindow()
 {
+    stateUpdate(ST_DISCONNECTED);
+
     delete model_;
     delete ui;
 }
@@ -84,7 +88,9 @@ void MainWindow::on_connectToServerButton_clicked()    // connection+authorizati
 {
     if (state_ == ST_DISCONNECTED)
     {
-        connectUser();
+        qDebug() << "Connect button pushed";
+        QMessageBox::warning(this, "ERROR!", "Cannot connect user to server... Server not started yet");
+        return;
     }
 
     if (state_ == ST_CONNECTED)
@@ -98,19 +104,19 @@ void MainWindow::on_connectToServerButton_clicked()    // connection+authorizati
 
 void MainWindow::connectUser()
 {
-    qDebug() << "Connect button pushed";
     socket_->connectToHost(ip_, port_);
 
     if (!socket_->waitForConnected(200))
     {
         qDebug() << "Cannot connect";
-        QMessageBox::warning(this, "ERROR!", "Cannot connect user to server...");
         return;
     }
 
     stateUpdate(ST_CONNECTED);
     ui->connectToServerButton->setText("Авторизоваться на сервере");
-//        qDebug() << "Connected";
+    qDebug() << "Authorized";
+
+    killTimer(timerId_);
 }
 
 void MainWindow::authenticateUser()
@@ -200,6 +206,16 @@ void MainWindow::handleData()
     else if(data_.startsWith("PING:"))
     {
         handlePingRequest();
+    }
+
+    else if(data_.startsWith("EXIT:"))
+    {
+        handleExitRequest();
+    }
+
+    else if(data_.startsWith("STOP:"))
+    {
+        stopClient("Server stopped... Closing the app");
     }
 
     else
@@ -323,6 +339,39 @@ void MainWindow::handleUsersRequest()
     ui->messageRecieversOptionList->setCurrentRow(new_cur_row_index);   // set message to all at default
 
 //    updateChats();
+}
+
+void MainWindow::handleExitRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.size() < 2)
+    {
+        qDebug() << "wrong request";
+        return;
+    }
+
+    QString login_exited = message_request[1];
+
+    // TODO: remove chat with user and user from the list
+//    QList<QListWidgetItem*> exited_list = ui->messageRecieversOptionList->findItems(login_exited, Qt::MatchExactly);
+
+//    if (exited_list.isEmpty())
+//    {
+//        qDebug() << "No such chat in messageRecieversOptionList";
+//        return;
+//    }
+
+//    QListWidgetItem* exited_user = exited_list.first();  // specific sender from the messageRecieversOptionList
+//    QTextBrowser* chat = browserMap.value(exited_user);    // look for specific chat
+
+//    if (!chat)
+//    {
+//            qDebug() << "Error: no such chat in browserMap";
+//            return;
+//    }
+
+//    browserMap.remove(exited_user);
 }
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
@@ -500,6 +549,23 @@ QImage MainWindow::getFieldImage(const Field& field) const
     return image;
 }
 
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    static int n_try = 0;
+    n_try++;
+
+    if (n_try > 30)
+    {
+        stopClient("Timeout. Cannot connect to the server...");
+        qDebug() << "after " << n_try << " tries client cannot connect to the server";
+    }
+
+    if (state_ == ST_DISCONNECTED)
+    {
+        connectUser();
+    }
+}
+
 void MainWindow::paintEvent(QPaintEvent* event) // calls when interface redraws
 {
     Q_UNUSED(event);
@@ -532,4 +598,10 @@ void MainWindow::exitFromServer()
     qDebug() << "EXIT:";
 
     socket_->close();
+}
+
+void MainWindow::stopClient(QString msg)
+{
+    QMessageBox::information(this, "information!", msg);
+    this->close();
 }

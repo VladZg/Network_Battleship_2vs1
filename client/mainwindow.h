@@ -50,8 +50,10 @@ private:
     QByteArray data_;    // data from socket and for socket
     QString login_;
     Model* model_;
+    int timerId_;
 
 protected:
+    void timerEvent(QTimerEvent *event) override;
     void paintEvent(QPaintEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
 
@@ -65,7 +67,9 @@ public:
     void handleMessageRequest();
     void handleUsersRequest();
     void handlePingRequest();
+    void handleExitRequest();
     void updateChats();
+    void stopClient(QString msg);
 
     QImage getFieldImage(const Field& field) const;
 

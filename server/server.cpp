@@ -3,6 +3,10 @@
 #include "field.h"
 #include <QString>
 #include <QStringList>
+#include <QMessageBox>
+
+//static int NUM_IND = 0;
+#define PRINT(msg) { qDebug() << msg; browser->append(msg); }
 
 Server::Server(quint16 port) :
     port_(port)
@@ -10,24 +14,66 @@ Server::Server(quint16 port) :
 
 }
 
+Server::Server(const Server& other) :
+    port_(other.port_)
+{
+
+}
+
+Server& Server::operator=(const Server& other)
+{
+    if (this == &other)
+        return *this;
+
+    port_ = other.port_;
+    updateState(ST_NSTARTED);
+
+    return *this;
+}
+
 Server::~Server()
 {
 
 }
 
-void Server::startServer()
+void Server::startServer(QTextBrowser* textBrowser)
 {
-    if (this->listen(QHostAddress::Any, port_))
-    {
-        qDebug() << "Listening";
-    }
-
-    else
+    if (!this->listen(QHostAddress::Any, port_))
     {
         qDebug() << "Not listening";
+        QMessageBox::warning(textBrowser, "ERROR!", "Cannot start server on port " + QString::number(port_) + "... Try again!");
+        return;
     }
 
+    browser = textBrowser;
+
+    PRINT("Listening")
+    updateState(ST_STARTED);
+
+    textBrowser->setStyleSheet("background-color: rgb(255, 255, 255, 5);"\
+                               "background-image: url(:/images/images/background.jpg);"\
+                               "color: rgb(255, 255, 177);");
+
     startTimer(DEFAULT_SEARCH_INTERVAL);
+}
+
+void Server::stopServer()
+{
+    sendMessageToAll("STOP:");
+    PRINT("server: STOP: to all clients")
+    updateState(ST_STOPPED);
+
+    // TODO: finish the function
+}
+
+void Server::updateState(ServerState state)
+{
+    state_ = state;
+}
+
+Server::ServerState Server::getServerState()
+{
+    return state_;
 }
 
 void Server::incomingConnection(qintptr socketDescriptor)
@@ -44,7 +90,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
 //    socket_->setSocketDescriptor(socketDescriptor);
 
     connect(client.socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
-    connect(client.socket_, SIGNAL(newConnection())   , this, SLOT(on_sockConnect())   );  // when new socket connected, sockConnect slot runs
+    connect(client.socket_, SIGNAL(connected())   , this, SLOT(on_sockConnect())   );  // when new socket connected, sockConnect slot runs
     connect(client.socket_, SIGNAL(readyRead())   , this, SLOT(on_receiveData())     );  // when new network data comes, sockReady slot runs
     connect(client.socket_, SIGNAL(disconnected()), this, SLOT(on_sockDisconnect()));  // when socket disconnected, sockDisconnect slot run
 
@@ -55,7 +101,7 @@ void Server::on_receiveData()
 {
     socket_ = (QTcpSocket*)sender();
     data_ = socket_->readAll();
-    qDebug() << "client" << socket_->socketDescriptor() << ": " << data_;
+    PRINT("client" + QString::number(socket_->socketDescriptor()) + ": " + data_)
     handleData(data_, socket_->socketDescriptor());
 }
 
@@ -64,14 +110,14 @@ void Server::sendMessageToAll(const QString& message)
     for (ClientsIterator receiver_it = clients_.begin(); receiver_it != clients_.end(); ++receiver_it)
     {
         receiver_it->socket_->write(message.toUtf8());
-        qDebug() << message;
+        PRINT(message + " to " + receiver_it->login_)
     }
 }
 
 void Server::handleData(const QByteArray& data, int clientId)
 {
     QString request = QString::fromUtf8(data).trimmed();
-//    qDebug() << "client: " << request;
+//    PRINT("client: " + request)
 
     ClientsIterator cit = clients_.find(clientId);
 
@@ -82,7 +128,7 @@ void Server::handleData(const QByteArray& data, int clientId)
         QString receiver_login = message_request[1];
         QString message = message_request[2];
 
-        qDebug() << "sender: " << sender_login << ", receiver:" << receiver_login;
+        PRINT("sender: " + sender_login + ", receiver:" + receiver_login)
 
         if (receiver_login == "all")
         {
@@ -106,13 +152,13 @@ void Server::handleData(const QByteArray& data, int clientId)
             QString message_answer = "MESSAGE:" + sender_login + ":" + message;
             receiver_it->socket_->write(message_answer.toUtf8());
 
-            qDebug() << message_answer;
+            PRINT(message_answer)
         }
 
         else
         {
             // TODO: add error answer to the client
-            qDebug() << "No such user";
+            PRINT("No such user")
         }
     }
 
@@ -126,15 +172,15 @@ void Server::handleData(const QByteArray& data, int clientId)
 
             cit->socket_->write(((QString)"AUTH:SUCCESS").toUtf8());
 //            cit->socket_->flush();
-            qDebug() << "AUTH SUCCESS!!!";
-            qDebug() << "Send client connection status - YES";
+            PRINT("AUTH SUCCESS!!!")
+            PRINT("Send client connection status - YES")
         }
         else
         {
-            qDebug() << "AUTH UNSUCCESS... Already have " << login << " login";
+            PRINT("AUTH UNSUCCESS... Already have " + login + " login")
 
             cit->socket_->write(((QString)"AUTH:UNSUCCESS").toUtf8());
-            qDebug() << "Send client connection status - YES";
+            PRINT("Send client connection status - YES")
         }
     }
 
@@ -166,7 +212,7 @@ void Server::handleUsersRequest()
 //        client.socket_->flush();
     }
 
-    qDebug() << answer;
+    PRINT(answer)
 }
 
 void Server::handleExitRequest()
@@ -181,10 +227,10 @@ void Server::handleExitRequest()
     logins_.remove(cId);
 
     if (clients_.find(cId)==clients_.end() && logins_.find(cId)==logins_.end())
-        qDebug() << "User " << login << " is really deleted";
+        PRINT("User " + login + " is really deleted")
 
     // TODO: send to users message about this client has disconnected
-    sendMessageToAll("EXIT:");
+    sendMessageToAll("EXIT:" + login);
 }
 
 void Server::clientDisconnect(ClientsIterator& cit)
@@ -195,17 +241,17 @@ void Server::clientDisconnect(ClientsIterator& cit)
     cit->status_ = Client::ST_DISCONNECTED;
     cit->socket_->close();
 
-    qDebug() << "User" << cit->login_ << "is disconnected";
+    PRINT("User" + cit->login_ + "is disconnected")
 }
 
 void Server::on_sockConnect()
 {
-    qDebug() << "Connect";
+    PRINT("Connect")
 }
 
 void Server::on_sockDisconnect()
 {
-    qDebug() << "Disconnected socket " << socket_->socketDescriptor();
+    PRINT("Disconnected socket " + QString::number(socket_->socketDescriptor()))
 
     if (socket_)
         socket_->deleteLater();
@@ -227,8 +273,8 @@ void Server::removeDisconnectedClients()   // TODO: rewrite the function
             logins_.remove(cit.key());     // remove login of this user from the logins_
 //            clients_.remove(cit.key());    // remove the client from the clients_
 
-            qDebug() << clients_.keys();
-//            qDebug() << "Remove unexpected exited user " << cit->login_;
+//            PRINT(clients_.keys())
+//          PRINT("Remove unexpected exited user " + cit->login_)
 
 //            socket_ = cit->socket_;
         }
@@ -237,7 +283,7 @@ void Server::removeDisconnectedClients()   // TODO: rewrite the function
 
 void Server::on_sockError(QAbstractSocket::SocketError error)
 {
-    qDebug() << "Socket error " << error;
+    PRINT("Socket error " + QString::number(error))
 
     switch(error)
     {
@@ -264,7 +310,7 @@ bool Server::checkLogin(QString& login) // check if login available
 {
     if (!logins_.values().contains(login))
     {
-        qDebug() << "client " << login << " connected";
+        PRINT("client " + login + " connected")
         return true;
     }
 
@@ -273,8 +319,8 @@ bool Server::checkLogin(QString& login) // check if login available
 
 void Server::timerEvent(QTimerEvent* event)
 {
-    Q_UNUSED( event );
-//    qDebug() << "Отладочное сообщение таймера";
+    Q_UNUSED(event);
+    PRINT("timer tick")
 
 //    ClientsIterator freeClient = clients_.end();
 
@@ -293,14 +339,14 @@ void Server::timerEvent(QTimerEvent* event)
 //        {
 //            if(!cit->socket_->waitForReadyRead(1000))
 //            {
-//                qDebug() << "Client " << cit->login_ <<  " don't answer.";
+//                PRINT("Client " + cit->login_ +  " don't answer.")
 //                cit = clients_.erase(cit);
 //                continue;
 //            }
 //        }
 //        else
 //        {
-//            qDebug() << "Client " << cit->login_ <<  " exited urgently.";
+//            PRINT("Client " + cit->login_ +  " exited urgently.")
 //        }
 
 
