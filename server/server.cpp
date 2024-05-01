@@ -125,12 +125,9 @@ void Server::handleData(const QByteArray& data, int clientId)
             cit->setLogin(login);
 
             cit->socket_->write(((QString)"AUTH:SUCCESS").toUtf8());
-            cit->socket_->flush();
+//            cit->socket_->flush();
             qDebug() << "AUTH SUCCESS!!!";
             qDebug() << "Send client connection status - YES";
-
-            handleUsersRequest();
-            qDebug() << "Update client list for all users - YES";
         }
         else
         {
@@ -166,7 +163,7 @@ void Server::handleUsersRequest()
     foreach (const Client& client, clients_)
     {
         client.socket_->write(answer); // sending to all clients list of all user logins
-        client.socket_->flush();
+//        client.socket_->flush();
     }
 
     qDebug() << answer;
@@ -192,6 +189,8 @@ void Server::handleExitRequest()
 
 void Server::clientDisconnect(ClientsIterator& cit)
 {
+    socket_ = cit->socket_;
+
     cit->socket_->disconnectFromHost();
     cit->status_ = Client::ST_DISCONNECTED;
     cit->socket_->close();
@@ -206,13 +205,54 @@ void Server::on_sockConnect()
 
 void Server::on_sockDisconnect()
 {
-    qDebug() << "Disconnect socket";
-    socket_->deleteLater();
+    qDebug() << "Disconnected socket " << socket_->socketDescriptor();
+
+    if (socket_)
+        socket_->deleteLater();
+}
+
+void Server::removeDisconnectedClients()   // TODO: rewrite the function
+{
+    ClientsIterator freeClient = clients_.end();
+
+    for(ClientsIterator cit = clients_.begin(); cit != clients_.end(); cit++)
+    {
+//        if(freeClient == cit)
+//            freeClient = clients_.end();
+
+        if (cit->socket_ && !cit->socket_->isValid())  // check socket for valideness
+        {
+            socket_ = cit->socket_;
+
+            logins_.remove(cit.key());     // remove login of this user from the logins_
+//            clients_.remove(cit.key());    // remove the client from the clients_
+
+            qDebug() << clients_.keys();
+//            qDebug() << "Remove unexpected exited user " << cit->login_;
+
+//            socket_ = cit->socket_;
+        }
+    }
 }
 
 void Server::on_sockError(QAbstractSocket::SocketError error)
 {
     qDebug() << "Socket error " << error;
+
+    switch(error)
+    {
+        case QAbstractSocket::SocketError::RemoteHostClosedError:   // unexpected exit
+        {
+            // TODO: delete users
+            removeDisconnectedClients();
+            break;
+        }
+
+    default:
+        {
+
+        }
+    }
 }
 
 bool Server::is_logined(QString& login) // check if login available
@@ -233,7 +273,7 @@ bool Server::checkLogin(QString& login) // check if login available
 
 void Server::timerEvent(QTimerEvent* event)
 {
-//    Q_UNUSED( event );
+    Q_UNUSED( event );
 //    qDebug() << "Отладочное сообщение таймера";
 
 //    ClientsIterator freeClient = clients_.end();

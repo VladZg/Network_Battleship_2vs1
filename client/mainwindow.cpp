@@ -148,7 +148,7 @@ void MainWindow::authenticateUser()
             ui->connectToServerButton->setEnabled(false);   // turn the button off
 
             // TODO: get list of users from server
-//            usersListUpdate();
+            usersListUpdate();
         }
 
          else // didn't authorized
@@ -280,15 +280,15 @@ void MainWindow::handleMessageRequest()
     }
 }
 
-void MainWindow::handleUsersRequest() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
+void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
     socket_->write(((QString)"USERS:").toUtf8());
     socket_->waitForReadyRead(500);
 
-    usersListUpdate();
+    handleUsersRequest();
 }
 
-void MainWindow::usersListUpdate()
+void MainWindow::handleUsersRequest()
 {
 //    qDebug() << "HANDLE";
 

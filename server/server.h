@@ -22,6 +22,7 @@ public:
     void handleUsersRequest();
     void handleExitRequest();
     void sendMessageToAll(const QString& message);
+    void removeDisconnectedClients();
 
 private:
     quint16 port_; // QSerialPort
