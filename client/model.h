@@ -4,6 +4,8 @@
 
 #include <QString>
 #include <QObject>
+#include "config.h"
+#include "constants.h"
 #include "field.h"
 
 enum ModelState
@@ -12,6 +14,7 @@ enum ModelState
     ST_PLACING_SHIPS    ,
     ST_WAITING_STEP     ,
     ST_MAKING_STEP      ,
+    ST_GAME_FINISHED    ,
 };
 
 class Model: public QObject
@@ -29,11 +32,14 @@ public:
 
     CellDraw getMyCell(int x, int y) const;
     void setMyCell(int x, int y, CellDraw cell);
+    CellDraw getEnemyCell(int x, int y) const;
+    void setEnemyCell(int x, int y, CellDraw cell);
 //    void setMyField(Field field);
     void setMyField(QVector<CellDraw> field);
     void setMyField(QString field);
     QString getMyFieldStr() const;
     Field getMyField() const;
+    Field getEnemyField() const;
     bool checkMyField() const;
     void clearMyField();
 
@@ -43,6 +49,7 @@ private:
 
 private:
     Field* myField_;
+    Field* enemyField_;
     ModelState state_;
     QString login_;
 };

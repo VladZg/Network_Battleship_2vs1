@@ -13,9 +13,12 @@
 #include <QListWidget>
 #include <QTextBrowser>
 #include <QStackedWidget>
-#include "./config.h"
+#include <QPainter>
+#include "config.h"
+#include "constants.h"
 #include "field.h"
 #include "model.h"
+#include "controller.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -51,11 +54,13 @@ private:
     QString login_;
     Model* model_;
     int timerId_;
+    Controller* controller_;
 
 protected:
     void timerEvent(QTimerEvent *event) override;
     void paintEvent(QPaintEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
 
 public:
     QStringList userLogins_;
@@ -71,7 +76,7 @@ public:
     void updateChats();
     void stopClient(QString msg);
 
-    QImage getFieldImage(const Field& field) const;
+    QPixmap* getFieldImage(const Field& field);
 
 public slots:
     void on_sockConnect();

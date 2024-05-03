@@ -5,6 +5,6 @@
         <file>images/kill.png</file>
         <file>images/mark.png</file>
         <file>images/part.png</file>
-        <file>images/redfull.png</file>
+        <file>images/live.png</file>
     </qresource>
 </RCC>

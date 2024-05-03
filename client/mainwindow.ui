@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
+    <width>896</width>
     <height>500</height>
    </rect>
   </property>
@@ -157,24 +157,18 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QLabel" name="fieldsLabel">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>90</y>
-      <width>631</width>
-      <height>291</height>
+      <x>200</x>
+      <y>20</y>
+      <width>641</width>
+      <height>421</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="fieldsLayout">
-     <item>
-      <widget class="QLabel" name="fieldsLabel">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <property name="text">
+     <string/>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -182,7 +176,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>825</width>
+     <width>896</width>
      <height>21</height>
     </rect>
    </property>

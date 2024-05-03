@@ -6,6 +6,7 @@
 #include <QString>
 #include <QDebug>
 #include "./config.h"
+#include "constants.h"
 
 class Images
 {

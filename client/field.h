@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QString>
 #include "./config.h"
+#include "constants.h"
 
 enum CellDraw       // состояния клетки для отрисовки
 {
@@ -31,16 +32,24 @@ enum CellState  // состояния клетки
 class Field
 {
 public:
+    enum Owner
+    {
+        MY_FIELD    = 0,
+        ENEMY_FIELD = 1,
+    };
+
+public:
     Field();
     Field(QString field);
     ~Field();
 
     CellDraw getCell(int x, int y) const;
     void setCell(int x, int y, CellDraw cell);
-    QString getFieldStr();
+    QString getFieldStr() const;
     void setField(QString field);
     void setField(QVector<CellDraw> field);
     void clear();
+    QImage getFieldImage();
 
     int getWidth() const;
     int getHeight() const;
@@ -49,7 +58,8 @@ private:
     int width_;
     int height_;
     int area_;
-    QVector<CellDraw> field_;
+    QVector<CellState> fieldState_;
+    QVector<CellDraw> fieldDraw_;
 };
 
 #endif // FIELD_H

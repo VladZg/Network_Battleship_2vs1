@@ -23,10 +23,10 @@ void Images::load()
 
     LOAD_IMAGE_PNG("background")
     LOAD_IMAGE_PNG("dot"       )
-    LOAD_IMAGE_PNG("kill"      )
+    LOAD_IMAGE_PNG("live"      )
     LOAD_IMAGE_PNG("part"      )
-    LOAD_IMAGE_PNG("redhalf"   )
-    LOAD_IMAGE_PNG("mark"   )
+    LOAD_IMAGE_PNG("kill"      )
+    LOAD_IMAGE_PNG("mark"      )
 //    LOAD_IMAGE_PNG("about"  )
 
     isLoaded_ = true;

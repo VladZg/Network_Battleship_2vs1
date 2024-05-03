@@ -1,15 +1,21 @@
 #include "./model.h"
 
-Model::Model()
+Model::Model() :
+    state_(ST_GAME_NSTARTED)
 {
-    myField_ = new Field();
-//    state_ = ST_PLACING_SHIPS;
+    myField_    = new Field();
+    enemyField_ = new Field();
 }
 
 Model::~Model()
 {
     if (myField_)
         delete myField_;
+
+    if (enemyField_)
+        delete enemyField_;
+
+    updateState(ST_GAME_FINISHED);
 }
 
 CellDraw Model::getMyCell(int x, int y) const
@@ -17,9 +23,19 @@ CellDraw Model::getMyCell(int x, int y) const
     return myField_->getCell(x, y);
 }
 
+CellDraw Model::getEnemyCell(int x, int y) const
+{
+    return enemyField_->getCell(x, y);
+}
+
 void Model::setMyCell(int x, int y, CellDraw cell)
 {
     myField_->setCell(x, y, cell);
+}
+
+void Model::setEnemyCell(int x, int y, CellDraw cell)
+{
+    enemyField_->setCell(x, y, cell);
 }
 
 QString Model::getMyFieldStr() const
@@ -30,6 +46,11 @@ QString Model::getMyFieldStr() const
 Field Model::getMyField() const
 {
     return *myField_;
+}
+
+Field Model::getEnemyField() const
+{
+    return *enemyField_;
 }
 
 void Model::setMyField(QVector<CellDraw> field)

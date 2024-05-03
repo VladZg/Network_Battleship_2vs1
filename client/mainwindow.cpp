@@ -4,9 +4,12 @@
 #include <QMessageBox>
 #include <QWidget>
 #include <QGraphicsView>
+#include <QGraphicsScene>
 #include <QTextBrowser>
 #include <QTextCharFormat>
 #include <QPainter>
+#include <QPaintEngine>
+#include <iostream>
 
 MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +31,10 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->chatWidget->setLayout(chatWidgetLayout);
     ui->messageRecieversOptionsListWidget->setLayout(receiverListWidgetLayout);
 
+//    QPaintEngine *paintEngine = new QPaintEngine;
+//    paintEngine->ini
+//    this->ui->fieldsWidget->paintEngine() = ;
+
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
     socket_ = new QTcpSocket(this);
@@ -36,6 +43,16 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
     pictures.load();        // loading all the images for the game
     model_ = new Model();   // game model with fields
+    controller_ = new Controller(model_);
+
+    QGraphicsScene* graphicsScene = new QGraphicsScene;
+    QGraphicsView* graphicsView = new QGraphicsView;
+    graphicsView->setScene(graphicsScene);
+    graphicsView->setParent(ui->fieldsLabel);
+
+//    ui->fieldsWidget-
+//    graphicsView->s
+//    widget->setGraphicsDevice(graphicsDevice);
 
     connectionStateUpdate(ST_DISCONNECTED);
 
@@ -52,6 +69,7 @@ MainWindow::~MainWindow()
     connectionStateUpdate(ST_DISCONNECTED);
 
     delete model_;
+    delete controller_;
     delete ui;
 }
 
@@ -533,52 +551,6 @@ void MainWindow::createTextBrowser(QListWidgetItem* receiver)
     qDebug() << "Create chat for " << login_ << " and " << receiver->text();
 }
 
-QImage MainWindow::getFieldImage(const Field& field) const
-{
-    QImage image(FIELD_IMG_WIDTH_DEFAULT, FIELD_IMG_HEIGHT_DEFAULT, QImage::Format_ARGB32);
-    Cell cell;
-    image.fill(0);  // empty image
-    QPainter painter(&image);
-
-    double cfx = 1.0 * FIELD_IMG_WIDTH_DEFAULT  / FIELD_WIDTH_DEFAULT ;
-    double cfy = 1.0 * FIELD_IMG_HEIGHT_DEFAULT / FIELD_HEIGHT_DEFAULT;
-
-    int width = field.getWidth();
-    int height = field.getHeight();
-
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            cell = field.getCell(i, j);
-
-            switch(cell)
-            {
-            case CELL_DOT:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("dot"));
-                break;
-
-            case CELL_PART:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("part"));
-                break;
-
-            case CELL_KILL:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("kill"));
-                break;
-
-            case CELL_MARK:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("mark"));
-                break;
-
-            default:
-                break;
-            }
-        }
-    }
-
-    return image;
-}
-
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     static int n_try = 0;
@@ -596,20 +568,40 @@ void MainWindow::timerEvent(QTimerEvent *event)
     }
 }
 
+void MainWindow::mousePressEvent(QMouseEvent* event)
+{
+    QPoint pos = event->pos();
+    pos.setY(pos.y() - ui->fieldsLabel->y());
+    pos.setX(pos.x() - ui->fieldsLabel->x());
+    controller_->onMousePressed(pos, event);
+
+    qDebug() << "Clicked on: " << pos;
+
+    event->accept();
+}
+
 void MainWindow::paintEvent(QPaintEvent* event) // calls when interface redraws
 {
     Q_UNUSED(event);
 
-//    const int deltaY = this->centralWidget()->y();
+    if (ui->fieldsLabel)
+    {
+        QImage image = pictures.get("background");
+        QImage myFieldDrawImage    = model_->getMyField().getFieldImage();
+        QImage enemyFieldDrawImage = model_->getEnemyField().getFieldImage();
 
-    model_->setMyField("3000000000000100100320000220000000000000000000000111100000000000000000000202002000022000000000000003"); // just for test
+        QPainter painter(&image);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-    QPainter painter(this);
-    painter.drawImage(200, 100, pictures.get("background"));    // TODO: сделать норм автомаитческий рассчёт размеров и параметров изображений
-    painter.drawImage(240, 139, getFieldImage(model_->getMyField()));
+        painter.drawImage(MYFIELD_IMG_REL_X   , MYFIELD_IMG_REL_Y   , myFieldDrawImage   );
+        painter.drawImage(ENEMYFIELD_IMG_REL_X, ENEMYFIELD_IMG_REL_Y, enemyFieldDrawImage);
 
-//    ui->fieldsLabel->setPixmap(QPixmap::fromImage(pictures.get("background")));
-//    ui->fieldsLabel->setPixmap(QPixmap::fromImage(getFieldImage(model_->getMyField())));
+        painter.end();
+
+        ui->fieldsLabel->setPixmap(QPixmap::fromImage(image));
+    }
+
+    event->accept();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
