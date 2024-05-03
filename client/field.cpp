@@ -131,17 +131,23 @@ QImage Field::getFieldImage()
                 break;
             }
 
-//            case CELL_PART:
-//                painter.drawImage(x, y, pictures.get("part"));
-//                break;
+            case CELL_DAMAGED:
+            {
+                painter.drawImage(x, y, pictures.get("damaged"));
+                //                qDebug() << "damaged";
+                break;
+            }
 
-//            case CELL_KILL:
-//                painter.drawImage(x, y, pictures.get("kill"));
-//                break;
+            case CELL_KILLED:
+            {
+                painter.drawImage(x, y, pictures.get("killed"));
+                //                qDebug() << "killed";
+                break;
+            }
 
             case CELL_MARK:
             {
-                painter.drawImage(x, y, pictures.get("mark"));
+                painter.drawImage(x, y+1, pictures.get("flag"));
 //                qDebug() << "mark";
                 break;
             }

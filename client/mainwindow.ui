@@ -219,7 +219,7 @@
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-image: url(:/images/kill.png);</string>
+     <string notr="true">background-image: url(:/images/killed.png);</string>
     </property>
     <property name="text">
      <string>...</string>
