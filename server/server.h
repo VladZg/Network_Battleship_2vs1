@@ -36,6 +36,7 @@ public:
     void handleData(const QByteArray& data, int clientId);
     void clientDisconnect(ClientsIterator& cit);
     void handleUsersRequest();
+    void handleConnectionRequest();
     void handleExitRequest();
     void sendMessageToAll(const QString& message);
     void removeDisconnectedClients();

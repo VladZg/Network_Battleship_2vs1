@@ -101,7 +101,7 @@ QImage Field::getFieldImage()
     image.fill(0);  // empty image
     QPainter painter(&image);
 
-    qDebug() << getFieldStr();
+//    qDebug() << getFieldStr();
 
     double cfx = 1.0 * FIELD_IMG_WIDTH_DEFAULT /FIELD_WIDTH_DEFAULT ;
     double cfy = 1.0 * FIELD_IMG_HEIGHT_DEFAULT/FIELD_HEIGHT_DEFAULT;

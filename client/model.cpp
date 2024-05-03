@@ -117,3 +117,17 @@ bool Model::isShip(int size, int x, int y) const
 
     return true;
 }
+
+
+void Model::startGame(QString enemy_login)
+{
+    // ToDO: ...
+}
+
+void Model::finishGame()
+{
+    myField_->clear();
+    enemyField_->clear();
+
+    // TODO:
+}

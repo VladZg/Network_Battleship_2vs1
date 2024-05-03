@@ -45,6 +45,13 @@ C: PING:
 
 К: PONG:
 
+Подключение на игру:
+
+К1->C: CONNECTION:<login2>
+С->K2: CONNECTION:<login1>
+K2->C: CONNECTION:<login1>:ACCEPT / REJECT
+C->K1: CONNECTION:<login2>:ACCEPT / REJECT
+
 Ход игры:
 
 1) Пользователь подключается к серверу и авторизуется, введя логин и нажав кнопку «авторизоваться на сервере» 

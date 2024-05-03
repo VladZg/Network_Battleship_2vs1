@@ -69,12 +69,16 @@ public:
     void handleData();
     void usersListUpdate();
     void sendMessage();
+    void connectToGame(const QString& enemy_login);
     void handleMessageRequest();
     void handleUsersRequest();
     void handlePingRequest();
     void handleExitRequest();
     void updateChats();
     void stopClient(QString msg);
+
+    void startGame(QString enemy_login);
+    void finishGame();
 
     QPixmap* getFieldImage(const Field& field);
 
@@ -92,6 +96,10 @@ private slots:
     void on_sendMessageButton_clicked();
     void on_messageRecieversOptionList_itemSelectionChanged();
     void createTextBrowser(QListWidgetItem* user);
+
+    void on_switchButton_clicked();
+
+    void on_gameExitButton_clicked();
 
 private:
     QListWidget* receiversListWidget;    // user from the list who we want to send the message

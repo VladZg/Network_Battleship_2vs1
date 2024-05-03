@@ -123,10 +123,10 @@ void Server::handleData(const QByteArray& data, int clientId)
 //    PRINT("client: " + request)
 
     ClientsIterator cit = clients_.find(clientId);
+    QString sender_login = cit->getLogin();
 
     if (request.startsWith("MESSAGE:"))
     {
-        QString sender_login = cit->getLogin();
         QStringList message_request = request.split(":");
         QString receiver_login = message_request[1];
         QString message = message_request[2];
@@ -192,6 +192,52 @@ void Server::handleData(const QByteArray& data, int clientId)
         handleUsersRequest();
     }
 
+    else if (request.startsWith("CONNECTION:"))
+    {
+        QStringList message_request = request.split(":");
+        QString receiver_login = message_request[1];
+
+        if (is_logined(receiver_login))
+        {
+            quintptr receiver_socketDescriptor = 0;
+
+            for (auto it = logins_.begin(); it != logins_.end(); ++it)
+            {
+                if (it.value() == receiver_login)
+                {
+                    receiver_socketDescriptor = it.key();
+                    break;
+                }
+            }
+
+            ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
+            QString message_answer = "CONNECTION:" + sender_login;
+
+            if (message_request.size() == 3)    // CONNECTION:<login1>:ACCEPT/REJECT request from the 2nd user
+            {
+                message_answer += ":" + message_request[2]; // CONNECTION:<login1>:ACCEPT/REJECT for the 1st user
+            }
+
+            else if (message_request.size() == 2)   // CONNECTION:<login2> request from the 1st user
+            {
+                // nothing
+            }
+            else
+                qDebug() << "Wrong request";
+
+            receiver_it->socket_->write(message_answer.toUtf8());
+            qDebug() << message_answer << " to " << receiver_login;
+
+            PRINT(message_answer)
+        }
+
+        else
+        {
+            // TODO: add error answer to the client
+            PRINT("No such user")
+        }
+    }
+
     else if (request.startsWith("EXIT:"))
     {
         handleExitRequest();
@@ -224,6 +270,11 @@ void Server::handleUsersRequest()
     }
 
     PRINT(answer)
+}
+
+void Server::handleConnectionRequest()
+{
+
 }
 
 void Server::handleExitRequest()

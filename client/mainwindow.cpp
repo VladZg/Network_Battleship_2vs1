@@ -236,6 +236,68 @@ void MainWindow::handleData()
         stopClient("Server stopped... Closing the app");
     }
 
+    else if (data_.startsWith("CONNECTION:"))
+    {
+        QStringList message_request = QString::fromUtf8(data_).split(":");
+        QString enemy_login = message_request[1];
+
+        if (message_request.size() == 2)    // CONNECTION:<login1>
+        {
+            QMessageBox::StandardButton reply = QMessageBox::question(this, "Запрос на подключение",
+                                                                      "Пользователь " + enemy_login + " приглашает вас сыграть! Принять приглашение?",
+                                                                      QMessageBox::Yes | QMessageBox::No);
+            QString answer = "CONNECTION:" + enemy_login + ":";
+
+            if (reply == QMessageBox::Yes)
+            {
+                qDebug() << "You have accepted the invitation from " << enemy_login;
+
+                // проверка на то,что сообщение дошло? хз
+
+                startGame(enemy_login);
+
+                answer += "ACCEPT";
+            }
+            else
+            {
+                qDebug() << "You haven't accepted the invitation from " << enemy_login;
+
+                answer += "REJECT";
+            }
+
+            qDebug() << answer;
+            socket_->write(((QString)answer).toUtf8());
+        }
+
+        else if (message_request.size() == 3)   // CONNECTION:<login2>:ACCEPT/REJECT
+        {
+            QString resultOfConnection = message_request[2];
+
+            if (resultOfConnection == "ACCEPT")
+            {
+                QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " принял запрос на игру!");
+
+                startGame(enemy_login);
+
+                qDebug() << "Connection to " << enemy_login << " done!";
+
+                return;
+            }
+
+            else if (resultOfConnection == "REJECT")
+            {
+                QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " отклонил запрос на игру!");
+                qDebug() << "Didn't connect to " << enemy_login;
+            }
+
+            else
+                    qDebug() << "Wrong request";
+        }
+
+        else
+            qDebug() << "Wrong request";
+    }
+
     else
     {
 
@@ -363,8 +425,12 @@ void MainWindow::handleUsersRequest()
 //            userToChoose->setEnabled(true);
             QObject::connect(userToPlayWith, &QAction::triggered, [this, userToChoose]()
             {
-                qDebug() << "try to connect to the user " << userToChoose->text();
+                QString enemy_login = userToChoose->text();
+
+                qDebug() << "try to connect to the user " << enemy_login;
                 // TODO: handler
+
+                connectToGame(enemy_login);
             });
         }
 
@@ -402,23 +468,29 @@ void MainWindow::handleExitRequest()
     QString login_exited = message_request[1];
 
     // TODO: remove chat with user and user from the list
-//    QList<QListWidgetItem*> exited_list = ui->messageRecieversOptionList->findItems(login_exited, Qt::MatchExactly);
+    QList<QListWidgetItem*> exited_list = ui->messageRecieversOptionList->findItems(login_exited, Qt::MatchExactly);
 
-//    if (exited_list.isEmpty())
-//    {
-//        qDebug() << "No such chat in messageRecieversOptionList";
-//        return;
-//    }
+    if (exited_list.isEmpty())
+    {
+        qDebug() << "No such chat in messageRecieversOptionList";
+        return;
+    }
 
-//    QListWidgetItem* exited_user = exited_list.first();  // specific sender from the messageRecieversOptionList
-//    QTextBrowser* chat = browserMap.value(exited_user);    // look for specific chat
+    QListWidgetItem* exited_user = exited_list.first();  // specific sender from the messageRecieversOptionList
+    QTextBrowser* chat = browserMap.value(exited_user);    // look for specific chat
 
-//    if (!chat)
-//    {
-//            qDebug() << "Error: no such chat in browserMap";
-//            return;
-//    }
+    if (!chat)
+    {
+            qDebug() << "Error: no such chat in browserMap";
+            return;
+    }
 
+//    ui->usersList;
+
+    qDebug() << "deleting chat with exited user " << login_exited;
+
+    // TODO:
+//    ui->messageRecieversOptionList->removeItemWidget(exited_user);
 //    browserMap.remove(exited_user);
 }
 
@@ -494,10 +566,15 @@ void MainWindow::sendMessage()
     }
 }
 
-
 void MainWindow::on_sendMessageButton_clicked()
 {
     sendMessage();
+}
+
+void MainWindow::connectToGame(const QString& enemy_login)
+{
+    socket_->write(((QString)"CONNECTION:" + enemy_login).toUtf8());
+    qDebug() << "CONNECTION:" << enemy_login;
 }
 
 void MainWindow::updateChats()
@@ -627,3 +704,59 @@ void MainWindow::stopClient(QString msg)
     QMessageBox::information(this, "information!", msg);
     this->close();
 }
+
+void MainWindow::on_switchButton_clicked()
+{
+    // эта кнопка чисто для дебага
+
+    if (model_->getState() == ST_GAME_NSTARTED ||
+        model_->getState() == ST_GAME_FINISHED   )
+        return;
+
+    if (model_->getState() == ST_MAKING_STEP)
+        model_->updateState(ST_PLACING_SHIPS);
+
+    else if (model_->getState() == ST_PLACING_SHIPS)
+        model_->updateState(ST_MAKING_STEP);
+}
+
+void MainWindow::startGame(QString enemy_login)
+{
+//    model_->startGame(enemy_login);
+//    controller_->startGame(enemy_login);
+
+    ui->myGameLoginLabel->setText(login_);
+    ui->enemyGameLoginLabel->setText(enemy_login);
+
+    ui->gameExitButton->setVisible(true);
+
+    // TODO: ...
+
+    model_->updateState(ST_PLACING_SHIPS);
+}
+
+void MainWindow::finishGame()
+{
+    model_->finishGame();
+//    controller_->finishGame(enemy_login);
+
+    ui->myGameLoginLabel->clear();
+    ui->enemyGameLoginLabel->clear();
+
+    ui->gameExitButton->setVisible(false);
+
+
+    // TODO: ...
+
+    model_->updateState(ST_GAME_FINISHED);
+}
+
+void MainWindow::on_gameExitButton_clicked()
+{
+    if (model_->getState() == ST_GAME_NSTARTED ||
+        model_->getState() == ST_GAME_FINISHED   )
+        return;
+
+    finishGame();
+}
+

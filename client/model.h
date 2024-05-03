@@ -43,6 +43,9 @@ public:
     bool checkMyField() const;
     void clearMyField();
 
+    void startGame(QString enemy_login);
+    void finishGame();
+
 private:
     int shipNum( int size ) const;
     bool isShip( int size, int x, int y ) const;
