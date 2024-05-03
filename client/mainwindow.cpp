@@ -37,7 +37,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     pictures.load();        // loading all the images for the game
     model_ = new Model();   // game model with fields
 
-    stateUpdate(ST_DISCONNECTED);
+    connectionStateUpdate(ST_DISCONNECTED);
 
     connect(socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
     connect(socket_, SIGNAL(connected())   , this, SLOT(on_sockConnect())   );  // when socket connected, sockConnect slot runs
@@ -49,13 +49,13 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    stateUpdate(ST_DISCONNECTED);
+    connectionStateUpdate(ST_DISCONNECTED);
 
     delete model_;
     delete ui;
 }
 
-void MainWindow::stateUpdate(ClientState new_state)
+void MainWindow::connectionStateUpdate(ClientConnectionState new_state)
 {
     switch (new_state)
     {
@@ -74,31 +74,26 @@ void MainWindow::stateUpdate(ClientState new_state)
             ui->statusbar->showMessage("status: ST_AUTHORIZED");
             break;
         }
-        case ST_READY:
-        {
-            ui->statusbar->showMessage("status: ST_READY");
-            break;
-        }
     }
 
-    state_ = new_state;
+    connectionState_ = new_state;
 }
 
 void MainWindow::on_connectToServerButton_clicked()    // connection+authorization button
 {
-    if (state_ == ST_DISCONNECTED)
+    if (connectionState_ == ST_DISCONNECTED)
     {
         qDebug() << "Connect button pushed";
         QMessageBox::warning(this, "ERROR!", "Cannot connect user to server... Server not started yet");
         return;
     }
 
-    if (state_ == ST_CONNECTED)
+    if (connectionState_ == ST_CONNECTED)
     {
         authenticateUser();
     }
 
-//    if (state_ == ST_AUTHORIZED)
+//    if (connectionState_ == ST_AUTHORIZED)
 //        return;
 }
 
@@ -112,7 +107,7 @@ void MainWindow::connectUser()
         return;
     }
 
-    stateUpdate(ST_CONNECTED);
+    connectionStateUpdate(ST_CONNECTED);
     ui->connectToServerButton->setText("Авторизоваться на сервере");
     qDebug() << "Authorized";
 
@@ -138,7 +133,7 @@ void MainWindow::authenticateUser()
         QString answer = QString::fromUtf8(data_).trimmed();    // gettin g server answer
         if (answer.startsWith("AUTH:SUCCESS"))
         {
-            stateUpdate(ST_AUTHORIZED);
+            connectionStateUpdate(ST_AUTHORIZED);
             login_ = login_entered;
 
             ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
@@ -178,6 +173,11 @@ void MainWindow::on_sockDisconnect()
 void MainWindow::on_sockError(QAbstractSocket::SocketError error)
 {
     qDebug() << "Socket error " << error;
+}
+
+void MainWindow::on_userToChose_triggered()
+{
+    qDebug() << "Send request to ..." ; // TODO
 }
 
 void MainWindow::on_receiveData()
@@ -308,7 +308,7 @@ void MainWindow::handleUsersRequest()
 {
 //    qDebug() << "HANDLE";
 
-    QStringList logins = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of string logins from the request
+    QStringList users_list = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of users (login:status) from the request
     QString cur_login = "";
 
     QListWidgetItem* cur_user = ui->messageRecieversOptionList->currentItem();
@@ -322,9 +322,39 @@ void MainWindow::handleUsersRequest()
     int cur_row_index = 0;
     int new_cur_row_index = cur_row_index;
 
-    foreach (const QString& login, logins)
+    foreach (const QString& user, users_list)
     {
-        ui->usersList->addAction(login);
+        QStringList user_info = user.split(":");
+        QString login = user_info[0];
+        int status = user_info[1].toInt();
+
+        QAction* userToChoose = ui->usersList->addAction(login);
+        userToChoose->setIcon(QIcon(":images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+
+//        for (QAction *action : ui->readyPlayersList->actions()) // delete from the ui->readyPlayersList
+//        {
+//            if (action->text() == login)
+//                ui->readyPlayersList->removeAction(action);
+//        }
+
+        if (status == 1 && login != login_) // == ST_READY
+        {
+            QAction* userToPlayWith = userToChoose; // ui->readyPlayersList->addAction(userToChoose->text());
+            userToPlayWith->setIcon(QIcon(":images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+
+//            userToChoose->setEnabled(true);
+            QObject::connect(userToPlayWith, &QAction::triggered, [this, userToChoose]()
+            {
+                qDebug() << "try to connect to the user " << userToChoose->text();
+                // TODO: handler
+            });
+        }
+
+        else
+        {
+//            userToChoose->setEnabled(false);
+        }
+
         ui->messageRecieversOptionList->addItem(login);
         cur_row_index++;
 
@@ -386,7 +416,7 @@ void MainWindow::screenUpdate()
 
 void MainWindow::updateAll()
 {
-    stateUpdate(state_);
+    connectionStateUpdate(connectionState_);
     usersListUpdate();
     screenUpdate();
 }
@@ -560,7 +590,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
         qDebug() << "after " << n_try << " tries client cannot connect to the server";
     }
 
-    if (state_ == ST_DISCONNECTED)
+    if (connectionState_ == ST_DISCONNECTED)
     {
         connectUser();
     }
@@ -586,7 +616,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug() << "exit from the programm";
 
-    if (state_ != ST_DISCONNECTED)
+    if (connectionState_ != ST_DISCONNECTED)
         exitFromServer();
 
     event->accept();

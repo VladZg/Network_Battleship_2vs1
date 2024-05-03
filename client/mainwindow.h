@@ -21,12 +21,11 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-enum ClientState  // states of client
+enum ClientConnectionState  // connection states of client
 {
     ST_DISCONNECTED = 0,
     ST_CONNECTED       ,
     ST_AUTHORIZED      ,
-    ST_READY           ,
     // more
 };
 
@@ -38,12 +37,13 @@ public:
     MainWindow(QString ip, quint16 port, QWidget *parent = nullptr);
     ~MainWindow();
     void screenUpdate();
-    void stateUpdate(ClientState new_state);
+    void connectionStateUpdate(ClientConnectionState new_state);
+    void modelStateUpdate(ModelState new_state);
     void updateAll();
     void exitFromServer();
 
 private:
-    ClientState state_;
+    ClientConnectionState connectionState_;
     QString ip_;
     int port_;
     QTcpSocket* socket_; // socket for interacting with server
@@ -78,6 +78,7 @@ public slots:
     void on_receiveData();
     void on_sockDisconnect();
     void on_sockError(QAbstractSocket::SocketError error);
+    void on_userToChose_triggered();
 
 private slots:
     void on_connectToServerButton_clicked();

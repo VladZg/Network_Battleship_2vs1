@@ -18,7 +18,7 @@ Field::~Field()
     field_.clear();
 }
 
-Cell Field::getCell(int x, int y) const
+CellDraw Field::getCell(int x, int y) const
 {
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
     {
@@ -29,7 +29,7 @@ Cell Field::getCell(int x, int y) const
     return CELL_EMPTY;
 }
 
-void Field::setCell(int x, int y, Cell cell)
+void Field::setCell(int x, int y, CellDraw cell)
 {
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
     {
@@ -44,7 +44,7 @@ QString Field::getFieldStr()
 {
     QString result = "";
 
-    for(QVector<Cell>::iterator cell_it = field_.begin(); cell_it != field_.end(); ++cell_it)
+    for(QVector<CellDraw>::iterator cell_it = field_.begin(); cell_it != field_.end(); ++cell_it)
     {
         result += QString::number(*cell_it);
     }
@@ -62,11 +62,11 @@ void Field::setField(QString field)
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
         if ((*cell_it) < (QChar)CELL_EMPTY || (*cell_it) > (QChar)CELL_MARK)
-            field_.push_back((Cell)cell_it->digitValue());
+            field_.push_back((CellDraw)cell_it->digitValue());
     }
 }
 
-void Field::setField(QVector<Cell> field)
+void Field::setField(QVector<CellDraw> field)
 {
     if (field.size() != area_)
         return;

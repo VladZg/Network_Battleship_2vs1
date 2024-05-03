@@ -46,6 +46,7 @@ void Server::startServer(QTextBrowser* textBrowser)
     }
 
     browser = textBrowser;
+//    qInstallMessageHandler([this](QtMsgType type, const QMessageLogContext& context, const QString& msg) {qDebug(msg.toUtf8()); browser->append(msg); });
 
     PRINT("Listening")
     updateState(ST_STARTED);
@@ -206,7 +207,15 @@ void Server::handleData(const QByteArray& data, int clientId)
 
 void Server::handleUsersRequest()
 {
-    const char* answer = ("USERS:" + logins_.values().join(" ")).toUtf8();
+    QList<QString> users_list;
+
+    foreach (const Client& client, clients_)
+    {
+        QString user_str = client.login_ + ":" + QString::number(client.status_); // <login>:<status>
+        users_list.append(user_str);
+    }
+
+    const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1> <login2>:<status2> ...
 
     foreach (const Client& client, clients_)
     {

@@ -8,9 +8,10 @@
 
 enum ModelState
 {
-    ST_PLACING_SHIPS,
-    ST_WAITING_STEP ,
-    ST_MAKING_STEP
+    ST_GAME_NSTARTED = 0,
+    ST_PLACING_SHIPS    ,
+    ST_WAITING_STEP     ,
+    ST_MAKING_STEP      ,
 };
 
 class Model: public QObject
@@ -22,14 +23,14 @@ public:
     ~Model();
 
     ModelState getState() const;
-    void setState(ModelState);
+    void updateState(ModelState);
     void setLogin(const QString& str);
     QString getLogin() const;
 
-    Cell getMyCell(int x, int y) const;
-    void setMyCell(int x, int y, Cell cell);
+    CellDraw getMyCell(int x, int y) const;
+    void setMyCell(int x, int y, CellDraw cell);
 //    void setMyField(Field field);
-    void setMyField(QVector<Cell> field);
+    void setMyField(QVector<CellDraw> field);
     void setMyField(QString field);
     QString getMyFieldStr() const;
     Field getMyField() const;

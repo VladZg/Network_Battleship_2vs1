@@ -191,7 +191,13 @@
      <string>Пользователи</string>
     </property>
    </widget>
+   <widget class="QMenu" name="readyPlayersList">
+    <property name="title">
+     <string>Играть</string>
+    </property>
+   </widget>
    <addaction name="usersList"/>
+   <addaction name="readyPlayersList"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">

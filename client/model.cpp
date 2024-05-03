@@ -12,12 +12,12 @@ Model::~Model()
         delete myField_;
 }
 
-Cell Model::getMyCell(int x, int y) const
+CellDraw Model::getMyCell(int x, int y) const
 {
     return myField_->getCell(x, y);
 }
 
-void Model::setMyCell(int x, int y, Cell cell)
+void Model::setMyCell(int x, int y, CellDraw cell)
 {
     myField_->setCell(x, y, cell);
 }
@@ -32,7 +32,7 @@ Field Model::getMyField() const
     return *myField_;
 }
 
-void Model::setMyField(QVector<Cell> field)
+void Model::setMyField(QVector<CellDraw> field)
 {
     myField_->setField(field);
 }
@@ -47,7 +47,7 @@ ModelState Model::getState() const
     return state_;
 }
 
-void Model::setState(ModelState state)
+void Model::updateState(ModelState state)
 {
     state_ = state;
 }
