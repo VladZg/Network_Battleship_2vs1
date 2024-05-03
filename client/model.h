@@ -12,6 +12,7 @@ enum ModelState
 {
     ST_GAME_NSTARTED = 0,
     ST_PLACING_SHIPS    ,
+    ST_WAITING_PLACING  ,
     ST_WAITING_STEP     ,
     ST_MAKING_STEP      ,
     ST_GAME_FINISHED    ,
@@ -40,7 +41,7 @@ public:
     QString getMyFieldStr() const;
     Field getMyField() const;
     Field getEnemyField() const;
-    bool checkMyField() const;
+    bool isMyFieldCorrect() const;
     void clearMyField();
 
     void startGame(QString enemy_login);

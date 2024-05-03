@@ -760,3 +760,24 @@ void MainWindow::on_gameExitButton_clicked()
     finishGame();
 }
 
+
+void MainWindow::on_startButton_clicked()
+{
+    model_->updateState(ST_PLACING_SHIPS);
+}
+
+
+void MainWindow::on_checkButton_clicked()
+{
+    bool is_correct = model_->isMyFieldCorrect();
+
+    QString result_msg = "Result of check: ";
+    if (is_correct)
+        result_msg += "CORRECT";
+    else
+        result_msg += "INCORRECT";
+
+    QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
+    qDebug() << "Result of check: " << is_correct;
+}
+

@@ -1,4 +1,5 @@
 #include "./model.h"
+#include <QMessageBox>
 
 Model::Model() :
     state_(ST_GAME_NSTARTED)
@@ -83,13 +84,17 @@ QString Model::getLogin() const
     return login_;
 }
 
-bool Model::checkMyField() const
+bool Model::isMyFieldCorrect() const
 {
+    // писать нахуй тут
+
     // Check field for correct ship placement
-    return (shipNum(1) == 4 &&
-            shipNum(2) == 3 &&
-            shipNum(3) == 2 &&
-            shipNum(4) == 1   );
+//    return  (shipNum(1) == 4 &&
+//             shipNum(2) == 3 &&
+//             shipNum(3) == 2 &&
+//             shipNum(4) == 1   );
+
+    return true;
 }
 
 int Model::shipNum(int size) const  // checks the number of ships with <size> blocks
