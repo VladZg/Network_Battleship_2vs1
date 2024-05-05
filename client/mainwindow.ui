@@ -170,27 +170,21 @@
      <string/>
     </property>
    </widget>
-   <widget class="QPushButton" name="switchButton">
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>400</y>
-      <width>91</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>сменить ход</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="myGameLoginLabel">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>60</y>
+      <x>310</x>
+      <y>30</y>
       <width>81</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
     </property>
     <property name="text">
      <string/>
@@ -199,11 +193,18 @@
    <widget class="QLabel" name="enemyGameLoginLabel">
     <property name="geometry">
      <rect>
-      <x>630</x>
-      <y>60</y>
+      <x>620</x>
+      <y>30</y>
       <width>81</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
     </property>
     <property name="text">
      <string/>
@@ -225,31 +226,85 @@
      <string>...</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="startButton">
+   <widget class="QPushButton" name="generateFieldButton">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>400</y>
-      <width>80</width>
+      <x>230</x>
+      <y>60</y>
+      <width>111</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
-     <string>start</string>
+     <string>Сгенерировать</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="checkButton">
+   <widget class="QPushButton" name="applyFieldButton">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>460</x>
       <y>400</y>
-      <width>80</width>
+      <width>111</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
-     <string>check</string>
+     <string>Подтвердить</string>
     </property>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>370</y>
+      <width>201</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="debugButtonsLayout">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="checkButton">
+       <property name="text">
+        <string>check</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QPushButton" name="switchButton">
+       <property name="text">
+        <string>сменить ход</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="generateButton">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>сгенерировать</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QPushButton" name="startButton">
+       <property name="text">
+        <string>start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="clearButton">
+       <property name="text">
+        <string>очистить</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

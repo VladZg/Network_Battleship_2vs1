@@ -107,6 +107,14 @@ private slots:
 
     void on_checkButton_clicked();
 
+    void on_generateFieldButton_clicked();
+
+    void on_applyFieldButton_clicked();
+
+    void on_generateButton_clicked();
+
+    void on_clearButton_clicked();
+
 private:
     QListWidget* receiversListWidget;    // user from the list who we want to send the message
     QStackedWidget* receiverBrowserStackedWidget;  // browser (chat) with this user

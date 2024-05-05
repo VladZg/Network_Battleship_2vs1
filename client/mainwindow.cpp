@@ -31,9 +31,9 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->chatWidget->setLayout(chatWidgetLayout);
     ui->messageRecieversOptionsListWidget->setLayout(receiverListWidgetLayout);
 
-//    QPaintEngine *paintEngine = new QPaintEngine;
-//    paintEngine->ini
-//    this->ui->fieldsWidget->paintEngine() = ;
+    ui->gameExitButton->setVisible(false);
+    ui->applyFieldButton->setVisible(false);
+    ui->generateFieldButton->setVisible(false);
 
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
@@ -777,7 +777,9 @@ void MainWindow::startGame(QString enemy_login, int gameId)
     ui->myGameLoginLabel->setText(login_);
     ui->enemyGameLoginLabel->setText(enemy_login);
 
-    ui->gameExitButton->setVisible(true);
+    ui->gameExitButton->setVisible(     true);
+    ui->applyFieldButton->setVisible(   true);
+    ui->generateFieldButton->setVisible(true);
 
     // TODO: ...
 }
@@ -790,8 +792,9 @@ void MainWindow::finishGame()
     ui->myGameLoginLabel->clear();
     ui->enemyGameLoginLabel->clear();
 
-    ui->gameExitButton->setVisible(false);
-
+    ui->gameExitButton->setVisible(     false);
+    ui->applyFieldButton->setVisible(   false);
+    ui->generateFieldButton->setVisible(false);
 
     // TODO: ...
 }
@@ -836,5 +839,39 @@ void MainWindow::on_checkButton_clicked()
 
     QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
     qDebug() << "Result of check: " << is_correct;
+}
+
+
+void MainWindow::on_generateFieldButton_clicked()
+{
+    if (model_->getState() != ST_PLACING_SHIPS)
+        return;
+
+    model_->generateMyField();
+//    ui->centralwidget->update();
+}
+
+void MainWindow::on_applyFieldButton_clicked()
+{
+    if (!model_->isMyFieldCorrect())
+    {
+//        model_->updateState(ST_WAITING_PLACING);
+        qDebug() << "Incorrect ship placing";
+        return;
+    }
+
+    qDebug() << "Ship placement is correct!";
+}
+
+
+void MainWindow::on_generateButton_clicked()
+{
+    model_->generateMyField();
+}
+
+
+void MainWindow::on_clearButton_clicked()
+{
+    model_->clearMyField();
 }
 

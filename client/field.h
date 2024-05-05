@@ -20,13 +20,15 @@ enum CellDraw       // состояния клетки для отрисовки
 enum CellState  // состояния клетки
 {
     CL_ST_EMPTY = 0,    // пустая клетка
-    CI_ST_CENTER   ,    // центральная клетка (единичный корабль)
-    CI_ST_TOP      ,    // верхняя клетка корабля (вертикального)
-    CI_ST_BOTTOM   ,    // нижняя клетка корабля (вертикального)
-    CI_ST_VMIDDLE  ,    // серединная клетка вертикально ориентированного корабля
-    CI_ST_HMIDDLE  ,    // серединная клетка горизонтально ориентированного корабля
-    CI_ST_LEFT     ,    // левая клетка корабля (горизонтального)
-    CI_ST_RIGHT    ,    // правая клетка корабля (горизонтального)
+    CL_ST_CENTER   ,    // центральная клетка (единичный корабль)
+    CL_ST_TOP      ,    // верхняя клетка корабля (вертикального)
+    CL_ST_BOTTOM   ,    // нижняя клетка корабля (вертикального)
+    CL_ST_VMIDDLE  ,    // серединная клетка вертикально ориентированного корабля
+    CL_ST_HMIDDLE  ,    // серединная клетка горизонтально ориентированного корабля
+    CL_ST_LEFT     ,    // левая клетка корабля (горизонтального)
+    CL_ST_RIGHT    ,    // правая клетка корабля (горизонтального)
+
+    CL_UNDEFINED   ,    // неопределённое непустое состояние клетки
 };
 
 class Field
@@ -41,15 +43,26 @@ public:
 public:
     Field();
     Field(QString field);
+    Field& operator=(const Field& other);   // copy assignment
+
     ~Field();
 
     CellDraw getCell(int x, int y) const;
     void setCell(int x, int y, CellDraw cell);
-    QString getFieldStr() const;
-    void setField(QString field);
-    void setField(QVector<CellDraw> field);
+    QString getStateFieldStr() const;
+    QString getDrawFieldStr() const;
+
+    void setStateField(QString field);
+    void setDrawField(QString field);
+    void setDrawField(QVector<CellDraw> field);
+    void setStateField(QVector<CellState> field);
+    void initDrawField();
+
     void clear();
     QImage getFieldImage();
+
+    void generate();
+    bool isCorrect();
 
     int getWidth() const;
     int getHeight() const;

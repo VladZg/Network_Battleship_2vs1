@@ -37,13 +37,16 @@ public:
     CellDraw getEnemyCell(int x, int y) const;
     void setEnemyCell(int x, int y, CellDraw cell);
 //    void setMyField(Field field);
-    void setMyField(QVector<CellDraw> field);
+    void setMyField(QVector<CellDraw>  field);
+    void setMyField(QVector<CellState> field);
     void setMyField(QString field);
     QString getMyFieldStr() const;
     Field getMyField() const;
     Field getEnemyField() const;
     bool isMyFieldCorrect() const;
     void clearMyField();
+
+    void generateMyField();
 
     void startGame(QString enemy_login, int gameId);
     void finishGame();

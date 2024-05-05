@@ -11,9 +11,27 @@ Field::Field() :
     clear();
 }
 
-Field::Field(QString field)
+Field::Field(QString field) :
+    width_(FIELD_WIDTH_DEFAULT),
+    height_(FIELD_HEIGHT_DEFAULT),
+    area_(FIELD_WIDTH_DEFAULT*FIELD_HEIGHT_DEFAULT)
 {
+    qDebug() << "Field(str) constructor: " << field;
+    setStateField(field);
+}
 
+Field& Field::operator=(const Field& other)
+{
+    if (this == &other)
+        return *this;
+
+    width_      = other.width_      ;
+    height_     = other.height_     ;
+    area_       = other.area_       ;
+    fieldState_ = other.fieldState_ ;
+    fieldDraw_  = other.fieldDraw_  ;
+
+    return *this;
 }
 
 Field::~Field()
@@ -44,7 +62,19 @@ void Field::setCell(int x, int y, CellDraw cell)
     qDebug() << "ERROR: no such cell (" << x << "," << y << ")";
 }
 
-QString Field::getFieldStr() const
+QString Field::getStateFieldStr() const
+{
+    QString result = "";
+
+    for(QVector<CellState>::const_iterator cell_it = fieldState_.begin(); cell_it != fieldState_.end(); ++cell_it)
+    {
+        result += QString::number(*cell_it);
+    }
+
+    return result;
+}
+
+QString Field::getDrawFieldStr() const
 {
     QString result = "";
 
@@ -56,7 +86,24 @@ QString Field::getFieldStr() const
     return result;
 }
 
-void Field::setField(QString field)
+void Field::setStateField(QString field)
+{
+    fieldState_.clear();
+
+    for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
+    {
+        if (cell_it->digitValue() < (int)CL_ST_EMPTY || cell_it->digitValue() > (int)CL_UNDEFINED)
+        {
+            qDebug() << "setStateField(str): wrong string!";
+            fieldState_.clear();
+            return;
+        }
+
+        fieldState_.push_back((CellState)cell_it->digitValue());
+    }
+}
+
+void Field::setDrawField(QString field)
 {
     if (field.size() != area_)
         return;
@@ -65,17 +112,47 @@ void Field::setField(QString field)
 
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
-        if ((*cell_it) < (QChar)CELL_EMPTY || (*cell_it) > (QChar)CELL_MARK)
-            fieldDraw_.push_back((CellDraw)cell_it->digitValue());
+        if (cell_it->digitValue() < (int)CELL_EMPTY || cell_it->digitValue() > (int)CELL_MARK)
+        {
+            qDebug() << "setStateField(str): wrong string!";
+            fieldDraw_.clear();
+            return;
+        }
+
+        fieldDraw_.push_back((CellDraw)cell_it->digitValue());
     }
 }
 
-void Field::setField(QVector<CellDraw> field)
+void Field::setStateField(QVector<CellState> field)
+{
+    if (field.size() != area_)
+        return;
+
+    fieldState_ = field;
+}
+
+void Field::setDrawField(QVector<CellDraw> field)
 {
     if (field.size() != area_)
         return;
 
     fieldDraw_ = field;
+}
+
+void Field::initDrawField()
+{
+    fieldDraw_.clear();
+
+    for(int i = 0; i < area_; i++)
+    {
+        if (fieldState_[i] == CL_ST_EMPTY)
+            fieldDraw_.push_back(CELL_EMPTY);
+
+        else
+            fieldDraw_.push_back(CELL_LIVE);
+
+//        qDebug() << QString::number(i) + ": " << fieldDraw_[i];
+    }
 }
 
 void Field::clear()
@@ -161,4 +238,34 @@ QImage Field::getFieldImage()
     painter.end();
 
     return image;
+}
+
+void Field::generate()
+{
+    qDebug() << "\"generate\" clicked: Generating new field";
+
+    // TODO: add generated fields and atabase
+
+    QString field_example = "1111011100"\
+                            "0000000000"\
+                            "1110110110"\
+                            "0000000000"\
+                            "1101010101"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000";   // example for testing
+
+    setStateField(field_example);
+    initDrawField();
+
+    qDebug() << "Generated field (state): " + getStateFieldStr();
+    qDebug() << "Generated field (draw ): " + getDrawFieldStr();
+
+}
+
+bool Field::isCorrect()
+{
+    return true;
 }

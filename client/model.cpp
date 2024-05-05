@@ -41,7 +41,7 @@ void Model::setEnemyCell(int x, int y, CellDraw cell)
 
 QString Model::getMyFieldStr() const
 {
-    return myField_->getFieldStr();
+    return myField_->getStateFieldStr();
 }
 
 Field Model::getMyField() const
@@ -56,12 +56,22 @@ Field Model::getEnemyField() const
 
 void Model::setMyField(QVector<CellDraw> field)
 {
-    myField_->setField(field);
+    myField_->setDrawField(field);
+}
+
+void Model::setMyField(QVector<CellState> field)
+{
+    myField_->setStateField(field);
 }
 
 void Model::setMyField(QString field)
 {
-    myField_->setField(field);
+    myField_->setStateField(field);
+}
+
+void Model::clearMyField()
+{
+    myField_->clear();
 }
 
 ModelState Model::getState() const
@@ -93,39 +103,7 @@ int Model::getGameId() const
 
 bool Model::isMyFieldCorrect() const
 {
-    // писать нахуй тут
-
-    // Check field for correct ship placement
-//    return  (shipNum(1) == 4 &&
-//             shipNum(2) == 3 &&
-//             shipNum(3) == 2 &&
-//             shipNum(4) == 1   );
-
-    return true;
-}
-
-int Model::shipNum(int size) const  // checks the number of ships with <size> blocks
-{
-    int shipNumber = 0;
-
-    int width  = myField_->getWidth();
-    int height = myField_->getHeight();
-
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            if(isShip(size, i, j))
-                shipNumber++;
-        }
-    }
-
-    return shipNumber;
-}
-
-bool Model::isShip(int size, int x, int y) const
-{
-    // TODO: implement function that checks if thats a ship with needed <size>
+    myField_->isCorrect();
 
     return true;
 }
@@ -146,4 +124,9 @@ void Model::finishGame()
     // TODO:
 
     updateState(ST_GAME_FINISHED);
+}
+
+void Model::generateMyField()
+{
+    myField_->generate();
 }
