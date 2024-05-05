@@ -421,4 +421,5 @@ bool Field::isCorrect() const
     //             shipNum(4) == 1   );
 
     return true;
+    // random string
 }
