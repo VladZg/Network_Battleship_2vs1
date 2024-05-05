@@ -20,12 +20,12 @@ SOURCES += main.cpp \
     server.cpp
 
 HEADERS += \
-    client.h \
-    config.h \
-    field.h \
-    gamecontroller.h \
-    mainwindow.h \
-    server.h
+    client.hpp \
+    config.hpp \
+    field.hpp \
+    gamecontroller.hpp \
+    mainwindow.hpp \
+    server.hpp
 
 FORMS += \
     mainwindow.ui

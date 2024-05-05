@@ -4,9 +4,9 @@
 
 #include <QString>
 #include <QObject>
-#include "config.h"
-#include "constants.h"
-#include "field.h"
+#include "config.hpp"
+#include "constants.hpp"
+#include "field.hpp"
 
 enum ModelState
 {

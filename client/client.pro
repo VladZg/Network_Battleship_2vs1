@@ -19,13 +19,13 @@ SOURCES += \
     model.cpp
 
 HEADERS += \
-    config.h \
-    constants.h \
-    controller.h \
-    field.h \
-    images.h \
-    mainwindow.h \
-    model.h
+    config.hpp \
+    constants.hpp \
+    controller.hpp \
+    field.hpp \
+    images.hpp \
+    mainwindow.hpp \
+    model.hpp
 
 FORMS += \
     mainwindow.ui

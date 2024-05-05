@@ -1,4 +1,4 @@
-#include "images.h"
+#include "images.hpp"
 #include <QPixmap>
 
 Images pictures = Images();

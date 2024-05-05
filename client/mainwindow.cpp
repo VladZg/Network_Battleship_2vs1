@@ -1,6 +1,6 @@
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 #include "ui_mainwindow.h"
-#include "images.h"
+#include "images.hpp"
 #include <QMessageBox>
 #include <QWidget>
 #include <QGraphicsView>

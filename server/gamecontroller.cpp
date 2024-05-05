@@ -1,4 +1,4 @@
-#include "gamecontroller.h"
+#include "gamecontroller.hpp"
 
 GameController::GameController(int gameId, ClientsIterator clientStarted, ClientsIterator clientAccepted) :
     clientStarted_(clientStarted)   ,

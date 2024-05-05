@@ -1,4 +1,4 @@
-#include "client.h"
+#include "client.hpp"
 
 Client::Client() :
     field_(NULL)
