@@ -19,16 +19,15 @@ enum CellDraw       // состояния клетки для отрисовки
 
 enum CellState  // состояния клетки
 {
-    CL_ST_EMPTY = 0,    // пустая клетка
-    CL_ST_CENTER   ,    // центральная клетка (единичный корабль)
-    CL_ST_TOP      ,    // верхняя клетка корабля (вертикального)
-    CL_ST_BOTTOM   ,    // нижняя клетка корабля (вертикального)
-    CL_ST_VMIDDLE  ,    // серединная клетка вертикально ориентированного корабля
-    CL_ST_HMIDDLE  ,    // серединная клетка горизонтально ориентированного корабля
-    CL_ST_LEFT     ,    // левая клетка корабля (горизонтального)
-    CL_ST_RIGHT    ,    // правая клетка корабля (горизонтального)
-
-    CL_UNDEFINED   ,    // неопределённое непустое состояние клетки
+    CL_ST_EMPTY   = 0,    // пустая клетка
+    CL_ST_CENTER  = 1,    // центральная клетка (единичный корабль)
+    CL_ST_TOP     = 2,    // верхняя клетка корабля (вертикального)
+    CL_ST_BOTTOM  = 3,    // нижняя клетка корабля (вертикального)
+    CL_ST_VMIDDLE = 4,    // серединная клетка вертикально ориентированного корабля
+    CL_ST_HMIDDLE = 5,    // серединная клетка горизонтально ориентированного корабля
+    CL_ST_LEFT    = 6,    // левая клетка корабля (горизонтального)
+    CL_ST_RIGHT   = 7,    // правая клетка корабля (горизонтального)
+    CL_UNDEFINED  = 8,    // неопределённое непустое состояние клетки
 };
 
 class Field
@@ -50,6 +49,7 @@ public:
     CellDraw getCell(int x, int y) const;
     void setDrawCell(int x, int y, CellDraw cell);
     void setStateCell(int x, int y, CellState cell);
+    void setStateCell(int index_bordered, CellState cell);
     QString getStateFieldStr() const;
     QString getDrawFieldStr() const;
 
@@ -67,14 +67,13 @@ public:
     int getWidth() const;
     int getHeight() const;
 
-    bool isCorrect() const;
-    bool CheckDiagonalCollisions(QVector<CellState> fieldState) const;
-//    bool CheckVerticalCollisions(QVector<CellState> fieldState) const;
-    bool CheckLength(QVector<CellState> fieldState) const;
+    bool isCorrect();
+    bool CheckDiagonalCollisions(QVector<CellState> fieldState);
+    bool CheckLength(QVector<CellState> fieldState);
 
 private:
-    int shipNum( int size ) const;
-    bool isShip( int size, int x, int y ) const;
+    int shipNum( int size );
+    bool isShip( int size, int x, int y );
 
 private:
     int width_;
