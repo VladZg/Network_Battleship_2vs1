@@ -2,6 +2,7 @@
 #include <QPainter>
 #include "field.h"
 #include "images.h"
+#include <iostream>
 
 Field::Field() :
     width_(FIELD_WIDTH_DEFAULT),
@@ -11,27 +12,9 @@ Field::Field() :
     clear();
 }
 
-Field::Field(QString field) :
-    width_(FIELD_WIDTH_DEFAULT),
-    height_(FIELD_HEIGHT_DEFAULT),
-    area_(FIELD_WIDTH_DEFAULT*FIELD_HEIGHT_DEFAULT)
+Field::Field(QString field)
 {
-    qDebug() << "Field(str) constructor: " << field;
-    setStateField(field);
-}
 
-Field& Field::operator=(const Field& other)
-{
-    if (this == &other)
-        return *this;
-
-    width_      = other.width_      ;
-    height_     = other.height_     ;
-    area_       = other.area_       ;
-    fieldState_ = other.fieldState_ ;
-    fieldDraw_  = other.fieldDraw_  ;
-
-    return *this;
 }
 
 Field::~Field()
@@ -62,19 +45,7 @@ void Field::setCell(int x, int y, CellDraw cell)
     qDebug() << "ERROR: no such cell (" << x << "," << y << ")";
 }
 
-QString Field::getStateFieldStr() const
-{
-    QString result = "";
-
-    for(QVector<CellState>::const_iterator cell_it = fieldState_.begin(); cell_it != fieldState_.end(); ++cell_it)
-    {
-        result += QString::number(*cell_it);
-    }
-
-    return result;
-}
-
-QString Field::getDrawFieldStr() const
+QString Field::getFieldStr() const
 {
     QString result = "";
 
@@ -86,24 +57,7 @@ QString Field::getDrawFieldStr() const
     return result;
 }
 
-void Field::setStateField(QString field)
-{
-    fieldState_.clear();
-
-    for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
-    {
-        if (cell_it->digitValue() < (int)CL_ST_EMPTY || cell_it->digitValue() > (int)CL_UNDEFINED)
-        {
-            qDebug() << "setStateField(str): wrong string!";
-            fieldState_.clear();
-            return;
-        }
-
-        fieldState_.push_back((CellState)cell_it->digitValue());
-    }
-}
-
-void Field::setDrawField(QString field)
+void Field::setField(QString field)
 {
     if (field.size() != area_)
         return;
@@ -112,47 +66,17 @@ void Field::setDrawField(QString field)
 
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
-        if (cell_it->digitValue() < (int)CELL_EMPTY || cell_it->digitValue() > (int)CELL_MARK)
-        {
-            qDebug() << "setStateField(str): wrong string!";
-            fieldDraw_.clear();
-            return;
-        }
-
-        fieldDraw_.push_back((CellDraw)cell_it->digitValue());
+        if ((*cell_it) < (QChar)CELL_EMPTY || (*cell_it) > (QChar)CELL_MARK)
+            fieldDraw_.push_back((CellDraw)cell_it->digitValue());
     }
 }
 
-void Field::setStateField(QVector<CellState> field)
-{
-    if (field.size() != area_)
-        return;
-
-    fieldState_ = field;
-}
-
-void Field::setDrawField(QVector<CellDraw> field)
+void Field::setField(QVector<CellDraw> field)
 {
     if (field.size() != area_)
         return;
 
     fieldDraw_ = field;
-}
-
-void Field::initDrawField()
-{
-    fieldDraw_.clear();
-
-    for(int i = 0; i < area_; i++)
-    {
-        if (fieldState_[i] == CL_ST_EMPTY)
-            fieldDraw_.push_back(CELL_EMPTY);
-
-        else
-            fieldDraw_.push_back(CELL_LIVE);
-
-//        qDebug() << QString::number(i) + ": " << fieldDraw_[i];
-    }
 }
 
 void Field::clear()
@@ -240,32 +164,159 @@ QImage Field::getFieldImage()
     return image;
 }
 
-void Field::generate()
+int Field::shipNum(int size) const  // checks the number of ships with <size> blocks
 {
-    qDebug() << "\"generate\" clicked: Generating new field";
+    int shipNumber = 0;
 
-    // TODO: add generated fields and atabase
+    for(int i = 0; i < width_; i++)
+    {
+        for(int j = 0; j < height_; j++)
+        {
+            if(isShip(size, i, j))
+                shipNumber++;
+        }
+    }
 
-    QString field_example = "1111011100"\
-                            "0000000000"\
-                            "1110110110"\
-                            "0000000000"\
-                            "1101010101"\
-                            "0000000000"\
-                            "0000000000"\
-                            "0000000000"\
-                            "0000000000"\
-                            "0000000000";   // example for testing
-
-    setStateField(field_example);
-    initDrawField();
-
-    qDebug() << "Generated field (state): " + getStateFieldStr();
-    qDebug() << "Generated field (draw ): " + getDrawFieldStr();
-
+    return shipNumber;
 }
 
-bool Field::isCorrect()
+bool Field::isShip(int size, int x, int y) const
 {
+    // TODO: implement function that checks if thats a ship with needed <size>
+
     return true;
+}
+
+bool Field::CheckDiagonalCollisions(QVector<CellState> fieldState) const
+{
+    for(int i = 0; i < height_; i++)
+    {
+        for(int j = 0; j < width_; j++)
+        {
+            int index = (width_ + 2)*(i + 1) + j + 1;
+            if(fieldState[index] == CL_ST_EMPTY)
+            {
+                continue;
+            }
+
+            if(fieldState[index - (width_ + 2) - 1] != CL_ST_EMPTY ||
+               fieldState[index - (width_ + 2) + 1] != CL_ST_EMPTY ||
+               fieldState[index + (width_ + 2) + 1] != CL_ST_EMPTY ||
+               fieldState[index + (width_ + 2) - 1] != CL_ST_EMPTY)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool Field::CheckLength(QVector<CellState> fieldState) const
+{
+    for(int i = 0; i < height_; i++)
+    {
+        for(int j = 0; j < width_; j++)
+        {
+            int index = (width_ + 2)*(i + 1) + j + 1;
+            if(fieldState[index] == CL_ST_EMPTY)
+            {
+                continue;
+            }
+
+            if(fieldState[index + (width_ + 2)] != CL_ST_EMPTY && fieldState[index + 1] != CL_ST_EMPTY)
+            {
+               fieldState[index] = CI_ST_LEFT;
+               //hotizontal ship
+               index++;
+               int length = 2;
+
+               while(fieldState[index+1]!=CL_ST_EMPTY)
+               {
+                    fieldState[index] = CI_ST_HMIDDLE;
+                    index++;
+                    length++;
+               }
+               fieldState[index] = CI_ST_RIGHT;
+
+               if(length > 4)
+                   return false;
+
+               continue;
+            }
+
+            if(fieldState[index + 1] == CL_ST_EMPTY && fieldState[index + (width_ + 2)] != CL_ST_EMPTY)
+            {
+               fieldState[index] = CI_ST_TOP;
+
+               //vertical ship
+               continue;
+            }
+
+            fieldState[index] = CI_ST_CENTER;
+
+        }
+    }
+
+    return true;
+}
+
+bool Field::isCorrect() const
+{
+    QVector<CellState> fieldStateNoBorder(fieldState_);
+    QVector<CellState> fieldState((width_ + 2) * (height_ + 2));
+
+    std::copy(fieldStateNoBorder.begin(), fieldStateNoBorder.end(), fieldState.begin());
+
+    fieldStateNoBorder[0] = CI_ST_CENTER;
+    fieldStateNoBorder[1] = CI_ST_CENTER;
+    fieldStateNoBorder[3] = CI_ST_CENTER;
+    fieldStateNoBorder[4] = CI_ST_CENTER;
+    fieldStateNoBorder[5] = CI_ST_CENTER;
+    fieldStateNoBorder[6] = CI_ST_CENTER;
+    fieldStateNoBorder[7] = CI_ST_CENTER;
+
+    for(int i = 0; i < height_; i++)
+    {
+        for(int j = 0; j < width_; j++)
+        {
+            fieldState[(width_ + 2)*(i + 1) + j + 1] = fieldStateNoBorder[width_*i + j];
+        }
+    }
+
+    if(CheckDiagonalCollisions(fieldState) == false)
+    {
+        return false;
+    }
+
+    if(CheckLength(fieldState) == false)
+    {
+        return false;
+    }
+
+
+    QDebug debug = qDebug();
+    debug << "\n";
+    for(int i = 0; i < height_ + 2; i++)
+    {
+        for(int j = 0; j < width_ + 2; j++)
+        {
+            debug << fieldState[i * 12 + j] << " ";
+        }
+        debug << "\n";
+    }
+
+
+        // Check field for correct ship placement
+    //    return  (shipNum(1) == 4 &&
+    //             shipNum(2) == 3 &&
+    //             shipNum(3) == 2 &&
+    //             shipNum(4) == 1   );
+
+    return true;
+}
+
+QVector<CellState> Field::getFieldState()
+{
+    return fieldState_;
 }

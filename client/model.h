@@ -30,15 +30,13 @@ public:
     void updateState(ModelState);
     void setLogin(const QString& str);
     QString getLogin() const;
-    int getGameId() const;
 
     CellDraw getMyCell(int x, int y) const;
     void setMyCell(int x, int y, CellDraw cell);
     CellDraw getEnemyCell(int x, int y) const;
     void setEnemyCell(int x, int y, CellDraw cell);
 //    void setMyField(Field field);
-    void setMyField(QVector<CellDraw>  field);
-    void setMyField(QVector<CellState> field);
+    void setMyField(QVector<CellDraw> field);
     void setMyField(QString field);
     QString getMyFieldStr() const;
     Field getMyField() const;
@@ -46,21 +44,14 @@ public:
     bool isMyFieldCorrect() const;
     void clearMyField();
 
-    void generateMyField();
-
-    void startGame(QString enemy_login, int gameId);
+    void startGame(QString enemy_login);
     void finishGame();
-
-private:
-    int shipNum( int size ) const;
-    bool isShip( int size, int x, int y ) const;
 
 private:
     Field* myField_;
     Field* enemyField_;
     ModelState state_;
     QString login_;
-    int gameId_;
 };
 
 

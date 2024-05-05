@@ -41,7 +41,7 @@ void Model::setEnemyCell(int x, int y, CellDraw cell)
 
 QString Model::getMyFieldStr() const
 {
-    return myField_->getStateFieldStr();
+    return myField_->getFieldStr();
 }
 
 Field Model::getMyField() const
@@ -56,22 +56,12 @@ Field Model::getEnemyField() const
 
 void Model::setMyField(QVector<CellDraw> field)
 {
-    myField_->setDrawField(field);
-}
-
-void Model::setMyField(QVector<CellState> field)
-{
-    myField_->setStateField(field);
+    myField_->setField(field);
 }
 
 void Model::setMyField(QString field)
 {
-    myField_->setStateField(field);
-}
-
-void Model::clearMyField()
-{
-    myField_->clear();
+    myField_->setField(field);
 }
 
 ModelState Model::getState() const
@@ -94,26 +84,16 @@ QString Model::getLogin() const
     return login_;
 }
 
-int Model::getGameId() const
-{
-//    if (state_ == ST_GAME_NSTARTED) return
-
-    return gameId_;
-}
-
 bool Model::isMyFieldCorrect() const
 {
-    myField_->isCorrect();
+    Field MyField;
 
-    return true;
+    return MyField.isCorrect();
 }
 
-void Model::startGame(QString enemy_login, int gameId)
+void Model::startGame(QString enemy_login)
 {
-    gameId_ = gameId;
     // ToDO: ...
-
-    updateState(ST_PLACING_SHIPS);
 }
 
 void Model::finishGame()
@@ -122,11 +102,4 @@ void Model::finishGame()
     enemyField_->clear();
 
     // TODO:
-
-    updateState(ST_GAME_FINISHED);
-}
-
-void Model::generateMyField()
-{
-    myField_->generate();
 }
