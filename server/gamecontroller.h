@@ -1,0 +1,41 @@
+#ifndef GAMECONTROLLER_H
+#define GAMECONTROLLER_H
+
+#include "config.h"
+#include "client.h"
+
+class GameController
+{
+public:
+    enum GameState
+    {
+        ST_NSTARTED =  0,   // игра не начата
+        ST_PLACING      ,   // пользователи располагают корабли
+        ST_STARTED_STEP ,   // ход пользователя, начавшего игру
+        ST_ACCEPTED_STEP,   // ход пользователя, принявшего приглашение
+        ST_FINISHED     ,   // игра завершена
+    };
+
+    GameController(int gameId, ClientsIterator clientStarted, ClientsIterator clientAccepted);
+    ~GameController();
+
+    ClientsIterator getClientStartedIt();
+    ClientsIterator getClientAcceptedIt();
+    int getGameId();
+    GameState getState();
+
+private:
+    int gameId_;
+    GameState state_;
+
+//    void startGame();
+
+private:
+    ClientsIterator clientStarted_;     // client who started  the game
+    ClientsIterator clientAccepted_;    // client who accepted the game
+};
+
+typedef QMap<int, GameController> Games;
+typedef Games::iterator GamesIterator;
+
+#endif // GAMECONTROLLER_H

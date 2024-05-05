@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
+    <width>896</width>
     <height>500</height>
    </rect>
   </property>
@@ -157,20 +157,150 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QLabel" name="fieldsLabel">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>90</y>
-      <width>631</width>
-      <height>291</height>
+      <x>200</x>
+      <y>20</y>
+      <width>641</width>
+      <height>421</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="fieldsLayout">
-     <item>
-      <widget class="QLabel" name="fieldsLabel">
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="myGameLoginLabel">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>30</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="enemyGameLoginLabel">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>30</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="gameExitButton">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>20</y>
+      <width>24</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-image: url(:/images/killed.png);</string>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="generateFieldButton">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>60</y>
+      <width>111</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Сгенерировать</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="applyFieldButton">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>400</y>
+      <width>111</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Подтвердить</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>370</y>
+      <width>201</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="debugButtonsLayout">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="checkButton">
        <property name="text">
-        <string/>
+        <string>check</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QPushButton" name="switchButton">
+       <property name="text">
+        <string>сменить ход</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="generateButton">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>сгенерировать</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QPushButton" name="startButton">
+       <property name="text">
+        <string>start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="clearButton">
+       <property name="text">
+        <string>очистить</string>
        </property>
       </widget>
      </item>
@@ -182,7 +312,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>825</width>
+     <width>896</width>
      <height>21</height>
     </rect>
    </property>
@@ -191,7 +321,13 @@
      <string>Пользователи</string>
     </property>
    </widget>
+   <widget class="QMenu" name="readyPlayersList">
+    <property name="title">
+     <string>Играть</string>
+    </property>
+   </widget>
    <addaction name="usersList"/>
+   <addaction name="readyPlayersList"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">

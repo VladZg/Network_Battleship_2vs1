@@ -1,4 +1,7 @@
+#include <QPixmap>
+#include <QPainter>
 #include "field.h"
+#include "images.h"
 
 Field::Field() :
     width_(FIELD_WIDTH_DEFAULT),
@@ -8,43 +11,62 @@ Field::Field() :
     clear();
 }
 
-Field::Field(QString field)
+Field::Field(QString field) :
+    width_(FIELD_WIDTH_DEFAULT),
+    height_(FIELD_HEIGHT_DEFAULT),
+    area_(FIELD_WIDTH_DEFAULT*FIELD_HEIGHT_DEFAULT)
 {
+    qDebug() << "Field(str) constructor: " << field;
+    setStateField(field);
+}
 
+Field& Field::operator=(const Field& other)
+{
+    if (this == &other)
+        return *this;
+
+    width_      = other.width_      ;
+    height_     = other.height_     ;
+    area_       = other.area_       ;
+    fieldState_ = other.fieldState_ ;
+    fieldDraw_  = other.fieldDraw_  ;
+
+    return *this;
 }
 
 Field::~Field()
 {
-    field_.clear();
+    fieldState_.clear();
+    fieldDraw_.clear();
 }
 
-Cell Field::getCell(int x, int y) const
+CellDraw Field::getCell(int x, int y) const
 {
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
     {
-        return field_[width_*y+x];
+        return fieldDraw_[width_*y+x];
     }
 
     qDebug() << "Wrong cell indexes";
     return CELL_EMPTY;
 }
 
-void Field::setCell(int x, int y, Cell cell)
+void Field::setCell(int x, int y, CellDraw cell)
 {
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
     {
-        field_[width_*y+x] = cell;
+        fieldDraw_[width_*y+x] = cell;
         return;
     }
 
     qDebug() << "ERROR: no such cell (" << x << "," << y << ")";
 }
 
-QString Field::getFieldStr()
+QString Field::getStateFieldStr() const
 {
     QString result = "";
 
-    for(QVector<Cell>::iterator cell_it = field_.begin(); cell_it != field_.end(); ++cell_it)
+    for(QVector<CellState>::const_iterator cell_it = fieldState_.begin(); cell_it != fieldState_.end(); ++cell_it)
     {
         result += QString::number(*cell_it);
     }
@@ -52,31 +74,91 @@ QString Field::getFieldStr()
     return result;
 }
 
-void Field::setField(QString field)
+QString Field::getDrawFieldStr() const
 {
-    if (field.size() != area_)
-        return;
+    QString result = "";
 
-    field_.clear();
+    for(QVector<CellDraw>::const_iterator cell_it = fieldDraw_.begin(); cell_it != fieldDraw_.end(); ++cell_it)
+    {
+        result += QString::number(*cell_it);
+    }
+
+    return result;
+}
+
+void Field::setStateField(QString field)
+{
+    fieldState_.clear();
 
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
-        if ((*cell_it) < (QChar)CELL_EMPTY || (*cell_it) > (QChar)CELL_MARK)
-            field_.push_back((Cell)cell_it->digitValue());
+        if (cell_it->digitValue() < (int)CL_ST_EMPTY || cell_it->digitValue() > (int)CL_UNDEFINED)
+        {
+            qDebug() << "setStateField(str): wrong string!";
+            fieldState_.clear();
+            return;
+        }
+
+        fieldState_.push_back((CellState)cell_it->digitValue());
     }
 }
 
-void Field::setField(QVector<Cell> field)
+void Field::setDrawField(QString field)
 {
     if (field.size() != area_)
         return;
 
-    field_ = field;
+    fieldDraw_.clear();
+
+    for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
+    {
+        if (cell_it->digitValue() < (int)CELL_EMPTY || cell_it->digitValue() > (int)CELL_MARK)
+        {
+            qDebug() << "setStateField(str): wrong string!";
+            fieldDraw_.clear();
+            return;
+        }
+
+        fieldDraw_.push_back((CellDraw)cell_it->digitValue());
+    }
+}
+
+void Field::setStateField(QVector<CellState> field)
+{
+    if (field.size() != area_)
+        return;
+
+    fieldState_ = field;
+}
+
+void Field::setDrawField(QVector<CellDraw> field)
+{
+    if (field.size() != area_)
+        return;
+
+    fieldDraw_ = field;
+}
+
+void Field::initDrawField()
+{
+    fieldDraw_.clear();
+
+    for(int i = 0; i < area_; i++)
+    {
+        if (fieldState_[i] == CL_ST_EMPTY)
+            fieldDraw_.push_back(CELL_EMPTY);
+
+        else
+            fieldDraw_.push_back(CELL_LIVE);
+
+//        qDebug() << QString::number(i) + ": " << fieldDraw_[i];
+    }
 }
 
 void Field::clear()
 {
-    field_.fill(CELL_EMPTY, area_);
+    fieldDraw_.fill(CELL_EMPTY, area_);
+    fieldState_.fill(CL_ST_EMPTY, area_);
 }
 
 int Field::getWidth() const
@@ -89,4 +171,101 @@ int Field::getHeight() const
     return height_;
 }
 
+QImage Field::getFieldImage()
+{
+    QImage image(FIELD_IMG_WIDTH_DEFAULT, FIELD_IMG_HEIGHT_DEFAULT, QImage::Format_ARGB32);
+    CellDraw cell;
+    image.fill(0);  // empty image
+    QPainter painter(&image);
 
+//    qDebug() << getFieldStr();
+
+    double cfx = 1.0 * FIELD_IMG_WIDTH_DEFAULT /FIELD_WIDTH_DEFAULT ;
+    double cfy = 1.0 * FIELD_IMG_HEIGHT_DEFAULT/FIELD_HEIGHT_DEFAULT;
+
+    for(int i = 0; i < width_; i++)
+    {
+        for(int j = 0; j < height_; j++)
+        {
+            cell = getCell(i, j);
+
+            int x = i*cfx;
+            int y = j*cfy;
+
+            switch(cell)
+            {
+            case CELL_DOT:
+            {
+                painter.drawImage(x, y, pictures.get("dot"));
+//                qDebug() << "dot";
+                break;
+            }
+
+            case CELL_LIVE:
+            {
+                painter.drawImage(x, y, pictures.get("live"));
+//                qDebug() << "live";
+                break;
+            }
+
+            case CELL_DAMAGED:
+            {
+                painter.drawImage(x, y, pictures.get("damaged"));
+                //                qDebug() << "damaged";
+                break;
+            }
+
+            case CELL_KILLED:
+            {
+                painter.drawImage(x, y, pictures.get("killed"));
+                //                qDebug() << "killed";
+                break;
+            }
+
+            case CELL_MARK:
+            {
+                painter.drawImage(x, y+1, pictures.get("flag"));
+//                qDebug() << "mark";
+                break;
+            }
+
+            default:
+                break;
+            }
+        }
+    }
+
+    painter.end();
+
+    return image;
+}
+
+void Field::generate()
+{
+    qDebug() << "\"generate\" clicked: Generating new field";
+
+    // TODO: add generated fields and atabase
+
+    QString field_example = "1111011100"\
+                            "0000000000"\
+                            "1110110110"\
+                            "0000000000"\
+                            "1101010101"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000";   // example for testing
+
+    setStateField(field_example);
+    initDrawField();
+
+    qDebug() << "Generated field (state): " + getStateFieldStr();
+    qDebug() << "Generated field (draw ): " + getDrawFieldStr();
+
+}
+
+bool Field::isCorrect()
+{
+    return true;
+}

@@ -7,6 +7,7 @@
 #include <vector>
 #include <QTextBrowser>
 #include "client.h"
+#include "gamecontroller.h"
 
 class Server: public QTcpServer
 {
@@ -33,12 +34,17 @@ public:
 
     bool checkLogin(QString& login);
     bool is_logined(QString& login);
+    ClientsIterator findClient(QString& login);
     void handleData(const QByteArray& data, int clientId);
     void clientDisconnect(ClientsIterator& cit);
     void handleUsersRequest();
+    void handleConnectionRequest();
     void handleExitRequest();
     void sendMessageToAll(const QString& message);
     void removeDisconnectedClients();
+
+    void startGame(QString login1, QString login2);
+    void finishGame(int gameId);
 
 private:
     quint16 port_; // QSerialPort
@@ -48,10 +54,10 @@ private:
     QMap<quintptr, QString> logins_;
     ServerState state_;
     int timerId_;
+    Games games_;
 
 protected:
     void timerEvent(QTimerEvent* event);
-
 
 public slots:
     void startServer(QTextBrowser* textBrowser);

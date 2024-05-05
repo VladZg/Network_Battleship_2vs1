@@ -34,7 +34,7 @@ public:
 public:
     QTcpSocket*  socket_;
     ClientStatus status_;
-//    ClientIterator playingWith;
+    ClientIterator enemy_;
     QString login_;
 
 private:

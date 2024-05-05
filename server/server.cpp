@@ -46,6 +46,7 @@ void Server::startServer(QTextBrowser* textBrowser)
     }
 
     browser = textBrowser;
+//    qInstallMessageHandler([this](QtMsgType type, const QMessageLogContext& context, const QString& msg) {qDebug(msg.toUtf8()); browser->append(msg); });
 
     PRINT("Listening")
     updateState(ST_STARTED);
@@ -99,6 +100,18 @@ void Server::incomingConnection(qintptr socketDescriptor)
     clients_.insert(clientId, client);
 }
 
+ClientsIterator Server::findClient(QString& login)
+{
+    for (ClientsIterator cit = clients_.begin(); cit != clients_.end(); ++cit)
+    {
+        if (cit->login_ == login)
+            return cit;
+    }
+
+    return clients_.end();
+}
+
+
 void Server::on_receiveData()
 {
     socket_ = (QTcpSocket*)sender();
@@ -122,10 +135,10 @@ void Server::handleData(const QByteArray& data, int clientId)
 //    PRINT("client: " + request)
 
     ClientsIterator cit = clients_.find(clientId);
+    QString sender_login = cit->getLogin();
 
     if (request.startsWith("MESSAGE:"))
     {
-        QString sender_login = cit->getLogin();
         QStringList message_request = request.split(":");
         QString receiver_login = message_request[1];
         QString message = message_request[2];
@@ -191,6 +204,85 @@ void Server::handleData(const QByteArray& data, int clientId)
         handleUsersRequest();
     }
 
+    else if (request.startsWith("CONNECTION:"))
+    {
+        QStringList message_request = request.split(":");
+        QString receiver_login = message_request[1];
+
+        if (is_logined(receiver_login))
+        {
+            quintptr receiver_socketDescriptor = 0;
+
+            for (auto it = logins_.begin(); it != logins_.end(); ++it)
+            {
+                if (it.value() == receiver_login)
+                {
+                    receiver_socketDescriptor = it.key();
+                    break;
+                }
+            }
+
+            ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
+            QString message_answer = "CONNECTION:" + sender_login;
+
+            if (message_request.size() == 3)    // CONNECTION:<login1>:ACCEPT/REJECT request from the 2nd user
+            {
+                message_answer += ":" + message_request[2]; // CONNECTION:<login1>:ACCEPT/REJECT for the 1st user
+            }
+
+            else if (message_request.size() == 2)   // CONNECTION:<login2> request from the 1st user
+            {
+                // nothing
+            }
+            else
+                qDebug() << "Wrong request";
+
+            receiver_it->socket_->write(message_answer.toUtf8());
+            qDebug() << message_answer << " to " << receiver_login;
+
+            PRINT(message_answer)
+        }
+
+        else
+        {
+            // TODO: add error answer to the client
+            PRINT("No such user")
+        }
+    }
+
+    else if (request.startsWith("GAME:"))
+    {
+        QStringList message_request = request.split(":");
+
+        if (message_request.size() == 4)
+        {
+            if (message_request[1] == "START")  // GAME:START:<login_started>:<login_accepted>
+            {
+                QString login_started = message_request[2];
+                QString login_accepted = message_request[3];
+
+                // Init game for these 2 users
+                startGame(login_started, login_accepted);
+            }
+            else
+                PRINT("Wrong request")
+        }
+
+        else if (message_request.size() == 3)   // GAME:FINISH:<gameId>
+        {
+            if (message_request[1] == "FINISH")
+            {
+                int gameId = message_request[2].toInt(); // get gameId
+                finishGame(gameId);
+            }
+            else
+                PRINT("Wrong request")
+        }
+
+        else
+            PRINT("Wrong request")
+    }
+
     else if (request.startsWith("EXIT:"))
     {
         handleExitRequest();
@@ -206,7 +298,15 @@ void Server::handleData(const QByteArray& data, int clientId)
 
 void Server::handleUsersRequest()
 {
-    const char* answer = ("USERS:" + logins_.values().join(" ")).toUtf8();
+    QList<QString> users_list;
+
+    foreach (const Client& client, clients_)
+    {
+        QString user_str = client.login_ + ":" + QString::number(client.status_); // <login>:<status>
+        users_list.append(user_str);
+    }
+
+    const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1> <login2>:<status2> ...
 
     foreach (const Client& client, clients_)
     {
@@ -215,6 +315,11 @@ void Server::handleUsersRequest()
     }
 
     PRINT(answer)
+}
+
+void Server::handleConnectionRequest()
+{
+
 }
 
 void Server::handleExitRequest()
@@ -322,7 +427,7 @@ bool Server::checkLogin(QString& login) // check if login available
 void Server::timerEvent(QTimerEvent* event)
 {
     Q_UNUSED(event);
-    PRINT("timer tick")
+//    PRINT("timer tick")
 
 //    ClientsIterator freeClient = clients_.end();
 
@@ -353,4 +458,84 @@ void Server::timerEvent(QTimerEvent* event)
 
 
 //    }
+}
+
+void Server::startGame(QString login_started, QString login_accepted)
+{
+    ClientsIterator c1It = findClient(login_started);
+    ClientsIterator c2It = findClient(login_accepted);
+
+    static int gameId = 0;
+    gameId++;   // get gameId
+
+    GameController gameController(gameId, c1It, c2It);
+    games_.insert(gameId, gameController);
+
+    if (games_.find(gameId) != games_.end())
+        PRINT("New game inserted in games_")
+    else
+        PRINT("Error in inserting new game")
+
+    QString message1 = "GAME:START:" + login_accepted + ":" + QString::number(gameId);
+    QString message2 = "GAME:START:" + login_started + ":" + QString::number(gameId);
+
+    c1It->socket_->write(message1.toUtf8());
+    c1It->socket_->flush();
+    c2It->socket_->write(message2.toUtf8());
+    c2It->socket_->flush();
+
+    qDebug() << message1;
+    qDebug() << message2;
+    PRINT("Start game " + login_started + " vs " + login_accepted + " with gameId=" + QString::number(gameId))
+}
+
+void Server::finishGame(int gameId)
+{
+    GamesIterator gameIt = games_.find(gameId);
+
+    qDebug() << "We have now " + QString::number(games_.size()) + " active games";
+    for (GamesIterator git = games_.begin(); git != games_.end(); ++git)
+    {
+        PRINT("game " + QString::number(git->getGameId()) + " " + git->getClientStartedIt()->login_ + " vs " + git->getClientAcceptedIt()->login_)
+    }
+
+    if (gameIt == games_.end())
+    {
+        PRINT("Game " + QString::number(gameId) + " not found")
+        return;
+    }
+
+    ClientsIterator c1It = gameIt->getClientStartedIt();   // get from game structure
+    ClientsIterator c2It = gameIt->getClientAcceptedIt();   // get from game structure
+
+    QString login1 = c1It->login_;
+    QString login2 = c2It->login_;
+
+    PRINT("login1: " + login1 + ", login2: " + login2)
+
+    QString message = "GAME:";
+
+    // TODO: проверка на то, были ли уже результаты игры, и если игра прервана пользователем, то отправляем GAME:STOP:<>...
+    if (gameIt->getState() == GameController::ST_FINISHED)
+    {
+        message += "FINISH";
+        PRINT("Finish game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
+    }
+    else
+    {
+        message += "STOP";
+        PRINT("Stop game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
+    }
+
+    c1It->socket_->write(message.toUtf8());
+    c1It->socket_->flush();
+    c2It->socket_->write(message.toUtf8());
+    c2It->socket_->flush();
+
+    PRINT(message + " to " + login1)
+    PRINT(message + " to " + login2)
+    PRINT("Done")
+
+    gameIt->~GameController();  // finish game
+    games_.erase(gameIt);
 }

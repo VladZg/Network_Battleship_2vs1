@@ -11,6 +11,7 @@ CONFIG += c++11
 TARGET = client
 
 SOURCES += \
+    controller.cpp \
     field.cpp \
     images.cpp \
     main.cpp \
@@ -19,6 +20,8 @@ SOURCES += \
 
 HEADERS += \
     config.h \
+    constants.h \
+    controller.h \
     field.h \
     images.h \
     mainwindow.h \
