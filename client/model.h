@@ -33,7 +33,8 @@ public:
     int getGameId() const;
 
     CellDraw getMyCell(int x, int y) const;
-    void setMyCell(int x, int y, CellDraw cell);
+    void setMyDrawCell(int x, int y, CellDraw cell);
+    void setMyStateCell(int x, int y, CellState cell);
     CellDraw getEnemyCell(int x, int y) const;
     void setEnemyCell(int x, int y, CellDraw cell);
 //    void setMyField(Field field);
@@ -50,10 +51,6 @@ public:
 
     void startGame(QString enemy_login, int gameId);
     void finishGame();
-
-private:
-    int shipNum( int size ) const;
-    bool isShip( int size, int x, int y ) const;
 
 private:
     Field* myField_;

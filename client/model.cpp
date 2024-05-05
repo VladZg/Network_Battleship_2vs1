@@ -29,14 +29,19 @@ CellDraw Model::getEnemyCell(int x, int y) const
     return enemyField_->getCell(x, y);
 }
 
-void Model::setMyCell(int x, int y, CellDraw cell)
+void Model::setMyDrawCell(int x, int y, CellDraw cell)
 {
-    myField_->setCell(x, y, cell);
+    myField_->setDrawCell(x, y, cell);
+}
+
+void Model::setMyStateCell(int x, int y, CellState cell)
+{
+    myField_->setStateCell(x, y, cell);
 }
 
 void Model::setEnemyCell(int x, int y, CellDraw cell)
 {
-    enemyField_->setCell(x, y, cell);
+    enemyField_->setDrawCell(x, y, cell);
 }
 
 QString Model::getMyFieldStr() const
@@ -103,9 +108,7 @@ int Model::getGameId() const
 
 bool Model::isMyFieldCorrect() const
 {
-    myField_->isCorrect();
-
-    return true;
+    return myField_->isCorrect();;
 }
 
 void Model::startGame(QString enemy_login, int gameId)

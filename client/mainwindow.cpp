@@ -829,6 +829,8 @@ void MainWindow::on_startButton_clicked()
 
 void MainWindow::on_checkButton_clicked()
 {
+    qDebug() << "My field: " << model_->getMyFieldStr();
+
     bool is_correct = model_->isMyFieldCorrect();
 
     QString result_msg = "Result of check: ";

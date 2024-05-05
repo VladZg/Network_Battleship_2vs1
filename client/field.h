@@ -48,7 +48,8 @@ public:
     ~Field();
 
     CellDraw getCell(int x, int y) const;
-    void setCell(int x, int y, CellDraw cell);
+    void setDrawCell(int x, int y, CellDraw cell);
+    void setStateCell(int x, int y, CellState cell);
     QString getStateFieldStr() const;
     QString getDrawFieldStr() const;
 
@@ -62,10 +63,18 @@ public:
     QImage getFieldImage();
 
     void generate();
-    bool isCorrect();
 
     int getWidth() const;
     int getHeight() const;
+
+    bool isCorrect() const;
+    bool CheckDiagonalCollisions(QVector<CellState> fieldState) const;
+//    bool CheckVerticalCollisions(QVector<CellState> fieldState) const;
+    bool CheckLength(QVector<CellState> fieldState) const;
+
+private:
+    int shipNum( int size ) const;
+    bool isShip( int size, int x, int y ) const;
 
 private:
     int width_;
