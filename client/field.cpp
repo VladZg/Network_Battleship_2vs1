@@ -76,6 +76,15 @@ void Field::setStateCell(int x, int y, CellState cell)
     qDebug() << "ERROR: no such cell (" << x << "," << y << ")";
 }
 
+void Field::setStateCell(int index_bordered, CellState cell)
+{
+    if(index_bordered < (width_ + 2) * (height_ + 2))
+    {
+        fieldState_[index_bordered - 13 - 2*int(index_bordered/23)] = cell;
+        return;
+    }
+}
+
 QString Field::getStateFieldStr() const
 {
     QString result = "";
@@ -279,7 +288,7 @@ void Field::generate()
 
 }
 
-int Field::shipNum(int size) const  // checks the number of ships with <size> blocks
+int Field::shipNum(int size)  // checks the number of ships with <size> blocks
 {
     int shipNumber = 0;
 
@@ -295,14 +304,14 @@ int Field::shipNum(int size) const  // checks the number of ships with <size> bl
     return shipNumber;
 }
 
-bool Field::isShip(int size, int x, int y) const
+bool Field::isShip(int size, int x, int y)
 {
     // TODO: implement function that checks if thats a ship with needed <size>
 
     return true;
 }
 
-bool Field::CheckDiagonalCollisions(QVector<CellState> fieldState) const
+bool Field::CheckDiagonalCollisions(QVector<CellState> fieldState)
 {
     for(int i = 0; i < height_; i++)
     {
@@ -327,61 +336,87 @@ bool Field::CheckDiagonalCollisions(QVector<CellState> fieldState) const
     return true;
 }
 
-bool Field::CheckLength(QVector<CellState> fieldState) const
+bool Field::CheckLength(QVector<CellState> fieldState) // тут если чё нихуя правильно не работает, надеюсь бы отдебажим как проснемся :))
 {
     for(int i = 0; i < height_; i++)
     {
         for(int j = 0; j < width_; j++)
         {
             int index = (width_ + 2)*(i + 1) + j + 1;
-            if(fieldState[index] == CL_ST_EMPTY)
+            if(fieldState[index] == CL_UNDEFINED)
             {
-                continue;
+                if(fieldState[index + 1] != CL_ST_EMPTY) //horizontal ship
+                 {
+//                    setStateCell(index, CL_ST_LEFT);
+//                    fieldState[index] = CL_ST_LEFT;
+
+//                    int length = 2;
+//                    int delta = 1;
+//                    index += delta;
+
+//                    while(fieldState[index + delta] != CL_ST_EMPTY)
+//                    {
+//                         setStateCell(index, CL_ST_HMIDDLE);
+//                         fieldState[index] = CL_ST_HMIDDLE;
+//                         index += delta;
+//                         length++;
+//                    }
+//                    setStateCell(index, CL_ST_RIGHT);
+//                    fieldState[index] = CL_ST_RIGHT;
+
+//                    if(length > 4)
+//                        return false;
+
+//                    continue;
+                 }
+
+                 if(fieldState[index + (width_ + 2)] != CL_ST_EMPTY) //vertical ship
+                 {
+                     qDebug() << "                                                                          ЗАШЛИ В ИФ";
+                    setStateCell(index, CL_ST_TOP);
+                    fieldState[index] = CL_ST_TOP;
+
+                    int step = 1;
+                    int delta = width_ + 2;
+
+                    while(fieldState[index + delta*step] != CL_ST_EMPTY)
+                    {
+                         setStateCell(index + delta*step, CL_ST_VMIDDLE);
+                         fieldState[index + delta*step] = CL_ST_VMIDDLE;
+                         step++;
+                    }
+                    setStateCell(index + delta*(step-1), CL_ST_BOTTOM);
+                    fieldState[index + delta*(step-1)] = CL_ST_BOTTOM;
+
+                    if(step > 4)
+                        return false;
+
+                    continue;
+                 }
+
+                 setStateCell(index, CL_ST_CENTER);
+                 fieldState[index] = CL_ST_CENTER;
             }
-
-            if(fieldState[index + (width_ + 2)] != CL_ST_EMPTY && fieldState[index + 1] != CL_ST_EMPTY)
-            {
-               fieldState[index] = CL_ST_LEFT;
-               //hotizontal ship
-               index++;
-               int length = 2;
-
-               while(fieldState[index+1]!=CL_ST_EMPTY)
-               {
-                    fieldState[index] = CL_ST_HMIDDLE;
-                    index++;
-                    length++;
-               }
-               fieldState[index] = CL_ST_RIGHT;
-
-               if(length > 4)
-                   return false;
-
-               continue;
-            }
-
-            if(fieldState[index + 1] == CL_ST_EMPTY && fieldState[index + (width_ + 2)] != CL_ST_EMPTY)
-            {
-               fieldState[index] = CL_ST_TOP;
-
-               //vertical ship
-               continue;
-            }
-
-            fieldState[index] = CL_ST_CENTER;
-
         }
     }
 
+    QDebug debug1 = qDebug();
+    debug1 << "\n";
+    for(int i = 0; i < height_ + 2; i++)
+    {
+        for(int j = 0; j < width_ + 2; j++)
+        {
+            debug1 << fieldState[i * 12 + j] << " ";
+        }
+        debug1 << "\n";
+    }
     return true;
 }
 
-bool Field::isCorrect() const
+bool Field::isCorrect()
 {
     QVector<CellState> fieldStateNoBorder(fieldState_);
     QVector<CellState> fieldState((width_ + 2) * (height_ + 2));
-
-    std::copy(fieldStateNoBorder.begin(), fieldStateNoBorder.end(), fieldState.begin());
 
     for(int i = 0; i < height_; i++)
     {
@@ -401,17 +436,29 @@ bool Field::isCorrect() const
         return false;
     }
 
+//    QDebug debug1 = qDebug();
+//    debug1 << "\n";
+//    for(int i = 0; i < height_ + 2; i++)
+//    {
+//        for(int j = 0; j < width_ + 2; j++)
+//        {
+//            debug1 << fieldState[i * 12 + j] << " ";
+//        }
+//        debug1 << "\n";
+//    }
 
-    QDebug debug = qDebug();
-    debug << "\n";
-    for(int i = 0; i < height_ + 2; i++)
-    {
-        for(int j = 0; j < width_ + 2; j++)
-        {
-            debug << fieldState[i * 12 + j] << " ";
-        }
-        debug << "\n";
-    }
+//    QDebug debug2 = qDebug();
+//    debug2 << "\n";
+//    for(int i = 0; i < height_; i++)
+//    {
+//        for(int j = 0; j < width_; j++)
+//        {
+//            debug2 << fieldState_[i * 10 + j] << " ";
+//        }
+//        debug2 << "\n";
+//    }
+
+
 
 
         // Check field for correct ship placement
