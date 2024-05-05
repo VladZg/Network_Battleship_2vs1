@@ -33,6 +33,7 @@ public:
 
     bool checkLogin(QString& login);
     bool is_logined(QString& login);
+    ClientsIterator findClient(QString& login);
     void handleData(const QByteArray& data, int clientId);
     void clientDisconnect(ClientsIterator& cit);
     void handleUsersRequest();
@@ -40,6 +41,9 @@ public:
     void handleExitRequest();
     void sendMessageToAll(const QString& message);
     void removeDisconnectedClients();
+
+    void startGame(QString login1, QString login2);
+    void finishGame(int gameId);
 
 private:
     quint16 port_; // QSerialPort

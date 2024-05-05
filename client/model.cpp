@@ -127,6 +127,8 @@ bool Model::isShip(int size, int x, int y) const
 void Model::startGame(QString enemy_login)
 {
     // ToDO: ...
+
+    updateState(ST_PLACING_SHIPS);
 }
 
 void Model::finishGame()
@@ -135,4 +137,6 @@ void Model::finishGame()
     enemyField_->clear();
 
     // TODO:
+
+    updateState(ST_GAME_FINISHED);
 }

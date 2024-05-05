@@ -100,6 +100,18 @@ void Server::incomingConnection(qintptr socketDescriptor)
     clients_.insert(clientId, client);
 }
 
+ClientsIterator Server::findClient(QString& login)
+{
+    for (ClientsIterator cit = clients_.begin(); cit != clients_.end(); ++cit)
+    {
+        if (cit->login_ == login)
+            return cit;
+    }
+
+    return clients_.end();
+}
+
+
 void Server::on_receiveData()
 {
     socket_ = (QTcpSocket*)sender();
@@ -236,6 +248,39 @@ void Server::handleData(const QByteArray& data, int clientId)
             // TODO: add error answer to the client
             PRINT("No such user")
         }
+    }
+
+    else if (request.startsWith("GAME:"))
+    {
+        QStringList message_request = request.split(":");
+
+        if (message_request.size() == 4)
+        {
+            if (message_request[1] == "START")  // GAME:START:<login_started>:<login_accepted>
+            {
+                QString login_started = message_request[2];
+                QString login_accepted = message_request[3];
+
+                // Init game for these 2 users
+                startGame(login_started, login_accepted);
+            }
+            else
+                PRINT("Wrong request")
+        }
+
+        else if (message_request.size() == 3)   // GAME:FINISH:<gameId>
+        {
+            if (message_request[1] == "FINISH")
+            {
+                int gameId = message_request[2].toInt(); // get gameId
+                finishGame(gameId);
+            }
+            else
+                PRINT("Wrong request")
+        }
+
+        else
+            PRINT("Wrong request")
     }
 
     else if (request.startsWith("EXIT:"))
@@ -413,4 +458,48 @@ void Server::timerEvent(QTimerEvent* event)
 
 
 //    }
+}
+
+void Server::startGame(QString login_started, QString login_accepted)
+{
+    ClientsIterator c1It = findClient(login_started);
+    ClientsIterator c2It = findClient(login_accepted);
+
+    int gameId = 0; // get gameId
+
+    QString message1 = "GAME:START:" + login_accepted + ":" + QString::number(gameId);
+    QString message2 = "GAME:START:" + login_started + ":" + QString::number(gameId);
+
+    c1It->socket_->write(message1.toUtf8());
+    c1It->socket_->flush();
+    c2It->socket_->write(message2.toUtf8());
+    c2It->socket_->flush();
+
+    qDebug() << message1;
+    qDebug() << message2;
+    PRINT("Start game " + login_started + " vs " + login_accepted + " with gameId=" + QString::number(gameId))
+}
+
+void Server::finishGame(int gameId)
+{
+    // TODO: get logins by the id of the game
+    QString login1 = "";
+    QString login2 = "";
+
+    ClientsIterator c1It;   // get from game structure
+    ClientsIterator c2It;   // get from game structure
+
+    QString message = "GAME:";
+
+    // TODO: проверка на то, были ли уже результаты игры, и если игра прервана пользователем, то отправляем GAME:STOP:<>...
+    if (true)
+        message += "FINISH";
+
+    else
+        message += "STOP";
+
+//    c1It->socket_->write(message.toUtf8());
+//    c1It->socket_->write(message.toUtf8());
+
+    PRINT("Finish game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
 }

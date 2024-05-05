@@ -226,6 +226,16 @@ void MainWindow::handleData()
         handlePingRequest();
     }
 
+    else if (data_.startsWith("CONNECTION:"))
+    {
+        handleConnectionRequest();
+    }
+
+    else if (data_.startsWith("GAME:"))
+    {
+        handleGameRequest();
+    }
+
     else if(data_.startsWith("EXIT:"))
     {
         handleExitRequest();
@@ -234,68 +244,6 @@ void MainWindow::handleData()
     else if(data_.startsWith("STOP:"))
     {
         stopClient("Server stopped... Closing the app");
-    }
-
-    else if (data_.startsWith("CONNECTION:"))
-    {
-        QStringList message_request = QString::fromUtf8(data_).split(":");
-        QString enemy_login = message_request[1];
-
-        if (message_request.size() == 2)    // CONNECTION:<login1>
-        {
-            QMessageBox::StandardButton reply = QMessageBox::question(this, "Запрос на подключение",
-                                                                      "Пользователь " + enemy_login + " приглашает вас сыграть! Принять приглашение?",
-                                                                      QMessageBox::Yes | QMessageBox::No);
-            QString answer = "CONNECTION:" + enemy_login + ":";
-
-            if (reply == QMessageBox::Yes)
-            {
-                qDebug() << "You have accepted the invitation from " << enemy_login;
-
-                // проверка на то,что сообщение дошло? хз
-
-                startGame(enemy_login);
-
-                answer += "ACCEPT";
-            }
-            else
-            {
-                qDebug() << "You haven't accepted the invitation from " << enemy_login;
-
-                answer += "REJECT";
-            }
-
-            qDebug() << answer;
-            socket_->write(((QString)answer).toUtf8());
-        }
-
-        else if (message_request.size() == 3)   // CONNECTION:<login2>:ACCEPT/REJECT
-        {
-            QString resultOfConnection = message_request[2];
-
-            if (resultOfConnection == "ACCEPT")
-            {
-                QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " принял запрос на игру!");
-
-                startGame(enemy_login);
-
-                qDebug() << "Connection to " << enemy_login << " done!";
-
-                return;
-            }
-
-            else if (resultOfConnection == "REJECT")
-            {
-                QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " отклонил запрос на игру!");
-                qDebug() << "Didn't connect to " << enemy_login;
-            }
-
-            else
-                    qDebug() << "Wrong request";
-        }
-
-        else
-            qDebug() << "Wrong request";
     }
 
     else
@@ -492,6 +440,120 @@ void MainWindow::handleExitRequest()
     // TODO:
 //    ui->messageRecieversOptionList->removeItemWidget(exited_user);
 //    browserMap.remove(exited_user);
+}
+
+void MainWindow::handleConnectionRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+    QString enemy_login = message_request[1];
+
+    if (message_request.size() == 2)    // CONNECTION:<login1>
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Запрос на подключение",
+                                                                  "Пользователь " + enemy_login + " приглашает вас сыграть! Принять приглашение?",
+                                                                  QMessageBox::Yes | QMessageBox::No);
+        QString answer = "CONNECTION:" + enemy_login + ":";
+
+        if (reply == QMessageBox::Yes)
+        {
+            qDebug() << "You have accepted the invitation from " << enemy_login;
+
+            // проверка на то,что сообщение дошло? хз
+
+            answer += "ACCEPT";
+        }
+        else
+        {
+            qDebug() << "You haven't accepted the invitation from " << enemy_login;
+
+            answer += "REJECT";
+        }
+
+        qDebug() << answer;
+        socket_->write(((QString)answer).toUtf8());
+    }
+
+    else if (message_request.size() == 3)   // CONNECTION:<login2>:ACCEPT/REJECT
+    {
+        QString resultOfConnection = message_request[2];
+
+        if (resultOfConnection == "ACCEPT")
+        {
+            QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " принял запрос на игру!");
+
+            QString message = "GAME:START:" + login_ + ":" + enemy_login;
+
+            socket_->write(message.toUtf8());
+            qDebug() << message;
+
+            qDebug() << "Connection to " << enemy_login << " done!";
+
+            return;
+        }
+
+        else if (resultOfConnection == "REJECT")
+        {
+            QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " отклонил запрос на игру!");
+            qDebug() << "Didn't connect to " << enemy_login;
+        }
+
+        else
+                qDebug() << "Wrong request";
+    }
+
+    else
+        qDebug() << "Wrong request";
+}
+
+void MainWindow::handleGameRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.size() == 2)
+    {
+        if (message_request[1] == "FINISH") // GAME:FINISH
+        {
+            int gameId = 0;     // TODO: get gameId: controller->getGameId();
+
+            QString message = "GAME:FINISH:" + QString::number(gameId);
+            socket_->write(message.toUtf8());    // GAME:FINISH:<gameId>
+            qDebug() << message;
+
+            finishGame();
+        }
+
+        else if (message_request[1] == "STOP") // GAME:STOP
+        {
+            int gameId = 0;     // TODO: get gameId: controller->getGameId();
+
+            QString message = "GAME:FINISH:" + QString::number(gameId);
+            socket_->write(message.toUtf8());    // GAME:FINISH:<gameId>
+            qDebug() << message;
+
+            QMessageBox::information(this, "Information!", "Enemy stopped the game...");
+
+            finishGame();
+        }
+
+        else
+            qDebug() <<"Wrong request";
+    }
+
+    else if (message_request.size() == 4)   // GAME:START:<enemy_login>:<gameId>
+    {
+        if (message_request[1] == "START")
+        {
+            QString enemy_login = message_request[2];
+            int gameId = message_request[3].toInt();
+
+            startGame(enemy_login, gameId);
+        }
+        else
+            qDebug() << "Wrong request";
+    }
+
+    else
+        qDebug() << "Wrong request";
 }
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
@@ -720,10 +782,10 @@ void MainWindow::on_switchButton_clicked()
         model_->updateState(ST_MAKING_STEP);
 }
 
-void MainWindow::startGame(QString enemy_login)
+void MainWindow::startGame(QString enemy_login, int gameId)
 {
-//    model_->startGame(enemy_login);
-//    controller_->startGame(enemy_login);
+//    model_->startGame(enemy_login, gameId);
+//    controller_->startGame(enemy_login, gameId);
 
     ui->myGameLoginLabel->setText(login_);
     ui->enemyGameLoginLabel->setText(enemy_login);
@@ -731,8 +793,6 @@ void MainWindow::startGame(QString enemy_login)
     ui->gameExitButton->setVisible(true);
 
     // TODO: ...
-
-    model_->updateState(ST_PLACING_SHIPS);
 }
 
 void MainWindow::finishGame()
@@ -747,8 +807,6 @@ void MainWindow::finishGame()
 
 
     // TODO: ...
-
-    model_->updateState(ST_GAME_FINISHED);
 }
 
 void MainWindow::on_gameExitButton_clicked()
@@ -756,6 +814,9 @@ void MainWindow::on_gameExitButton_clicked()
     if (model_->getState() == ST_GAME_NSTARTED ||
         model_->getState() == ST_GAME_FINISHED   )
         return;
+
+    int gameId = 0; // TODO: get gameId;
+    socket_->write(((QString)"GAME:FINISH:" + QString::number(gameId)).toUtf8());
 
     finishGame();
 }

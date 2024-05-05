@@ -74,10 +74,12 @@ public:
     void handleUsersRequest();
     void handlePingRequest();
     void handleExitRequest();
+    void handleConnectionRequest();
+    void handleGameRequest();
     void updateChats();
     void stopClient(QString msg);
 
-    void startGame(QString enemy_login);
+    void startGame(QString enemy_login, int gameId);
     void finishGame();
 
     QPixmap* getFieldImage(const Field& field);
