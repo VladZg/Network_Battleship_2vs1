@@ -427,7 +427,7 @@ bool Server::checkLogin(QString& login) // check if login available
 void Server::timerEvent(QTimerEvent* event)
 {
     Q_UNUSED(event);
-    PRINT("timer tick")
+//    PRINT("timer tick")
 
 //    ClientsIterator freeClient = clients_.end();
 
@@ -465,7 +465,16 @@ void Server::startGame(QString login_started, QString login_accepted)
     ClientsIterator c1It = findClient(login_started);
     ClientsIterator c2It = findClient(login_accepted);
 
-    int gameId = 0; // get gameId
+    static int gameId = 0;
+    gameId++;   // get gameId
+
+    GameController gameController(gameId, c1It, c2It);
+    games_.insert(gameId, gameController);
+
+    if (games_.find(gameId) != games_.end())
+        PRINT("New game inserted in games_")
+    else
+        PRINT("Error in inserting new game")
 
     QString message1 = "GAME:START:" + login_accepted + ":" + QString::number(gameId);
     QString message2 = "GAME:START:" + login_started + ":" + QString::number(gameId);
@@ -482,24 +491,51 @@ void Server::startGame(QString login_started, QString login_accepted)
 
 void Server::finishGame(int gameId)
 {
-    // TODO: get logins by the id of the game
-    QString login1 = "";
-    QString login2 = "";
+    GamesIterator gameIt = games_.find(gameId);
 
-    ClientsIterator c1It;   // get from game structure
-    ClientsIterator c2It;   // get from game structure
+    qDebug() << "We have now " + QString::number(games_.size()) + " active games";
+    for (GamesIterator git = games_.begin(); git != games_.end(); ++git)
+    {
+        PRINT("game " + QString::number(git->getGameId()) + " " + git->getClientStartedIt()->login_ + " vs " + git->getClientAcceptedIt()->login_)
+    }
+
+    if (gameIt == games_.end())
+    {
+        PRINT("Game " + QString::number(gameId) + " not found")
+        return;
+    }
+
+    ClientsIterator c1It = gameIt->getClientStartedIt();   // get from game structure
+    ClientsIterator c2It = gameIt->getClientAcceptedIt();   // get from game structure
+
+    QString login1 = c1It->login_;
+    QString login2 = c2It->login_;
+
+    PRINT("login1: " + login1 + ", login2: " + login2)
 
     QString message = "GAME:";
 
     // TODO: проверка на то, были ли уже результаты игры, и если игра прервана пользователем, то отправляем GAME:STOP:<>...
-    if (true)
+    if (gameIt->getState() == GameController::ST_FINISHED)
+    {
         message += "FINISH";
-
+        PRINT("Finish game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
+    }
     else
+    {
         message += "STOP";
+        PRINT("Stop game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
+    }
 
-//    c1It->socket_->write(message.toUtf8());
-//    c1It->socket_->write(message.toUtf8());
+    c1It->socket_->write(message.toUtf8());
+    c1It->socket_->flush();
+    c2It->socket_->write(message.toUtf8());
+    c2It->socket_->flush();
 
-    PRINT("Finish game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
+    PRINT(message + " to " + login1)
+    PRINT(message + " to " + login2)
+    PRINT("Done")
+
+    gameIt->~GameController();  // finish game
+    games_.erase(gameIt);
 }

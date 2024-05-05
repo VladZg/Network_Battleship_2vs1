@@ -513,25 +513,12 @@ void MainWindow::handleGameRequest()
     {
         if (message_request[1] == "FINISH") // GAME:FINISH
         {
-            int gameId = 0;     // TODO: get gameId: controller->getGameId();
-
-            QString message = "GAME:FINISH:" + QString::number(gameId);
-            socket_->write(message.toUtf8());    // GAME:FINISH:<gameId>
-            qDebug() << message;
-
             finishGame();
         }
 
         else if (message_request[1] == "STOP") // GAME:STOP
         {
-            int gameId = 0;     // TODO: get gameId: controller->getGameId();
-
-            QString message = "GAME:FINISH:" + QString::number(gameId);
-            socket_->write(message.toUtf8());    // GAME:FINISH:<gameId>
-            qDebug() << message;
-
-            QMessageBox::information(this, "Information!", "Enemy stopped the game...");
-
+            QMessageBox::information(this, "Information!", "Игра остановлена одним из пользователей...");
             finishGame();
         }
 
@@ -784,7 +771,7 @@ void MainWindow::on_switchButton_clicked()
 
 void MainWindow::startGame(QString enemy_login, int gameId)
 {
-//    model_->startGame(enemy_login, gameId);
+    model_->startGame(enemy_login, gameId);
 //    controller_->startGame(enemy_login, gameId);
 
     ui->myGameLoginLabel->setText(login_);
@@ -815,10 +802,19 @@ void MainWindow::on_gameExitButton_clicked()
         model_->getState() == ST_GAME_FINISHED   )
         return;
 
-    int gameId = 0; // TODO: get gameId;
-    socket_->write(((QString)"GAME:FINISH:" + QString::number(gameId)).toUtf8());
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Завершить игру",
+                                                              "Хотите завершить игру досрочно?",
+                                                              QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        qDebug() << "Don't want to stop the game";
+        return;
+    }
 
-    finishGame();
+    qDebug() << "You want to stop the current game";
+
+    int gameId = model_->getGameId(); // TODO: get gameId;
+    socket_->write(((QString)"GAME:FINISH:" + QString::number(gameId)).toUtf8());
 }
 
 

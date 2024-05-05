@@ -84,6 +84,13 @@ QString Model::getLogin() const
     return login_;
 }
 
+int Model::getGameId() const
+{
+//    if (state_ == ST_GAME_NSTARTED) return
+
+    return gameId_;
+}
+
 bool Model::isMyFieldCorrect() const
 {
     // писать нахуй тут
@@ -123,9 +130,9 @@ bool Model::isShip(int size, int x, int y) const
     return true;
 }
 
-
-void Model::startGame(QString enemy_login)
+void Model::startGame(QString enemy_login, int gameId)
 {
+    gameId_ = gameId;
     // ToDO: ...
 
     updateState(ST_PLACING_SHIPS);

@@ -7,6 +7,7 @@
 #include <vector>
 #include <QTextBrowser>
 #include "client.h"
+#include "gamecontroller.h"
 
 class Server: public QTcpServer
 {
@@ -53,10 +54,10 @@ private:
     QMap<quintptr, QString> logins_;
     ServerState state_;
     int timerId_;
+    Games games_;
 
 protected:
     void timerEvent(QTimerEvent* event);
-
 
 public slots:
     void startServer(QTextBrowser* textBrowser);

@@ -30,6 +30,7 @@ public:
     void updateState(ModelState);
     void setLogin(const QString& str);
     QString getLogin() const;
+    int getGameId() const;
 
     CellDraw getMyCell(int x, int y) const;
     void setMyCell(int x, int y, CellDraw cell);
@@ -44,7 +45,7 @@ public:
     bool isMyFieldCorrect() const;
     void clearMyField();
 
-    void startGame(QString enemy_login);
+    void startGame(QString enemy_login, int gameId);
     void finishGame();
 
 private:
@@ -56,6 +57,7 @@ private:
     Field* enemyField_;
     ModelState state_;
     QString login_;
+    int gameId_;
 };
 
 
