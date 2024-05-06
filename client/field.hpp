@@ -19,15 +19,15 @@ enum CellDraw       // состояния клетки для отрисовки
 
 enum CellState  // состояния клетки
 {
-    CL_ST_EMPTY   = 0,    // пустая клетка
-    CL_ST_CENTER  = 1,    // центральная клетка (единичный корабль)
-    CL_ST_TOP     = 2,    // верхняя клетка корабля (вертикального)
-    CL_ST_BOTTOM  = 3,    // нижняя клетка корабля (вертикального)
-    CL_ST_VMIDDLE = 4,    // серединная клетка вертикально ориентированного корабля
-    CL_ST_HMIDDLE = 5,    // серединная клетка горизонтально ориентированного корабля
-    CL_ST_LEFT    = 6,    // левая клетка корабля (горизонтального)
-    CL_ST_RIGHT   = 7,    // правая клетка корабля (горизонтального)
-    CL_UNDEFINED  = 8,    // неопределённое непустое состояние клетки
+    CL_ST_EMPTY     = 0,    // пустая клетка
+    CL_ST_CENTER    = 1,    // центральная клетка (единичный корабль)
+    CL_ST_TOP       = 2,    // верхняя клетка корабля (вертикального)
+    CL_ST_BOTTOM    = 3,    // нижняя клетка корабля (вертикального)
+    CL_ST_VMIDDLE   = 4,    // серединная клетка вертикально ориентированного корабля
+    CL_ST_HMIDDLE   = 5,    // серединная клетка горизонтально ориентированного корабля
+    CL_ST_LEFT      = 6,    // левая клетка корабля (горизонтального)
+    CL_ST_RIGHT     = 7,    // правая клетка корабля (горизонтального)
+    CL_ST_UNDEFINED = 8,    // неопределённое непустое состояние клетки
 };
 
 class Field
@@ -68,12 +68,12 @@ public:
     int getHeight() const;
 
     bool isCorrect();
-    bool CheckDiagonalCollisions(QVector<CellState> fieldState);
-    bool CheckLength(QVector<CellState> fieldState);
+    bool CheckDiagonalCollisions(const QVector<CellState>& fieldStateWithBorders);
+    bool CheckLength(QVector<CellState>& fieldState);
 
 private:
-    int shipNum( int size );
-    bool isShip( int size, int x, int y );
+    int shipNum(int size, const QVector<CellState>& fieldStateWithBorders);
+    bool isShip(int size, int x, int y, const QVector<CellState>& fieldStateWithBorders);
 
 private:
     int width_;

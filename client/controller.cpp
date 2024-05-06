@@ -59,7 +59,7 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
         if (event->button() == Qt::LeftButton)
         {
             model_->setMyDrawCell(point.x(), point.y(), CELL_LIVE);
-            model_->setMyStateCell(point.x(), point.y(), CL_UNDEFINED);
+            model_->setMyStateCell(point.x(), point.y(), CL_ST_UNDEFINED);
             qDebug() << "Press on left button -> place a ship";
         }
         if (event->button() == Qt::RightButton)

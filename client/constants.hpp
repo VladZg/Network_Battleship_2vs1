@@ -19,4 +19,10 @@ const int ENEMYFIELD_IMG_Y = 127;
 const int ENEMYFIELD_IMG_REL_X = ENEMYFIELD_IMG_X;
 const int ENEMYFIELD_IMG_REL_Y = 39;
 
+const int SHIP_MAXLEN = 4;
+const int SHIP1_NUM = 4;
+const int SHIP2_NUM = 3;
+const int SHIP3_NUM = 2;
+const int SHIP4_NUM = 1;
+
 #endif // CONSTANTS_H

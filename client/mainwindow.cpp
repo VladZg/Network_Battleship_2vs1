@@ -140,6 +140,16 @@ void MainWindow::authenticateUser()
     {
         qDebug() << "trying to connect to server with login " << login_entered << "";
 
+        if (login_entered.split(" ").size() > 1)
+        {
+            QMessageBox::warning(this, "Login error!", "Неверный формат логина! Логин не должен содержать пробелов и специальных символов. Попробуйте снова");
+
+            ui->loginLabel->clear();
+
+            qDebug() << "Wrong login format! Must not have spaces";
+            return;
+        }
+
         socket_->write(("AUTH:" + login_entered).toUtf8()); // request for authorization
 
         if (!socket_->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
