@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <QCloseEvent>
 #include <QMessageBox>
@@ -11,6 +11,8 @@ MainWindow::MainWindow(quint16 port, QWidget *parent) :
     ui->setupUi(this);
 
     startTimer(500);
+
+//    qInstallMessageHandler([](QtMsgType type, const QMessageLogContext& context, const QString& msg) {qDebug(msg.toUtf8()); this->ui->textBrowser->append(msg); });
 }
 
 

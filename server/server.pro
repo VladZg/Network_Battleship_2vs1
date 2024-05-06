@@ -15,15 +15,17 @@ TARGET = server
 SOURCES += main.cpp \
     client.cpp \
     field.cpp \
+    gamecontroller.cpp \
     mainwindow.cpp \
     server.cpp
 
 HEADERS += \
-    client.h \
-    config.h \
-    field.h \
-    mainwindow.h \
-    server.h
+    client.hpp \
+    config.hpp \
+    field.hpp \
+    gamecontroller.hpp \
+    mainwindow.hpp \
+    server.hpp
 
 FORMS += \
     mainwindow.ui

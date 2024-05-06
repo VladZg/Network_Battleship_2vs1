@@ -1,9 +1,10 @@
-#include "images.h"
+#include "images.hpp"
+#include <QPixmap>
 
 Images pictures = Images();
 
 Images::Images():
-    isLoaded_( false )
+    isLoaded_(false)
 {
 
 }
@@ -23,11 +24,19 @@ void Images::load()
 
     LOAD_IMAGE_PNG("background")
     LOAD_IMAGE_PNG("dot"       )
-    LOAD_IMAGE_PNG("kill"      )
+    LOAD_IMAGE_PNG("live"      )
     LOAD_IMAGE_PNG("part"      )
-    LOAD_IMAGE_PNG("redhalf"   )
-    LOAD_IMAGE_PNG("mark"   )
+    LOAD_IMAGE_PNG("killed"    )
+    LOAD_IMAGE_PNG("mark"      )
+    LOAD_IMAGE_PNG("damaged"   )
+    LOAD_IMAGE_PNG("flag"      )
 //    LOAD_IMAGE_PNG("about"  )
+
+    QMap<QString, QImage>::const_iterator imgIt = images_.find("flag");
+    QPixmap pixmap = QPixmap::fromImage(imgIt.value());
+    QPixmap scaledPixmap = pixmap.scaled(QSize(FIELD_IMG_WIDTH_DEFAULT/FIELD_WIDTH_DEFAULT-2, FIELD_IMG_HEIGHT_DEFAULT/FIELD_HEIGHT_DEFAULT-2), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QImage scaledImg = scaledPixmap.toImage();
+    images_.insert(imgIt.key(), scaledImg);
 
     isLoaded_ = true;
 }

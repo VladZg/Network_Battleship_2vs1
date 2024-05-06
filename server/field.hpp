@@ -4,15 +4,12 @@
 #include <QVector>
 #include <QDebug>
 #include <QString>
-#include "./config.h"
+#include "./config.hpp"
 
 enum Cell
 {
     CELL_EMPTY = 0  ,   // пустое поле
-    CELL_DOT        ,   // промах
-    CELL_PART       ,   // поле частично подбитого корабля
-    CELL_KILL       ,   // поле полностью подбитого корабля
-    CELL_MARK       ,   // помеченное пользователем поле
+    CELL_SHIP       ,   // есть корабль
 };
 
 class Field

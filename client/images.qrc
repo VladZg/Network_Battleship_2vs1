@@ -2,9 +2,11 @@
     <qresource prefix="/">
         <file>images/background.png</file>
         <file>images/dot.png</file>
-        <file>images/kill.png</file>
         <file>images/mark.png</file>
         <file>images/part.png</file>
-        <file>images/redfull.png</file>
+        <file>images/live.png</file>
+        <file>images/killed.png</file>
+        <file>images/damaged.png</file>
+        <file>images/flag.png</file>
     </qresource>
 </RCC>

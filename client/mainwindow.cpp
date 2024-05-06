@@ -1,12 +1,15 @@
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 #include "ui_mainwindow.h"
-#include "images.h"
+#include "images.hpp"
 #include <QMessageBox>
 #include <QWidget>
 #include <QGraphicsView>
+#include <QGraphicsScene>
 #include <QTextBrowser>
 #include <QTextCharFormat>
 #include <QPainter>
+#include <QPaintEngine>
+#include <iostream>
 
 MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +31,10 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->chatWidget->setLayout(chatWidgetLayout);
     ui->messageRecieversOptionsListWidget->setLayout(receiverListWidgetLayout);
 
+    ui->gameExitButton->setVisible(false);
+    ui->applyFieldButton->setVisible(false);
+    ui->generateFieldButton->setVisible(false);
+
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
     socket_ = new QTcpSocket(this);
@@ -36,8 +43,18 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
     pictures.load();        // loading all the images for the game
     model_ = new Model();   // game model with fields
+    controller_ = new Controller(model_);
 
-    stateUpdate(ST_DISCONNECTED);
+    QGraphicsScene* graphicsScene = new QGraphicsScene;
+    QGraphicsView* graphicsView = new QGraphicsView;
+    graphicsView->setScene(graphicsScene);
+    graphicsView->setParent(ui->fieldsLabel);
+
+//    ui->fieldsWidget-
+//    graphicsView->s
+//    widget->setGraphicsDevice(graphicsDevice);
+
+    connectionStateUpdate(ST_DISCONNECTED);
 
     connect(socket_, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(on_sockError(QAbstractSocket::SocketError)));  // handles socket errors
     connect(socket_, SIGNAL(connected())   , this, SLOT(on_sockConnect())   );  // when socket connected, sockConnect slot runs
@@ -49,13 +66,14 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    stateUpdate(ST_DISCONNECTED);
+    connectionStateUpdate(ST_DISCONNECTED);
 
     delete model_;
+    delete controller_;
     delete ui;
 }
 
-void MainWindow::stateUpdate(ClientState new_state)
+void MainWindow::connectionStateUpdate(ClientConnectionState new_state)
 {
     switch (new_state)
     {
@@ -74,31 +92,26 @@ void MainWindow::stateUpdate(ClientState new_state)
             ui->statusbar->showMessage("status: ST_AUTHORIZED");
             break;
         }
-        case ST_READY:
-        {
-            ui->statusbar->showMessage("status: ST_READY");
-            break;
-        }
     }
 
-    state_ = new_state;
+    connectionState_ = new_state;
 }
 
 void MainWindow::on_connectToServerButton_clicked()    // connection+authorization button
 {
-    if (state_ == ST_DISCONNECTED)
+    if (connectionState_ == ST_DISCONNECTED)
     {
         qDebug() << "Connect button pushed";
         QMessageBox::warning(this, "ERROR!", "Cannot connect user to server... Server not started yet");
         return;
     }
 
-    if (state_ == ST_CONNECTED)
+    if (connectionState_ == ST_CONNECTED)
     {
         authenticateUser();
     }
 
-//    if (state_ == ST_AUTHORIZED)
+//    if (connectionState_ == ST_AUTHORIZED)
 //        return;
 }
 
@@ -112,7 +125,7 @@ void MainWindow::connectUser()
         return;
     }
 
-    stateUpdate(ST_CONNECTED);
+    connectionStateUpdate(ST_CONNECTED);
     ui->connectToServerButton->setText("Авторизоваться на сервере");
     qDebug() << "Authorized";
 
@@ -127,6 +140,16 @@ void MainWindow::authenticateUser()
     {
         qDebug() << "trying to connect to server with login " << login_entered << "";
 
+        if (login_entered.split(" ").size() > 1)
+        {
+            QMessageBox::warning(this, "Login error!", "Неверный формат логина! Логин не должен содержать пробелов и специальных символов. Попробуйте снова");
+
+            ui->loginLabel->clear();
+
+            qDebug() << "Wrong login format! Must not have spaces";
+            return;
+        }
+
         socket_->write(("AUTH:" + login_entered).toUtf8()); // request for authorization
 
         if (!socket_->waitForReadyRead(2500)) // if server don't answer > 2.5 sec
@@ -138,7 +161,7 @@ void MainWindow::authenticateUser()
         QString answer = QString::fromUtf8(data_).trimmed();    // gettin g server answer
         if (answer.startsWith("AUTH:SUCCESS"))
         {
-            stateUpdate(ST_AUTHORIZED);
+            connectionStateUpdate(ST_AUTHORIZED);
             login_ = login_entered;
 
             ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
@@ -180,6 +203,11 @@ void MainWindow::on_sockError(QAbstractSocket::SocketError error)
     qDebug() << "Socket error " << error;
 }
 
+void MainWindow::on_userToChose_triggered()
+{
+    qDebug() << "Send request to ..." ; // TODO
+}
+
 void MainWindow::on_receiveData()
 {
 //    socket->waitForReadyRead(500);
@@ -206,6 +234,16 @@ void MainWindow::handleData()
     else if(data_.startsWith("PING:"))
     {
         handlePingRequest();
+    }
+
+    else if (data_.startsWith("CONNECTION:"))
+    {
+        handleConnectionRequest();
+    }
+
+    else if (data_.startsWith("GAME:"))
+    {
+        handleGameRequest();
     }
 
     else if(data_.startsWith("EXIT:"))
@@ -308,7 +346,7 @@ void MainWindow::handleUsersRequest()
 {
 //    qDebug() << "HANDLE";
 
-    QStringList logins = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of string logins from the request
+    QStringList users_list = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of users (login:status) from the request
     QString cur_login = "";
 
     QListWidgetItem* cur_user = ui->messageRecieversOptionList->currentItem();
@@ -322,9 +360,43 @@ void MainWindow::handleUsersRequest()
     int cur_row_index = 0;
     int new_cur_row_index = cur_row_index;
 
-    foreach (const QString& login, logins)
+    foreach (const QString& user, users_list)
     {
-        ui->usersList->addAction(login);
+        QStringList user_info = user.split(":");
+        QString login = user_info[0];
+        int status = user_info[1].toInt();
+
+        QAction* userToChoose = ui->usersList->addAction(login);
+        userToChoose->setIcon(QIcon(":images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+
+//        for (QAction *action : ui->readyPlayersList->actions()) // delete from the ui->readyPlayersList
+//        {
+//            if (action->text() == login)
+//                ui->readyPlayersList->removeAction(action);
+//        }
+
+        if (status == 1 && login != login_) // == ST_READY
+        {
+            QAction* userToPlayWith = userToChoose; // ui->readyPlayersList->addAction(userToChoose->text());
+            userToPlayWith->setIcon(QIcon(":images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+
+//            userToChoose->setEnabled(true);
+            QObject::connect(userToPlayWith, &QAction::triggered, [this, userToChoose]()
+            {
+                QString enemy_login = userToChoose->text();
+
+                qDebug() << "try to connect to the user " << enemy_login;
+                // TODO: handler
+
+                connectToGame(enemy_login);
+            });
+        }
+
+        else
+        {
+//            userToChoose->setEnabled(false);
+        }
+
         ui->messageRecieversOptionList->addItem(login);
         cur_row_index++;
 
@@ -354,24 +426,131 @@ void MainWindow::handleExitRequest()
     QString login_exited = message_request[1];
 
     // TODO: remove chat with user and user from the list
-//    QList<QListWidgetItem*> exited_list = ui->messageRecieversOptionList->findItems(login_exited, Qt::MatchExactly);
+    QList<QListWidgetItem*> exited_list = ui->messageRecieversOptionList->findItems(login_exited, Qt::MatchExactly);
 
-//    if (exited_list.isEmpty())
-//    {
-//        qDebug() << "No such chat in messageRecieversOptionList";
-//        return;
-//    }
+    if (exited_list.isEmpty())
+    {
+        qDebug() << "No such chat in messageRecieversOptionList";
+        return;
+    }
 
-//    QListWidgetItem* exited_user = exited_list.first();  // specific sender from the messageRecieversOptionList
-//    QTextBrowser* chat = browserMap.value(exited_user);    // look for specific chat
+    QListWidgetItem* exited_user = exited_list.first();  // specific sender from the messageRecieversOptionList
+    QTextBrowser* chat = browserMap.value(exited_user);    // look for specific chat
 
-//    if (!chat)
-//    {
-//            qDebug() << "Error: no such chat in browserMap";
-//            return;
-//    }
+    if (!chat)
+    {
+            qDebug() << "Error: no such chat in browserMap";
+            return;
+    }
 
+//    ui->usersList;
+
+    qDebug() << "deleting chat with exited user " << login_exited;
+
+    // TODO:
+//    ui->messageRecieversOptionList->removeItemWidget(exited_user);
 //    browserMap.remove(exited_user);
+}
+
+void MainWindow::handleConnectionRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+    QString enemy_login = message_request[1];
+
+    if (message_request.size() == 2)    // CONNECTION:<login1>
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Запрос на подключение",
+                                                                  "Пользователь " + enemy_login + " приглашает вас сыграть! Принять приглашение?",
+                                                                  QMessageBox::Yes | QMessageBox::No);
+        QString answer = "CONNECTION:" + enemy_login + ":";
+
+        if (reply == QMessageBox::Yes)
+        {
+            qDebug() << "You have accepted the invitation from " << enemy_login;
+
+            // проверка на то,что сообщение дошло? хз
+
+            answer += "ACCEPT";
+        }
+        else
+        {
+            qDebug() << "You haven't accepted the invitation from " << enemy_login;
+
+            answer += "REJECT";
+        }
+
+        qDebug() << answer;
+        socket_->write(((QString)answer).toUtf8());
+    }
+
+    else if (message_request.size() == 3)   // CONNECTION:<login2>:ACCEPT/REJECT
+    {
+        QString resultOfConnection = message_request[2];
+
+        if (resultOfConnection == "ACCEPT")
+        {
+            QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " принял запрос на игру!");
+
+            QString message = "GAME:START:" + login_ + ":" + enemy_login;
+
+            socket_->write(message.toUtf8());
+            qDebug() << message;
+
+            qDebug() << "Connection to " << enemy_login << " done!";
+
+            return;
+        }
+
+        else if (resultOfConnection == "REJECT")
+        {
+            QMessageBox::information(this, "Connection info!", "Пользователь " + enemy_login + " отклонил запрос на игру!");
+            qDebug() << "Didn't connect to " << enemy_login;
+        }
+
+        else
+                qDebug() << "Wrong request";
+    }
+
+    else
+        qDebug() << "Wrong request";
+}
+
+void MainWindow::handleGameRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.size() == 2)
+    {
+        if (message_request[1] == "FINISH") // GAME:FINISH
+        {
+            finishGame();
+        }
+
+        else if (message_request[1] == "STOP") // GAME:STOP
+        {
+            QMessageBox::information(this, "Information!", "Игра остановлена одним из пользователей...");
+            finishGame();
+        }
+
+        else
+            qDebug() <<"Wrong request";
+    }
+
+    else if (message_request.size() == 4)   // GAME:START:<enemy_login>:<gameId>
+    {
+        if (message_request[1] == "START")
+        {
+            QString enemy_login = message_request[2];
+            int gameId = message_request[3].toInt();
+
+            startGame(enemy_login, gameId);
+        }
+        else
+            qDebug() << "Wrong request";
+    }
+
+    else
+        qDebug() << "Wrong request";
 }
 
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
@@ -386,7 +565,7 @@ void MainWindow::screenUpdate()
 
 void MainWindow::updateAll()
 {
-    stateUpdate(state_);
+    connectionStateUpdate(connectionState_);
     usersListUpdate();
     screenUpdate();
 }
@@ -446,10 +625,15 @@ void MainWindow::sendMessage()
     }
 }
 
-
 void MainWindow::on_sendMessageButton_clicked()
 {
     sendMessage();
+}
+
+void MainWindow::connectToGame(const QString& enemy_login)
+{
+    socket_->write(((QString)"CONNECTION:" + enemy_login).toUtf8());
+    qDebug() << "CONNECTION:" << enemy_login;
 }
 
 void MainWindow::updateChats()
@@ -503,52 +687,6 @@ void MainWindow::createTextBrowser(QListWidgetItem* receiver)
     qDebug() << "Create chat for " << login_ << " and " << receiver->text();
 }
 
-QImage MainWindow::getFieldImage(const Field& field) const
-{
-    QImage image(FIELD_IMG_WIDTH_DEFAULT, FIELD_IMG_HEIGHT_DEFAULT, QImage::Format_ARGB32);
-    Cell cell;
-    image.fill(0);  // empty image
-    QPainter painter(&image);
-
-    double cfx = 1.0 * FIELD_IMG_WIDTH_DEFAULT  / FIELD_WIDTH_DEFAULT ;
-    double cfy = 1.0 * FIELD_IMG_HEIGHT_DEFAULT / FIELD_HEIGHT_DEFAULT;
-
-    int width = field.getWidth();
-    int height = field.getHeight();
-
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            cell = field.getCell(i, j);
-
-            switch(cell)
-            {
-            case CELL_DOT:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("dot"));
-                break;
-
-            case CELL_PART:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("part"));
-                break;
-
-            case CELL_KILL:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("kill"));
-                break;
-
-            case CELL_MARK:
-                painter.drawImage(i*cfx, j*cfy, pictures.get("mark"));
-                break;
-
-            default:
-                break;
-            }
-        }
-    }
-
-    return image;
-}
-
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     static int n_try = 0;
@@ -560,33 +698,53 @@ void MainWindow::timerEvent(QTimerEvent *event)
         qDebug() << "after " << n_try << " tries client cannot connect to the server";
     }
 
-    if (state_ == ST_DISCONNECTED)
+    if (connectionState_ == ST_DISCONNECTED)
     {
         connectUser();
     }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent* event)
+{
+    QPoint pos = event->pos();
+    pos.setY(pos.y() - ui->fieldsLabel->y());
+    pos.setX(pos.x() - ui->fieldsLabel->x());
+    controller_->onMousePressed(pos, event);
+
+    qDebug() << "Clicked on: " << pos;
+
+    event->accept();
 }
 
 void MainWindow::paintEvent(QPaintEvent* event) // calls when interface redraws
 {
     Q_UNUSED(event);
 
-//    const int deltaY = this->centralWidget()->y();
+    if (ui->fieldsLabel)
+    {
+        QImage image = pictures.get("background");
+        QImage myFieldDrawImage    = model_->getMyField().getFieldImage();
+        QImage enemyFieldDrawImage = model_->getEnemyField().getFieldImage();
 
-    model_->setMyField("3000000000000100100320000220000000000000000000000111100000000000000000000202002000022000000000000003"); // just for test
+        QPainter painter(&image);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-    QPainter painter(this);
-    painter.drawImage(200, 100, pictures.get("background"));    // TODO: сделать норм автомаитческий рассчёт размеров и параметров изображений
-    painter.drawImage(240, 139, getFieldImage(model_->getMyField()));
+        painter.drawImage(MYFIELD_IMG_REL_X   , MYFIELD_IMG_REL_Y   , myFieldDrawImage   );
+        painter.drawImage(ENEMYFIELD_IMG_REL_X, ENEMYFIELD_IMG_REL_Y, enemyFieldDrawImage);
 
-//    ui->fieldsLabel->setPixmap(QPixmap::fromImage(pictures.get("background")));
-//    ui->fieldsLabel->setPixmap(QPixmap::fromImage(getFieldImage(model_->getMyField())));
+        painter.end();
+
+        ui->fieldsLabel->setPixmap(QPixmap::fromImage(image));
+    }
+
+    event->accept();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug() << "exit from the programm";
 
-    if (state_ != ST_DISCONNECTED)
+    if (connectionState_ != ST_DISCONNECTED)
         exitFromServer();
 
     event->accept();
@@ -605,3 +763,133 @@ void MainWindow::stopClient(QString msg)
     QMessageBox::information(this, "information!", msg);
     this->close();
 }
+
+void MainWindow::on_switchButton_clicked()
+{
+    // эта кнопка чисто для дебага
+
+    if (model_->getState() == ST_GAME_NSTARTED ||
+        model_->getState() == ST_GAME_FINISHED   )
+        return;
+
+    if (model_->getState() == ST_MAKING_STEP)
+        model_->updateState(ST_PLACING_SHIPS);
+
+    else if (model_->getState() == ST_PLACING_SHIPS)
+        model_->updateState(ST_MAKING_STEP);
+}
+
+void MainWindow::startGame(QString enemy_login, int gameId)
+{
+    model_->startGame(enemy_login, gameId);
+//    controller_->startGame(enemy_login, gameId);
+
+    ui->myGameLoginLabel->setText(login_);
+    ui->enemyGameLoginLabel->setText(enemy_login);
+
+    ui->gameExitButton->setVisible(     true);
+    ui->applyFieldButton->setVisible(   true);
+    ui->generateFieldButton->setVisible(true);
+
+    // TODO: ...
+}
+
+void MainWindow::finishGame()
+{
+    model_->finishGame();
+//    controller_->finishGame(enemy_login);
+
+    ui->myGameLoginLabel->clear();
+    ui->enemyGameLoginLabel->clear();
+
+    ui->gameExitButton->setVisible(     false);
+    ui->applyFieldButton->setVisible(   false);
+    ui->generateFieldButton->setVisible(false);
+
+    // TODO: ...
+}
+
+void MainWindow::on_gameExitButton_clicked()
+{
+    if (model_->getState() == ST_GAME_NSTARTED ||
+        model_->getState() == ST_GAME_FINISHED   )
+        return;
+
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Завершить игру",
+                                                              "Хотите завершить игру досрочно?",
+                                                              QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        qDebug() << "Don't want to stop the game";
+        return;
+    }
+
+    qDebug() << "You want to stop the current game";
+
+    int gameId = model_->getGameId(); // TODO: get gameId;
+    socket_->write(((QString)"GAME:FINISH:" + QString::number(gameId)).toUtf8());
+}
+
+
+void MainWindow::on_startButton_clicked()
+{
+    model_->updateState(ST_PLACING_SHIPS);
+}
+
+
+void MainWindow::on_checkButton_clicked()
+{
+    qDebug() << "My field: " << model_->getMyFieldStr();
+
+    bool is_correct = model_->isMyFieldCorrect();
+
+    QString result_msg = "Result of check: ";
+    if (is_correct)
+        result_msg += "CORRECT";
+    else
+        result_msg += "INCORRECT";
+
+    QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
+    qDebug() << "Result of check: " << is_correct;
+}
+
+
+void MainWindow::on_generateFieldButton_clicked()
+{
+    if (model_->getState() != ST_PLACING_SHIPS)
+        return;
+
+    model_->generateMyField();
+//    ui->centralwidget->update();
+}
+
+void MainWindow::on_applyFieldButton_clicked()
+{
+    if (!model_->isMyFieldCorrect())
+    {
+//        model_->updateState(ST_WAITING_PLACING);
+        qDebug() << "Incorrect ship placing";
+        QMessageBox::warning(this, "Ship placing warning", "Расстановка кораблей некорректна! Поменяйте её");
+        return;
+    }
+
+    qDebug() << "Ship placement is correct! Sending to a server)";
+
+    QString message = "GAME:" + QString::number(model_->getGameId()) + ":" + login_ + ":FIELD:" + model_->getMyFieldStr();
+    socket_->write(message.toUtf8());
+
+    qDebug() << message;
+}
+
+
+void MainWindow::on_generateButton_clicked()
+{
+    model_->generateMyField();
+}
+
+
+void MainWindow::on_clearButton_clicked()
+{
+    model_->clearMyField();
+}
+
