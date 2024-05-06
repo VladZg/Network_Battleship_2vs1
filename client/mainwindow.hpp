@@ -76,6 +76,7 @@ public:
     void handleExitRequest();
     void handleConnectionRequest();
     void handleGameRequest();
+    void handleGenerateRequest();
     void updateChats();
     void stopClient(QString msg);
 

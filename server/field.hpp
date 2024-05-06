@@ -23,10 +23,11 @@ public:
     void setCell(int x, int y, Cell cell);
     QString getFieldStr();
     void setField(QString field);
-    void setField(QVector<Cell> field);
+//    void setField(QVector<Cell> field);
     void clear();
 
     bool isCorrect() const;
+    void generate();
 
 private:
     int width_;

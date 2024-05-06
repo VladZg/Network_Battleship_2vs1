@@ -243,7 +243,7 @@
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>400</y>
+      <y>420</y>
       <width>111</width>
       <height>24</height>
      </rect>
@@ -309,10 +309,10 @@
    <widget class="QLabel" name="isCorrectLabel">
     <property name="geometry">
      <rect>
-      <x>458</x>
-      <y>380</y>
+      <x>460</x>
+      <y>370</y>
       <width>111</width>
-      <height>20</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">

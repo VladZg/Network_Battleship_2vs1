@@ -41,6 +41,7 @@ public:
     void setMyField(QVector<CellDraw>  field);
     void setMyField(QVector<CellState> field);
     void setMyField(QString field);
+    void initMyDrawField();
     QString getMyFieldStr() const;
     Field getMyField() const;
     Field getEnemyField() const;
@@ -52,9 +53,11 @@ public:
     void startGame(QString enemy_login, int gameId);
     void finishGame();
 
-private:
+public:
     Field* myField_;
     Field* enemyField_;
+
+private:
     ModelState state_;
     QString login_;
     int gameId_;

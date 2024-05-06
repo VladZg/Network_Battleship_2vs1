@@ -13,7 +13,10 @@ Field::~Field()
 
 }
 
-Field::Field(QString field)
+Field::Field(QString field) :
+    width_(FIELD_WIDTH_DEFAULT),
+    height_(FIELD_HEIGHT_DEFAULT),
+    area_(FIELD_WIDTH_DEFAULT*FIELD_HEIGHT_DEFAULT)
 {
     setField(field);
 }
@@ -54,25 +57,28 @@ QString Field::getFieldStr()
 
 void Field::setField(QString field)
 {
-    if (field.size() != area_)
-        return;
-
     field_.clear();
 
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
         if (cell_it->digitValue() < (int)CELL_EMPTY || cell_it->digitValue() > (int)CELL_SHIP)
-            field.push_back(QString(*cell_it));
+        {
+            qDebug() << "setField(str): wrong string!";
+            field_.clear();
+            return;
+        }
+
+        field_.push_back((Cell)cell_it->digitValue());
     }
 }
 
-void Field::setField(QVector<Cell> field)
-{
-    if (field.size() != area_)
-        return;
+//void Field::setField(QVector<Cell> field)
+//{
+//    if (field.size() != area_)
+//        return;
 
-    field_ = field;
-}
+//    field_ = field;
+//}
 
 void Field::clear()
 {
@@ -84,4 +90,26 @@ bool Field::isCorrect() const  // check if ship placement is correct
     // TODO: check for correct or not
 
     return true;
+}
+
+void Field::generate()
+{
+    qDebug() << "\"generate\" clicked: Generating new field";
+
+    // TODO: add generated fields and atabase
+
+    QString field_example = "1111011100"\
+                            "0000000000"\
+                            "1110110110"\
+                            "0000000000"\
+                            "1101010101"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000"\
+                            "0000000000";   // example for testing
+
+    setField(field_example);
+
+    qDebug() << "Generated field (state): " + getFieldStr();
 }

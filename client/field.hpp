@@ -57,7 +57,7 @@ public:
     void setDrawField(QString field);
     void setDrawField(QVector<CellDraw> field);
     void setStateField(QVector<CellState> field);
-    void initDrawField();
+    void initMyDrawField();
 
     void clear();
     QImage getFieldImage();

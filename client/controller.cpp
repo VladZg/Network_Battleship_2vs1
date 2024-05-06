@@ -73,6 +73,19 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 
 //        emit stateChanged();
 
+//        if (model_->getState() == ST_PLACING_SHIPS)
+//        {
+//            if (model_->isMyFieldCorrect())
+//            {
+//                isCorrectLabel->setText("корректная расстановка");
+//            }
+//            else
+
+//            {
+//                isCorrectLabel->setText("некорректная расстановка");
+//            }
+//        }
+
         qDebug() << "field after click: " << model_->getMyFieldStr();
 
         return;

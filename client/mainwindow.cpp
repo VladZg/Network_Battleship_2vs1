@@ -246,6 +246,11 @@ void MainWindow::handleData()
         handleGameRequest();
     }
 
+    else if (data_.startsWith("GENERATE:"))
+    {
+        handleGenerateRequest();
+    }
+
     else if(data_.startsWith("EXIT:"))
     {
         handleExitRequest();
@@ -553,6 +558,48 @@ void MainWindow::handleGameRequest()
         qDebug() << "Wrong request";
 }
 
+static QString convertBinFieldToState(const QString& fieldStr)
+{
+    QString fieldStateStr = "";
+
+    for (QString::const_iterator it = fieldStr.begin(); it != fieldStr.end(); ++it)
+    {
+        if (it->digitValue() == 0)
+            fieldStateStr += QString::number((int)CL_ST_EMPTY);
+
+        else if (it->digitValue() == 1)
+            fieldStateStr += QString::number((int)CL_ST_UNDEFINED);
+
+        else
+            qDebug() << "Wrong fieldStr!";
+    }
+
+    return fieldStateStr;
+}
+
+void MainWindow::handleGenerateRequest()    // GENERATE:<fieldBin>
+{
+    if (model_->getState() != ST_PLACING_SHIPS)
+        return;
+
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.size() < 2)
+    {
+        qDebug() << "Wrong answer from server";
+        return;
+    }
+
+    QString fieldBinStr = message_request[1];
+    qDebug() << "Server generated a field: " << fieldBinStr;
+
+    QString fieldStr = convertBinFieldToState(fieldBinStr);
+    qDebug() << "Converted field: " << fieldStr;
+
+    model_->myField_->setStateField(fieldStr);
+    model_->myField_->initMyDrawField();
+}
+
 void MainWindow::on_loginLabel_cursorPositionChanged(int , int )
 {
 
@@ -827,7 +874,7 @@ void MainWindow::on_gameExitButton_clicked()
     qDebug() << "You want to stop the current game";
 
     int gameId = model_->getGameId(); // TODO: get gameId;
-    socket_->write(((QString)"GAME:FINISH:" + QString::number(gameId)).toUtf8());
+    socket_->write(((QString)"GAME:" + QString::number(gameId) + ":FINISH:").toUtf8());
 }
 
 
@@ -859,7 +906,10 @@ void MainWindow::on_generateFieldButton_clicked()
     if (model_->getState() != ST_PLACING_SHIPS)
         return;
 
-    model_->generateMyField();
+    QString message = "GAME:" + QString::number(model_->getGameId()) + ":" + login_ + ":GENERATE";
+    socket_->write(message.toUtf8());
+
+//    model_->generateMyField();
 //    ui->centralwidget->update();
 }
 

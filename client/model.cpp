@@ -74,6 +74,11 @@ void Model::setMyField(QString field)
     myField_->setStateField(field);
 }
 
+void Model::initMyDrawField()
+{
+    myField_->initMyDrawField();
+}
+
 void Model::clearMyField()
 {
     myField_->clear();

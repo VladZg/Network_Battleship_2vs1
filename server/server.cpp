@@ -135,7 +135,14 @@ static QString convertFieldToBin(const QString& fieldStr)
 
     for (QString::const_iterator it = fieldStr.begin(); it != fieldStr.end(); ++it)
     {
-        fieldStrBin += QString::number((Cell)((int)(it->digitValue())));
+        if (it->digitValue() == 0)
+            fieldStrBin += QString::number((int)CELL_EMPTY);
+
+        else if (it->digitValue() < 9)
+            fieldStrBin += QString::number((int)CELL_SHIP);
+
+        else
+            qDebug() << "Wrong fieldStr!";
     }
 
     return fieldStrBin;
@@ -276,27 +283,68 @@ void Server::handleData(const QByteArray& data, int clientId)
                 // Init game for these 2 users
                 startGame(login_started, login_accepted);
             }
+            else if (message_request[3] == "GENERATE")  // "GAME:<gameId>:<login>:GENERATE"
+            {
+                int gameId = message_request[1].toInt(); // get gameId
+                QString login = message_request[2];
+
+                GamesIterator gIt = games_.find(gameId);
+
+                if (gIt == games_.end())
+                {
+                    qDebug() << "No such game";
+                    return;
+                }
+
+                bool is_ClientStarted = (login == gIt->getClientStartedIt()->login_);
+
+                Field field = Field();
+                field.generate();
+                qDebug() << "Generated field: " << field.getFieldStr();
+                QString message = "GENERATE:" + field.getFieldStr();
+
+                if (is_ClientStarted)
+                {
+                    gIt->getClientStartedIt()->socket_->write(message.toUtf8());
+                    qDebug() << "Started client field generated and sended!";
+                }
+                else
+                {
+                    gIt->getClientAcceptedIt()->socket_->write(message.toUtf8());
+                    qDebug() << "Accepted client field generated and sended!";
+                }
+            }
             else
                 PRINT("Wrong request")
         }
 
-        else if (message_request.size() == 3)   // GAME:FINISH:<gameId>
+        else if (message_request.size() == 3)   // GAME:<gameId>:FINISH
         {
-            if (message_request[1] == "FINISH")
+            if (message_request[2] == "FINISH")
             {
-                int gameId = message_request[2].toInt(); // get gameId
+                int gameId = message_request[1].toInt(); // get gameId
                 finishGame(gameId);
             }
             else
                 PRINT("Wrong request")
         }
 
-        else if (message_request.size() == 5)   // "GAME:<gameId>:<login>:FIELD:<fieldState>:"
+        else if (message_request.size() == 5)
         {
             int gameId = message_request[1].toInt(); // get gameId
             QString login = message_request[2];
 
-            if (message_request[3] == "FIELD")
+            GamesIterator gIt = games_.find(gameId);
+
+            if (gIt == games_.end())
+            {
+                qDebug() << "No such game";
+                return;
+            }
+
+            bool is_ClientStarted = (login == gIt->getClientStartedIt()->login_);
+
+            if (message_request[3] == "FIELD")  // "GAME:<gameId>:<login>:FIELD:<fieldState>"
             {
                 QString fieldStr = message_request[4];
                 qDebug() << "Player " << login << " field from client: " << fieldStr;
@@ -304,26 +352,16 @@ void Server::handleData(const QByteArray& data, int clientId)
                 QString fieldBinStr = convertFieldToBin(fieldStr);
                 qDebug() << "Player " << login << " field on server: " << fieldBinStr;
 
-//                GamesIterator gIt = games_.find(gameId);
-
-//                if (login == gIt->getClientStartedIt()->login_)
-//                {
-//                    gIt->setClientStartedField(fieldBinStr);
-//                    qDebug() << "Started client field setted!";
-//                }
-//                else if (login == gIt->getClientAcceptedIt()->login_)
-//                {
-//                    gIt->setClientAcceptedField(fieldBinStr);
-//                    qDebug() << "Accepted client field setted!";
-//                }
-//                else
-//                {
-//                    qDebug() << "Wrong";
-//                }
-            }
-            else if (true)  // other handlers
-            {
-
+                if (is_ClientStarted)
+                {
+                    gIt->setClientStartedField(fieldBinStr);
+                    qDebug() << "Started client field setted!";
+                }
+                else
+                {
+                    gIt->setClientAcceptedField(fieldBinStr);
+                    qDebug() << "Accepted client field setted!";
+                }
             }
             else
             {

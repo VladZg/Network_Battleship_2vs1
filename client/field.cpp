@@ -162,7 +162,7 @@ void Field::setDrawField(QVector<CellDraw> field)
     fieldDraw_ = field;
 }
 
-void Field::initDrawField()
+void Field::initMyDrawField()
 {
     fieldDraw_.clear();
 
@@ -281,7 +281,7 @@ void Field::generate()
                             "0000000000";   // example for testing
 
     setStateField(field_example);
-    initDrawField();
+    initMyDrawField();
 
     qDebug() << "Generated field (state): " + getStateFieldStr();
     qDebug() << "Generated field (draw ): " + getDrawFieldStr();

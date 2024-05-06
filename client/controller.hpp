@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QPoint>
 #include <QTcpSocket>
+#include <QLabel>
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QFile>
