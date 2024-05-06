@@ -4,7 +4,8 @@ GameController::GameController(int gameId, ClientsIterator clientStarted, Client
     clientStarted_(clientStarted)   ,
     clientAccepted_(clientAccepted) ,
     gameId_(gameId)                 ,
-    state_(ST_PLACING)
+    state_(ST_PLACING)              ,
+    nPlaced_(0)
 {
 
 }
@@ -33,6 +34,16 @@ int GameController::getGameId()
 GameController::GameState GameController::getState()
 {
     return state_;
+}
+
+void GameController::incNPlaced()
+{
+    nPlaced_++;
+}
+
+int GameController::getNPlaced()
+{
+    return nPlaced_;
 }
 
 //void GameController::startGame()

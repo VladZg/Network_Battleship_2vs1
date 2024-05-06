@@ -164,7 +164,15 @@ void Server::handleData(const QByteArray& data, int clientId)
 
         PRINT("sender: " + sender_login + ", receiver:" + receiver_login)
 
-        if (receiver_login == "all")
+        if (request.startsWith("SHOT:"))
+        {
+//            cit->socket_->write(((QString)"DOT").toUtf8());
+//            cit->socket_->write(((QString)"DAMAGE").toUtf8());
+            cit->socket_->write(((QString)"KILL").toUtf8());
+
+        }
+
+        else if (receiver_login == "all")
         {
             sendMessageToAll("MESSAGE:all:" + sender_login + ":" + message);
         }
@@ -361,6 +369,17 @@ void Server::handleData(const QByteArray& data, int clientId)
                 {
                     gIt->setClientAcceptedField(fieldBinStr);
                     qDebug() << "Accepted client field setted!";
+                }
+
+                gIt->incNPlaced();
+
+                if (gIt->getNPlaced() == 2)
+                {
+                    QString message = "GAME:FIGHT";
+                    gIt->getClientAcceptedIt()->socket_->write(message.toUtf8());
+                    gIt->getClientStartedIt()->socket_->write(message.toUtf8());
+
+                    qDebug() << "GAME:FIGHT";
                 }
             }
             else

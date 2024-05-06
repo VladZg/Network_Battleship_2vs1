@@ -1,8 +1,9 @@
 #include "controller.hpp"
 #include <QMouseEvent>
 
-Controller::Controller(Model* model):
-    model_(model)
+Controller::Controller(Model* model, QTcpSocket* socket):
+    model_(model),
+    socket_(socket)
 {
 
 }
@@ -99,10 +100,26 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 
         if (event->button() == Qt::LeftButton)
         {
-//             TODO: request to the server and habndle it
-//            CellDraw status = CELL_DOT; // get from server
-//            model_->setEnemyCell(point.x(), point.y(), status);
+            if (model_->getEnemyCell(point.x(), point.y()) != CELL_EMPTY)
+            {
+                qDebug() << "Already shot";
+                return;
+            }
+
+//            QString shotMessage = "GAME:" + model_->getGameId() + ":" + // TODO: request to the server and handle it
+
+
+            socket_->write(((QString)"SHOT").toUtf8());
+            socket_->waitForReadyRead(1000);
+
+            // ....
+            //            CellDraw status = CELL_DOT; // get from server
+            CellDraw status = CELL_DOT; // for example
+
+            model_->setEnemyCell(point.x(), point.y(), status);
             qDebug() << "Press on left button -> make a shot";
+
+            model_->switchStep();
         }
         else if (event->button() == Qt::RightButton)
         {
@@ -114,17 +131,15 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 
             model_->setEnemyCell(point.x(), point.y(), CELL_MARK);
             qDebug() << "Press on right button -> place a mark";
+            return;
         }
         else
+        {
             qDebug() << "nothing to do on this button click";
+            return;
+        }
 
         qDebug() << "Going to" << point.x() << point.y();
-//        CellDraw cell = model->getEnemyCell( point.x(), point.y() );
-
-//        if(cell != CELL)
-//            return;
-
-//        model_->setEnemyCell( point.x(), point.y(), CL_DOT );
 
         // TODO: make step
 

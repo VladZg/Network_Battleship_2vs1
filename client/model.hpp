@@ -48,8 +48,13 @@ public:
     bool isMyFieldCorrect() const;
     void clearMyField();
 
+    void switchStep();
+
+    void setStartedFlag(bool val);
+
     void generateMyField();
 
+    void startFight();
     void startGame(QString enemy_login, int gameId);
     void finishGame();
 
@@ -58,6 +63,7 @@ public:
     Field* enemyField_;
 
 private:
+    bool amIStarted_;
     ModelState state_;
     QString login_;
     int gameId_;

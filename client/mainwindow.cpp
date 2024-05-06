@@ -43,7 +43,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
     pictures.load();        // loading all the images for the game
     model_ = new Model();   // game model with fields
-    controller_ = new Controller(model_);
+    controller_ = new Controller(model_, socket_);
 
     QGraphicsScene* graphicsScene = new QGraphicsScene;
     QGraphicsView* graphicsView = new QGraphicsView;
@@ -486,6 +486,8 @@ void MainWindow::handleConnectionRequest()
 
         qDebug() << answer;
         socket_->write(((QString)answer).toUtf8());
+
+        model_->setStartedFlag(false);
     }
 
     else if (message_request.size() == 3)   // CONNECTION:<login2>:ACCEPT/REJECT
@@ -502,6 +504,8 @@ void MainWindow::handleConnectionRequest()
             qDebug() << message;
 
             qDebug() << "Connection to " << enemy_login << " done!";
+
+            model_->setStartedFlag(true);
 
             return;
         }
@@ -535,6 +539,11 @@ void MainWindow::handleGameRequest()
         {
             QMessageBox::information(this, "Information!", "Игра остановлена одним из пользователей...");
             finishGame();
+        }
+
+        else if (message_request[1] == "FIGHT") // GAME:FIGHT
+        {
+            startFight();
         }
 
         else
@@ -850,10 +859,18 @@ void MainWindow::finishGame()
     ui->enemyGameLoginLabel->clear();
 
     ui->gameExitButton->setVisible(     false);
-    ui->applyFieldButton->setVisible(   false);
-    ui->generateFieldButton->setVisible(false);
+//    ui->applyFieldButton->setVisible(   false);
+//    ui->generateFieldButton->setVisible(false);
 
     // TODO: ...
+}
+
+void MainWindow::startFight()
+{
+    model_->startFight();
+
+    ui->applyFieldButton->setVisible(false);
+    ui->generateFieldButton->setVisible(false);
 }
 
 void MainWindow::on_gameExitButton_clicked()
@@ -874,7 +891,7 @@ void MainWindow::on_gameExitButton_clicked()
     qDebug() << "You want to stop the current game";
 
     int gameId = model_->getGameId(); // TODO: get gameId;
-    socket_->write(((QString)"GAME:" + QString::number(gameId) + ":FINISH:").toUtf8());
+    socket_->write(((QString)"GAME:" + QString::number(gameId) + ":FINISH").toUtf8());  // GAME:<gameId:FINISH
 }
 
 

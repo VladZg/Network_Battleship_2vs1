@@ -94,6 +94,15 @@ void Model::updateState(ModelState state)
     state_ = state;
 }
 
+void Model::switchStep()
+{
+    if (state_ == ST_MAKING_STEP)
+        state_ = ST_WAITING_STEP;
+
+    else if (state_ == ST_WAITING_STEP)
+        state_ = ST_MAKING_STEP;
+}
+
 void Model::setLogin(const QString& login)
 {
     login_ = login;
@@ -134,7 +143,29 @@ void Model::finishGame()
     updateState(ST_GAME_FINISHED);
 }
 
+void Model::startFight()
+{
+    if (amIStarted_)
+    {
+        updateState(ST_MAKING_STEP);
+        qDebug() << "1st step is mine";
+    }
+
+    else
+    {
+        updateState(ST_WAITING_STEP);
+        qDebug() << "1st step isn't mine";
+    }
+
+    // TODO:
+}
+
 void Model::generateMyField()
 {
     myField_->generate();
+}
+
+void Model::setStartedFlag(bool val)
+{
+    amIStarted_ = val;
 }

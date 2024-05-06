@@ -80,6 +80,7 @@ public:
     void updateChats();
     void stopClient(QString msg);
 
+    void startFight();
     void startGame(QString enemy_login, int gameId);
     void finishGame();
 

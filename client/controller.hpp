@@ -36,12 +36,12 @@ class Controller: public QWidget
 {
     Q_OBJECT
 public:
-    Controller(Model* model);
+    Controller(Model* model, QTcpSocket* socket);
     ~Controller();
     void onMousePressed(const QPoint& position, QMouseEvent* event);
 
 private:
-    QTcpSocket* client_;
+    QTcpSocket* socket_;
     Model* model_;
 //    QHostAddress serverAddress;
 //    quint16 serverPort;

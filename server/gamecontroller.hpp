@@ -24,12 +24,16 @@ public:
     int getGameId();
     GameState getState();
 
+    void incNPlaced();
+    int getNPlaced();
+
     void setClientStartedField(QString field);
     void setClientAcceptedField(QString field);
 
 private:
     int gameId_;
     GameState state_;
+    int nPlaced_;
 
     ClientsIterator clientStarted_;     // client who started  the game
     ClientsIterator clientAccepted_;    // client who accepted the game
