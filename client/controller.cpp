@@ -1,4 +1,4 @@
-#include "controller.h"
+#include "controller.hpp"
 #include <QMouseEvent>
 
 Controller::Controller(Model* model):

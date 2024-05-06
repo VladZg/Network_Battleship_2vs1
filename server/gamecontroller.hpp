@@ -1,8 +1,8 @@
 #ifndef GAMECONTROLLER_H
 #define GAMECONTROLLER_H
 
-#include "config.h"
-#include "client.h"
+#include "config.hpp"
+#include "client.hpp"
 
 class GameController
 {

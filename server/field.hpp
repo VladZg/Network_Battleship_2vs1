@@ -4,7 +4,7 @@
 #include <QVector>
 #include <QDebug>
 #include <QString>
-#include "./config.h"
+#include "./config.hpp"
 
 enum Cell
 {

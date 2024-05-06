@@ -1,6 +1,6 @@
-#include "server.h"
-#include "client.h"
-#include "field.h"
+#include "server.hpp"
+#include "client.hpp"
+#include "field.hpp"
 #include <QString>
 #include <QStringList>
 #include <QMessageBox>

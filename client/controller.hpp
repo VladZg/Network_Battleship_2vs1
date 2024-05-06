@@ -7,9 +7,9 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QFile>
-#include "config.h"
-#include "constants.h"
-#include "model.h"
+#include "config.hpp"
+#include "constants.hpp"
+#include "model.hpp"
 
 enum GameResult
 {

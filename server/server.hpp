@@ -6,8 +6,8 @@
 //#include <QtSerialPort/QSerialPort>
 #include <vector>
 #include <QTextBrowser>
-#include "client.h"
-#include "gamecontroller.h"
+#include "client.hpp"
+#include "gamecontroller.hpp"
 
 class Server: public QTcpServer
 {

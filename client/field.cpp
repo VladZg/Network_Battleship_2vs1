@@ -1,7 +1,7 @@
 #include <QPixmap>
 #include <QPainter>
-#include "field.h"
-#include "images.h"
+#include "field.hpp"
+#include "images.hpp"
 
 Field::Field() :
     width_(FIELD_WIDTH_DEFAULT),

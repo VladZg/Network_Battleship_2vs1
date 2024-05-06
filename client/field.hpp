@@ -4,8 +4,8 @@
 #include <QVector>
 #include <QDebug>
 #include <QString>
-#include "./config.h"
-#include "constants.h"
+#include "config.hpp"
+#include "constants.hpp"
 
 enum CellDraw       // состояния клетки для отрисовки
 {

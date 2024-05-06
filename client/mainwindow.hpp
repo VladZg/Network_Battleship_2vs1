@@ -14,11 +14,11 @@
 #include <QTextBrowser>
 #include <QStackedWidget>
 #include <QPainter>
-#include "config.h"
-#include "constants.h"
-#include "field.h"
-#include "model.h"
-#include "controller.h"
+#include "config.hpp"
+#include "constants.hpp"
+#include "field.hpp"
+#include "model.hpp"
+#include "controller.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -93,7 +93,7 @@ public slots:
 
 private slots:
     void on_connectToServerButton_clicked();
-    void on_loginLabel_cursorPositionChanged(int arg1, int arg2);        
+    void on_loginLabel_cursorPositionChanged(int arg1, int arg2);
     void on_updateButton_clicked();
     void on_sendMessageButton_clicked();
     void on_messageRecieversOptionList_itemSelectionChanged();
