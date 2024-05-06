@@ -869,10 +869,16 @@ void MainWindow::on_applyFieldButton_clicked()
     {
 //        model_->updateState(ST_WAITING_PLACING);
         qDebug() << "Incorrect ship placing";
+        QMessageBox::warning(this, "Ship placing warning", "Расстановка кораблей некорректна! Поменяйте её");
         return;
     }
 
-    qDebug() << "Ship placement is correct!";
+    qDebug() << "Ship placement is correct! Sending to a server)";
+
+    QString message = "GAME:" + QString::number(model_->getGameId()) + ":" + login_ + ":FIELD:" + model_->getMyFieldStr();
+    socket_->write(message.toUtf8());
+
+    qDebug() << message;
 }
 
 

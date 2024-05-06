@@ -129,6 +129,18 @@ void Server::sendMessageToAll(const QString& message)
     }
 }
 
+static QString convertFieldToBin(const QString& fieldStr)
+{
+    QString fieldStrBin = "";
+
+    for (QString::const_iterator it = fieldStr.begin(); it != fieldStr.end(); ++it)
+    {
+        fieldStrBin += QString::number((Cell)((int)(it->digitValue())));
+    }
+
+    return fieldStrBin;
+}
+
 void Server::handleData(const QByteArray& data, int clientId)
 {
     QString request = QString::fromUtf8(data).trimmed();
@@ -279,6 +291,46 @@ void Server::handleData(const QByteArray& data, int clientId)
                 PRINT("Wrong request")
         }
 
+        else if (message_request.size() == 5)   // "GAME:<gameId>:<login>:FIELD:<fieldState>:"
+        {
+            int gameId = message_request[1].toInt(); // get gameId
+            QString login = message_request[2];
+
+            if (message_request[3] == "FIELD")
+            {
+                QString fieldStr = message_request[4];
+                qDebug() << "Player " << login << " field from client: " << fieldStr;
+
+                QString fieldBinStr = convertFieldToBin(fieldStr);
+                qDebug() << "Player " << login << " field on server: " << fieldBinStr;
+
+//                GamesIterator gIt = games_.find(gameId);
+
+//                if (login == gIt->getClientStartedIt()->login_)
+//                {
+//                    gIt->setClientStartedField(fieldBinStr);
+//                    qDebug() << "Started client field setted!";
+//                }
+//                else if (login == gIt->getClientAcceptedIt()->login_)
+//                {
+//                    gIt->setClientAcceptedField(fieldBinStr);
+//                    qDebug() << "Accepted client field setted!";
+//                }
+//                else
+//                {
+//                    qDebug() << "Wrong";
+//                }
+            }
+            else if (true)  // other handlers
+            {
+
+            }
+            else
+            {
+                qDebug() << "Wrong GAME: request";
+            }
+        }
+
         else
             PRINT("Wrong request")
     }
@@ -286,6 +338,11 @@ void Server::handleData(const QByteArray& data, int clientId)
     else if (request.startsWith("EXIT:"))
     {
         handleExitRequest();
+    }
+
+    else
+    {
+
     }
 
     // TODO: add more handlers
@@ -319,6 +376,7 @@ void Server::handleUsersRequest()
 
 void Server::handleConnectionRequest()
 {
+//    QStringList message_request = request.split(":");
 
 }
 
@@ -338,6 +396,11 @@ void Server::handleExitRequest()
 
     // TODO: send to users message about this client has disconnected
     sendMessageToAll("EXIT:" + login);
+}
+
+void Server::handleFieldRequest()
+{
+
 }
 
 void Server::clientDisconnect(ClientsIterator& cit)

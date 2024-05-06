@@ -39,3 +39,13 @@ GameController::GameState GameController::getState()
 //{
 
 //}
+
+void GameController::setClientStartedField(QString field)
+{
+    clientStartedField_.setField(field);
+}
+
+void GameController::setClientAcceptedField(QString field)
+{
+    clientAcceptedField_.setField(field);
+}

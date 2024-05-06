@@ -61,8 +61,8 @@ void Field::setField(QString field)
 
     for(QString::iterator cell_it = field.begin(); cell_it != field.end(); ++cell_it)
     {
-        if ((*cell_it) < (QChar)CELL_EMPTY || (*cell_it) > (QChar)CELL_MARK)
-        field.push_back(QString(*cell_it));
+        if (cell_it->digitValue() < (int)CELL_EMPTY || cell_it->digitValue() > (int)CELL_SHIP)
+            field.push_back(QString(*cell_it));
     }
 }
 

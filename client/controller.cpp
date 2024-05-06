@@ -86,15 +86,18 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 
         if (event->button() == Qt::LeftButton)
         {
-            // TODO: request to the server and habndle it
-            CellDraw status = CELL_DOT; // get from server
-
-            model_->setEnemyCell(point.x(), point.y(), status);
-            qDebug() << "Press on left button -> place a ship";
+//             TODO: request to the server and habndle it
+//            CellDraw status = CELL_DOT; // get from server
+//            model_->setEnemyCell(point.x(), point.y(), status);
+            qDebug() << "Press on left button -> make a shot";
         }
         else if (event->button() == Qt::RightButton)
         {
-            // TODO: check if its free
+            if (model_->getEnemyCell(point.x(), point.y()) != CELL_EMPTY)
+            {
+                qDebug() << "This cell if already played, cannot mark it";
+                return;
+            }
 
             model_->setEnemyCell(point.x(), point.y(), CELL_MARK);
             qDebug() << "Press on right button -> place a mark";

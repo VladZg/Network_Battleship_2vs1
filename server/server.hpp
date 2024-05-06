@@ -40,6 +40,7 @@ public:
     void handleUsersRequest();
     void handleConnectionRequest();
     void handleExitRequest();
+    void handleFieldRequest();
     void sendMessageToAll(const QString& message);
     void removeDisconnectedClients();
 

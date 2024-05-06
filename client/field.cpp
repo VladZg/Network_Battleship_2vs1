@@ -285,7 +285,6 @@ void Field::generate()
 
     qDebug() << "Generated field (state): " + getStateFieldStr();
     qDebug() << "Generated field (draw ): " + getDrawFieldStr();
-
 }
 
 void printField(const QVector<CellState>& field)
