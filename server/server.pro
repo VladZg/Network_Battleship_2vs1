@@ -14,21 +14,27 @@ TARGET = server
 
 SOURCES += main.cpp \
     client.cpp \
+    dbwindow.cpp \
     field.cpp \
     gamecontroller.cpp \
     mainwindow.cpp \
-    server.cpp
+    server.cpp \
+    databasecontroller.cpp
 
 HEADERS += \
     client.hpp \
     config.hpp \
+    dbwindow.hpp \
     field.hpp \
     gamecontroller.hpp \
     mainwindow.hpp \
-    server.hpp
+    server.hpp \
+    databasecontroller.hpp
+
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    dbwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

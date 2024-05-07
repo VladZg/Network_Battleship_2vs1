@@ -6,8 +6,6 @@
 #include <QSqlQuery>
 #include <QSqlTableModel>
 
-//#include "ui_databasecontroller.h"
-
 class DBController:public QDialog
 {
     Q_OBJECT
@@ -16,8 +14,6 @@ public:
     ~DBController();
 
 private:
-
-    Ui::DBController ui;
     QSqlDatabase db_;
     QSqlQuery *query_;
     QSqlTableModel *model_;

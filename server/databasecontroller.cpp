@@ -1,9 +1,7 @@
-#include "databasecontroller.h"
+#include "databasecontroller.hpp"
 
-DBController::DBController(QWidget *parent) :  QDialog(parent), m_ui(new Ui::DBController)
+DBController::DBController(QWidget *parent) :  QDialog(parent)
 {
-    m_ui->setupUi(this);
-
     db_ = QSqlDatabase::addDatabase("QSQLITE");
     db_.setDatabaseName("./testDB.db");
     if(db_.open())
@@ -21,12 +19,9 @@ DBController::DBController(QWidget *parent) :  QDialog(parent), m_ui(new Ui::DBC
     model_ = new QSqlTableModel(this, db_);
     model_->setTable("FuckBook");
     model_->select();
-
-    ui_->tableView->setModel(model_);
-
 }
 
 DBController::~DBController()
 {
-    delete m_ui;
+//    delete m_ui;
 }

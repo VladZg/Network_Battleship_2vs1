@@ -1,12 +1,15 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "dbwindow.hpp"
+#include "ui_dbwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+namespace DBUi {
+    class DBWindow: public Ui_DBWindow {};
+} // namespace Ui
+
+DBWindow::DBWindow(QWidget *parent)
+    : QMainWindow{parent},
+      ui(new DBUi::DBWindow)
 {
     ui->setupUi(this);
-
     db_ = QSqlDatabase::addDatabase("QSQLITE");
     db_.setDatabaseName("./testDB.db");
 
@@ -29,35 +32,25 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableView->setModel(model_);
 }
 
-MainWindow::~MainWindow()
+DBWindow::~DBWindow()
 {
     delete ui;
 }
 
-void MainWindow::on_pushButton_clicked()
+void DBWindow::on_addButton_clicked()
 {
     model_->insertRow(model_->rowCount());
     model_->submitAll();
 }
 
 
-void MainWindow::on_pushButton_2_clicked()
+void DBWindow::on_removeButton_clicked()
 {
     model_->removeRow(row);
 }
 
 
-void MainWindow::on_tableView_clicked(const QModelIndex &index)
+void DBWindow::on_tableView_clicked(const QModelIndex &index)
 {
     row = index.row();
 }
-
-//void MainWindow::rotate_90_deg()
-//{
-
-//}
-
-//void MainWindow::rotate_180_deg()
-//{
-//    rotate_90_deg
-//}
