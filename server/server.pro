@@ -14,22 +14,22 @@ TARGET = server
 
 SOURCES += main.cpp \
     client.cpp \
+    dbcontroller.cpp \
     dbwindow.cpp \
     field.cpp \
     gamecontroller.cpp \
     mainwindow.cpp \
-    server.cpp \
-    databasecontroller.cpp
+    server.cpp
 
 HEADERS += \
     client.hpp \
     config.hpp \
+    dbcontroller.hpp \
     dbwindow.hpp \
     field.hpp \
     gamecontroller.hpp \
     mainwindow.hpp \
-    server.hpp \
-    databasecontroller.hpp
+    server.hpp
 
 
 FORMS += \

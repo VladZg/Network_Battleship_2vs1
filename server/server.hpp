@@ -8,6 +8,7 @@
 #include <QTextBrowser>
 #include "client.hpp"
 #include "gamecontroller.hpp"
+#include "dbcontroller.hpp"
 
 class Server: public QTcpServer
 {
@@ -47,6 +48,8 @@ public:
     void startGame(QString login1, QString login2);
     void finishGame(int gameId);
 
+    void testDB();
+
 private:
     quint16 port_; // QSerialPort
     QTcpSocket* socket_;
@@ -56,6 +59,7 @@ private:
     ServerState state_;
     int timerId_;
     Games games_;
+    DBController dbController_;
 
 protected:
     void timerEvent(QTimerEvent* event);

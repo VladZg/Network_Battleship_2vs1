@@ -36,6 +36,8 @@ Server::~Server()
 
 }
 
+#define DB_NAME "./data.db"
+
 void Server::startServer(QTextBrowser* textBrowser)
 {
     if (!this->listen(QHostAddress::Any, port_))
@@ -44,6 +46,8 @@ void Server::startServer(QTextBrowser* textBrowser)
         QMessageBox::warning(textBrowser, "ERROR!", "Cannot start server on port " + QString::number(port_) + "... Try again!");
         return;
     }
+
+    dbController_.connectDatabase(DB_NAME);
 
     browser = textBrowser;
 //    qInstallMessageHandler([this](QtMsgType type, const QMessageLogContext& context, const QString& msg) {qDebug(msg.toUtf8()); browser->append(msg); });
@@ -67,6 +71,8 @@ void Server::stopServer()
     updateState(ST_STOPPED);
 
     // TODO: finish the function
+
+    dbController_.disconnectDatabase();
 }
 
 void Server::updateState(ServerState state)
@@ -658,4 +664,28 @@ void Server::finishGame(int gameId)
 
     gameIt->~GameController();  // finish game
     games_.erase(gameIt);
+}
+
+void Server::testDB()
+{
+    dbController_.createTable("Fields", "field_text TEXT");
+
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+
+    dbController_.printTable("Fields");
+
+    QString randomFieldStr = dbController_.getRandomField();
+    qDebug() << "Random field: " + randomFieldStr;
 }
