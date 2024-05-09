@@ -2,6 +2,7 @@
 #include <QPainter>
 #include "field.hpp"
 #include "images.hpp"
+#include "qmath.h"
 
 Field::Field() :
     width_(FIELD_WIDTH_DEFAULT),

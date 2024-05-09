@@ -4,6 +4,8 @@
 #include <QString>
 #include <QStringList>
 #include <QMessageBox>
+#include <QFile>
+#include <QTextStream>
 
 //static int NUM_IND = 0;
 #define PRINT(msg) { qDebug() << msg; browser->append(msg); }
@@ -666,26 +668,34 @@ void Server::finishGame(int gameId)
     games_.erase(gameIt);
 }
 
+//void Server::testDB(const QString &fileName)
+//{
+
 void Server::testDB()
 {
     dbController_.createTable("Fields", "field_text TEXT");
 
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
-    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+    const QString &fileName = "/home/timasok/progs/Battleship/Network_Battleship_2vs1/server/placements.txt";
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file" << fileName;
+        return;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+//        qDebug() << line << "@";
+        dbController_.addNewPlacement(line);
+    }
+
+//    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+
+    file.close();
 
     dbController_.printTable("Fields");
 
-    QString randomFieldStr = dbController_.getRandomField();
-    qDebug() << "Random field: " + randomFieldStr;
+//    QString randomFieldStr = dbController_.getRandomField();
+//    qDebug() << "Random field: " + randomFieldStr;
 }

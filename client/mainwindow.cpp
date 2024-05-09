@@ -39,7 +39,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
 
     socket_ = new QTcpSocket(this);
 
-    userLogins_ = {}; // list of user logins
+    userLogins_ = QStringList(); // list of user logins
 
     pictures.load();        // loading all the images for the game
     model_ = new Model();   // game model with fields

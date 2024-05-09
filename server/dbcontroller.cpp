@@ -1,6 +1,7 @@
 #include "dbcontroller.hpp"
 #include <QSqlError>
 #include <QSqlRecord>
+#include <QDebug>
 
 DBController::DBController(QWidget* parent) : QDialog(parent)
 {
@@ -12,19 +13,16 @@ DBController::~DBController()
 
 void DBController::connectDatabase(const QString& dbName)
 {
-    query_ = new QSqlQuery(db_);
-
     db_ = QSqlDatabase::addDatabase("QSQLITE");
     db_.setDatabaseName(dbName);
 
     if(db_.open())
     {
-        qDebug("open");
+        qDebug() << "Error opening database: " << db_.lastError().text();
     }
-    else
-    {
-        qDebug("no open");
-    }
+
+    query_ = new QSqlQuery(db_);
+
 }
 
 void DBController::runQuery(QString queryStr)
@@ -44,7 +42,7 @@ void DBController::createTable(QString tableName, QString tableFormat)
         }
     }
 
-    qDebug() << "Таблица" + tableName + "успешно создана или уже существует.";
+    qDebug() << "Таблица " + tableName + " успешно создана или уже существует.";
 
     model_ = new QSqlTableModel(this, db_);
     model_->setTable(tableName);
@@ -121,8 +119,9 @@ void DBController::printTable(const QString& tableName)
 
     QSqlRecord rec = query_->record();
     int columns = rec.count();
+    int lines = 1;
 
-    while (query_->next())
+    for (;query_->next();lines++)
     {
         for (int i = 0; i < columns; ++i)
         {
@@ -130,4 +129,7 @@ void DBController::printTable(const QString& tableName)
         }
         qDebug() << "-----------------------";
     }
+
+    qDebug() << "  Имя таблицы: " << tableName;
+    qDebug() << "Длина таблицы: " << lines;
 }

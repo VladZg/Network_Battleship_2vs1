@@ -66,7 +66,7 @@ QString MainWindow::getServerStateStr()
 
 void MainWindow::on_testDatabaseButton_clicked()
 {
-//    server_.testDB();
-    qDebug() << "It does nothing yet. Its task for Timasok";
+    server_.testDB();
+//    qDebug() << "It does nothing yet. Its task for Timasok";
 }
 

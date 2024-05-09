@@ -1,6 +1,7 @@
 #ifndef DBCONTROLLER_H
 #define DBCONTROLLER_H
 
+#include <QDebug>
 #include <QDialog>
 #include <qsqldatabase.h>
 #include <QSqlQuery>
