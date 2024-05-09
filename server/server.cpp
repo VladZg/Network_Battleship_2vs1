@@ -675,7 +675,7 @@ void Server::testDB()
 {
     dbController_.createTable("Fields", "field_text TEXT");
 
-    const QString &fileName = "/home/timasok/progs/Battleship/Network_Battleship_2vs1/server/placements.txt";
+    const QString &fileName = "../server/placements.txt";
 
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -690,7 +690,7 @@ void Server::testDB()
         dbController_.addNewPlacement(line);
     }
 
-//    dbController_.addNewPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
+//    dbController_.addNewteStPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
 
     file.close();
 
@@ -698,4 +698,7 @@ void Server::testDB()
 
 //    QString randomFieldStr = dbController_.getRandomField();
 //    qDebug() << "Random field: " + randomFieldStr;
+
+    dbController_.clearDatabase();
+    dbController_.printTable("Fields");
 }

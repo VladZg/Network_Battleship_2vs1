@@ -16,13 +16,13 @@ void DBController::connectDatabase(const QString& dbName)
     db_ = QSqlDatabase::addDatabase("QSQLITE");
     db_.setDatabaseName(dbName);
 
-    if(db_.open())
+    if(!db_.open())
     {
         qDebug() << "Error opening database: " << db_.lastError().text();
+        return;
     }
 
     query_ = new QSqlQuery(db_);
-
 }
 
 void DBController::runQuery(QString queryStr)
