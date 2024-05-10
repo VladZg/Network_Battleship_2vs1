@@ -39,3 +39,9 @@ QString Client::getFieldStr()
 
     return field_->getFieldStr();
 }
+
+bool Client::isCellEmpty(int x, int y)
+{
+    qDebug() << "Client::isCellEmpty";
+    return field_->isCellEmpty(x, y);
+}

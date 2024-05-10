@@ -100,37 +100,36 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 
         if (event->button() == Qt::LeftButton)
         {
-            if (model_->getEnemyCell(point.x(), point.y()) != CELL_EMPTY)
+            CellDraw cell = model_->getEnemyCell(point.x(), point.y());
+            if (cell != CELL_EMPTY && cell != CELL_MARK)
             {
                 qDebug() << "Already shot";
                 return;
             }
 
-//            QString shotMessage = "GAME:" + model_->getGameId() + ":" + // TODO: request to the server and handle it
+            QString shotMessage = "GAME:" + QString::number(model_->getGameId()) + ":" + model_->getLogin() + ":" + "SHOT:" + QString::number(point.x()) + ":" + QString::number(point.y()); // GAME:<gameId>:<my_login>:SHOT:<x>:<y>
 
-
-            socket_->write(((QString)"SHOT").toUtf8());
-            socket_->waitForReadyRead(1000);
-
-            // ....
-            //            CellDraw status = CELL_DOT; // get from server
-            CellDraw status = CELL_DOT; // for example
-
-            model_->setEnemyCell(point.x(), point.y(), status);
-            qDebug() << "Press on left button -> make a shot";
-
-            model_->switchStep();
+            socket_->write(shotMessage.toUtf8());
+            qDebug() << shotMessage;
         }
         else if (event->button() == Qt::RightButton)
         {
-            if (model_->getEnemyCell(point.x(), point.y()) != CELL_EMPTY)
+            CellDraw cellSt = model_->getEnemyCell(point.x(), point.y());
+
+            if (cellSt == CELL_MARK)
+            {
+                model_->setEnemyCell(point.x(), point.y(), CELL_EMPTY);
+                qDebug() << "Press on right button -> place a mark";
+                return;
+            }
+
+            if (cellSt != CELL_EMPTY)
             {
                 qDebug() << "This cell if already played, cannot mark it";
                 return;
             }
 
             model_->setEnemyCell(point.x(), point.y(), CELL_MARK);
-            qDebug() << "Press on right button -> place a mark";
             return;
         }
         else
@@ -146,4 +145,38 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 //        emit stateChanged();
         return;
     }
+
+    if(model_->getState() == ST_WAITING_STEP)
+    {
+        QPoint point = getFieldCoord(pos, Field::ENEMY_FIELD);
+        if(point.x() == -1 || point.y() == -1)
+            return;
+
+        if (event->button() == Qt::RightButton)
+        {
+            CellDraw cellSt = model_->getEnemyCell(point.x(), point.y());
+
+            if (cellSt == CELL_MARK)
+            {
+                model_->setEnemyCell(point.x(), point.y(), CELL_EMPTY);
+                qDebug() << "Press on right button -> place a mark";
+                return;
+            }
+
+            if (cellSt != CELL_EMPTY)
+            {
+                qDebug() << "This cell if already played, cannot mark it";
+                return;
+            }
+
+            model_->setEnemyCell(point.x(), point.y(), CELL_MARK);
+            return;
+        }
+        else
+        {
+            qDebug() << "nothing to do on this button click";
+            return;
+        }
+    }
+
 }

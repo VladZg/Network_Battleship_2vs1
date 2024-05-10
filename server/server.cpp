@@ -172,15 +172,15 @@ void Server::handleData(const QByteArray& data, int clientId)
 
         PRINT("sender: " + sender_login + ", receiver:" + receiver_login)
 
-        if (request.startsWith("SHOT:"))
-        {
+//        if (request.startsWith("SHOT:"))
+//        {
 //            cit->socket_->write(((QString)"DOT").toUtf8());
 //            cit->socket_->write(((QString)"DAMAGE").toUtf8());
-            cit->socket_->write(((QString)"KILL").toUtf8());
+//            cit->socket_->write(((QString)"KILL").toUtf8());
 
-        }
+//        }
 
-        else if (receiver_login == "all")
+        if (receiver_login == "all")
         {
             sendMessageToAll("MESSAGE:all:" + sender_login + ":" + message);
         }
@@ -299,37 +299,6 @@ void Server::handleData(const QByteArray& data, int clientId)
                 // Init game for these 2 users
                 startGame(login_started, login_accepted);
             }
-            else if (message_request[3] == "GENERATE")  // "GAME:<gameId>:<login>:GENERATE"
-            {
-                int gameId = message_request[1].toInt(); // get gameId
-                QString login = message_request[2];
-
-                GamesIterator gIt = games_.find(gameId);
-
-                if (gIt == games_.end())
-                {
-                    qDebug() << "No such game";
-                    return;
-                }
-
-                bool is_ClientStarted = (login == gIt->getClientStartedIt()->login_);
-
-                Field field = Field();
-                field.generate();
-                qDebug() << "Generated field: " << field.getFieldStr();
-                QString message = "GENERATE:" + field.getFieldStr();
-
-                if (is_ClientStarted)
-                {
-                    gIt->getClientStartedIt()->socket_->write(message.toUtf8());
-                    qDebug() << "Started client field generated and sended!";
-                }
-                else
-                {
-                    gIt->getClientAcceptedIt()->socket_->write(message.toUtf8());
-                    qDebug() << "Accepted client field generated and sended!";
-                }
-            }
             else
                 PRINT("Wrong request")
         }
@@ -345,7 +314,7 @@ void Server::handleData(const QByteArray& data, int clientId)
                 PRINT("Wrong request")
         }
 
-        else if (message_request.size() == 5)
+        else if (message_request.size() >= 5)
         {
             int gameId = message_request[1].toInt(); // get gameId
             QString login = message_request[2];
@@ -371,11 +340,13 @@ void Server::handleData(const QByteArray& data, int clientId)
                 if (is_ClientStarted)
                 {
                     gIt->setClientStartedField(fieldBinStr);
+                    gIt->getClientStartedIt()->initField(fieldBinStr);
                     qDebug() << "Started client field setted!";
                 }
                 else
                 {
                     gIt->setClientAcceptedField(fieldBinStr);
+                    gIt->getClientAcceptedIt()->initField(fieldBinStr);
                     qDebug() << "Accepted client field setted!";
                 }
 
@@ -390,14 +361,70 @@ void Server::handleData(const QByteArray& data, int clientId)
                     qDebug() << "GAME:FIGHT";
                 }
             }
+            else if (message_request[3] == "SHOT")  // "GAME:<gameId>:<login>:SHOT:<x>:<y>"
+            {
+                int x = message_request[4].toInt();
+                int y = message_request[5].toInt();
+
+                ClientsIterator enemyIt = gIt->getClientStartedIt();
+
+                if (is_ClientStarted)
+                    enemyIt = gIt->getClientAcceptedIt();
+
+                QString enemyLogin = enemyIt->login_;
+                qDebug() << login + " -> " + enemyLogin +  ": SHOT (" + QString::number(x) + "," + QString::number(y) + ")";
+
+                QString message = "SHOT:";
+
+                if (!enemyIt->isCellEmpty(x, y))
+                {
+                    qDebug() << "Попадание!";
+                    message += "DAMAGED";
+                }
+                else
+                {
+                    qDebug() << "Промах!";
+                    message += "DOT";
+                }
+
+                message += ":" + QString::number(x) + ":" + QString::number(y);
+
+                gIt->getClientStartedIt()->socket_->write(((QString)message).toUtf8());
+                gIt->getClientAcceptedIt()->socket_->write(((QString)message).toUtf8());
+            }
             else
             {
                 qDebug() << "Wrong GAME: request";
             }
         }
+        else if (message_request.size() == 6)
+        {
+
+
+        }
 
         else
             PRINT("Wrong request")
+    }
+
+    else if (request.startsWith("GENERATE:"))  // "GENERATE:"
+    {
+        Field field = Field();
+        field.generate();
+        qDebug() << "Generated field: " << field.getFieldStr();
+        QString message = "GENERATE:" + field.getFieldStr();
+
+        qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
+        ClientsIterator cit = clients_.find(cId);
+
+        if (cit == clients_.end())
+        {
+            qDebug() << "No such client";
+            return;
+        }
+
+        cit->socket_->write(message.toUtf8());
+        qDebug() << "Client's" + cit->login_ + "field generated and sended!";
     }
 
     else if (request.startsWith("EXIT:"))
@@ -622,6 +649,7 @@ void Server::finishGame(int gameId)
     GamesIterator gameIt = games_.find(gameId);
 
     qDebug() << "We have now " + QString::number(games_.size()) + " active games";
+    qDebug() << "Boo";
     for (GamesIterator git = games_.begin(); git != games_.end(); ++git)
     {
         PRINT("game " + QString::number(git->getGameId()) + " " + git->getClientStartedIt()->login_ + " vs " + git->getClientAcceptedIt()->login_)
@@ -664,7 +692,7 @@ void Server::finishGame(int gameId)
     PRINT(message + " to " + login2)
     PRINT("Done")
 
-    gameIt->~GameController();  // finish game
+//    gameIt->~GameController();  // finish game
     games_.erase(gameIt);
 }
 

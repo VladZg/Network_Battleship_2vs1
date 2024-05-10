@@ -7,10 +7,10 @@ int main(int argc, char *argv[])
 {
     QApplication server(argc, argv);
 
-    MainWindow window(12346);
-    DBWindow dbWindow;
+    MainWindow window(12345);
+//    DBWindow dbWindow;
 
-    dbWindow.show();
+//    dbWindow.show();
     window.show();
 
     return server.exec();

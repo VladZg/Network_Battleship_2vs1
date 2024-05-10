@@ -30,6 +30,7 @@ public:
     void initField();
     void initField(QString field);
     QString getFieldStr();
+    bool isCellEmpty(int x, int y);
 
 public:
     QTcpSocket*  socket_;
