@@ -409,8 +409,8 @@ void Server::handleData(const QByteArray& data, int clientId)
 
     else if (request.startsWith("GENERATE:"))  // "GENERATE:"
     {
-        Field field = Field();
-        field.generate();
+        Field field = Field(dbController_.getRandomField());
+//        field.generate();
         qDebug() << "Generated field: " << field.getFieldStr();
         QString message = "GENERATE:" + field.getFieldStr();
 
@@ -727,6 +727,6 @@ void Server::testDB()
 //    QString randomFieldStr = dbController_.getRandomField();
 //    qDebug() << "Random field: " + randomFieldStr;
 
-    dbController_.clearDatabase();
-    dbController_.printTable("Fields");
+//    dbController_.clearDatabase();
+//    dbController_.printTable("Fields");
 }

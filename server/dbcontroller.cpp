@@ -53,20 +53,29 @@ void DBController::createTable(QString tableName, QString tableFormat)
 
 QString DBController::getRandomField()
 {
-    int randomIndex = rand() % 10;
+    int nFields = tableLen("Fields");
+    qDebug() << "nFields = " + QString::number(nFields);
+
+    if (nFields <= 0)
+    {
+        qDebug() << "Нет расстановок в БД таблице Fields";
+        return "";
+    }
+
+    int randomIndex = rand() % nFields;
 
     // Запрос на получение случайной записи из таблицы
     query_->exec(QString("SELECT field_text FROM Fields LIMIT 1 OFFSET %1").arg(randomIndex));
 
-    if (query_->next())
-    {
-        QString randomString = query_->value(0).toString();
-        qDebug() << "Random field: " << randomString;
-    }
-    else
+    if (!query_->next())
     {
         qDebug() << "No random string found.";
+        return "";
     }
+
+    QString randomString = query_->value(0).toString();
+    qDebug() << "Random field: " << randomString;
+    return randomString;
 }
 
 void DBController::addNewPlacement(QString field)
@@ -119,7 +128,7 @@ void DBController::printTable(const QString& tableName)
 
     QSqlRecord rec = query_->record();
     int columns = rec.count();
-    int lines = 1;
+    int lines = 0;
 
     for (;query_->next();lines++)
     {
@@ -132,4 +141,23 @@ void DBController::printTable(const QString& tableName)
 
     qDebug() << "  Имя таблицы: " << tableName;
     qDebug() << "Длина таблицы: " << lines;
+}
+
+int DBController::tableLen(const QString& tableName)
+{
+    *query_ = QSqlQuery("SELECT * FROM " + tableName, db_);
+
+    if (!query_->exec()) {
+        qDebug() << "Ошибка при выполнении запроса:" << query_->lastError().text();
+        return 0;
+    }
+
+    QSqlRecord rec = query_->record();
+    int columns = rec.count();
+    int lines = 0;
+
+    for (;query_->next();lines++)
+        for (int i = 0; i < columns; ++i);
+
+    return lines;
 }
