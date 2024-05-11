@@ -35,6 +35,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
     ui->fieldsLabel->setVisible(false);
+    ui->checkButton->setVisible(false);
     ui->clearButton->setVisible(false);
 
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
@@ -181,6 +182,7 @@ void MainWindow::authenticateUser()
             ui->clearButton->setVisible(true);
             ui->generateFieldButton->setVisible(true);
             ui->fieldsLabel->setVisible(true);
+            ui->checkButton->setVisible(true);
 
             model_->setLogin(login_);
 
@@ -909,6 +911,7 @@ void MainWindow::startGame(QString enemy_login, int gameId)
     ui->gameExitButton->setVisible(     true);
     ui->applyFieldButton->setVisible(   true);
     ui->generateFieldButton->setVisible(true);
+    ui->checkButton->setVisible(true );
 
     // TODO: ...
 }
@@ -924,6 +927,8 @@ void MainWindow::finishGame()
     ui->gameExitButton->setVisible(     false);
     ui->applyFieldButton->setVisible(   false);
     ui->generateFieldButton->setVisible(true );
+    ui->checkButton->setVisible(true );
+
 
     // TODO: ...
 }
@@ -934,6 +939,7 @@ void MainWindow::startFight()
 
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
+    ui->checkButton->setVisible(false);
 }
 
 void MainWindow::on_gameExitButton_clicked()
@@ -1009,6 +1015,26 @@ void MainWindow::on_applyFieldButton_clicked()
 
 void MainWindow::on_clearButton_clicked()
 {
+    ModelState state = model_->getState();
+    if (state == ST_MAKING_STEP ||
+        state == ST_WAITING_STEP    )
+        return;
+
     model_->clearMyField();
 }
 
+void MainWindow::on_checkButton_clicked()
+{
+    qDebug() << "My field: " << model_->getMyFieldStr();
+
+    bool is_correct = model_->isMyFieldCorrect();
+
+    QString result_msg = "Результат проверки вашей расстановки: ";
+    if (is_correct)
+        result_msg += "КОРРЕКТНАЯ";
+    else
+        result_msg += "НЕКОРРЕКТНАЯ";
+
+    QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
+    qDebug() << "Result of check: " << is_correct;
+}
