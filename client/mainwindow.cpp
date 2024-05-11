@@ -34,6 +34,8 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->gameExitButton->setVisible(false);
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
+    ui->fieldsLabel->setVisible(false);
+    ui->clearButton->setVisible(false);
 
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
@@ -176,6 +178,12 @@ void MainWindow::authenticateUser()
             ui->connectToServerButton->setText("Вы успешно авторизованы!");
             ui->connectToServerButton->setEnabled(false);   // turn the button off
 
+            ui->clearButton->setVisible(true);
+            ui->generateFieldButton->setVisible(true);
+            ui->fieldsLabel->setVisible(true);
+
+            model_->setLogin(login_);
+
             // TODO: get list of users from server
             usersListUpdate();
         }
@@ -229,6 +237,11 @@ void MainWindow::handleData()
     else if(data_.startsWith("USERS:"))
     {
         handleUsersRequest();
+    }
+
+    else if(data_.startsWith("SHOT:"))
+    {
+        handleShotRequest();
     }
 
     else if(data_.startsWith("PING:"))
@@ -336,6 +349,68 @@ void MainWindow::handleMessageRequest()
         sender->setBackground(QBrush(QColor("green")));
         sender->setForeground(QBrush(QColor("white")));
         sender->setData(Qt::UserRole, true); // new flag means about new message not read yet
+    }
+}
+
+void MainWindow::handleShotRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.size() == 4)
+    {
+        int x = message_request[2].toInt();
+        int y = message_request[3].toInt();
+
+        QString shotResult = message_request[1];
+        CellDraw status = CELL_EMPTY;
+
+        if (shotResult == "DOT")
+        {
+            status = CELL_DOT;
+        }
+        else if (shotResult == "DAMAGED")
+        {
+            status = CELL_DAMAGED;
+        }
+        else if (shotResult == "KILLED")
+        {
+            status = CELL_KILLED;
+        }
+        else
+        {
+
+        }
+
+        if (model_->getState() == ST_MAKING_STEP)
+        {
+            model_->setEnemyCell(x, y, status);
+            qDebug() << "Enemy field: (" + QString::number(x) + "," + QString::number(y) + ") = " + QString::number(status) + "(" + shotResult + ")";
+
+            if (status == CELL_DOT)
+            {
+                qDebug() << "Вы промазали, смена хода!";
+                model_->switchStep();
+            }
+        }
+        else if (model_->getState() == ST_WAITING_STEP)
+        {
+            model_->setMyDrawCell(x, y, status);
+            qDebug() << "My field: (" + QString::number(x) + "," + QString::number(y) + ") = " + QString::number(status) + "(" + shotResult + ")";
+
+            if (status == CELL_DOT)
+            {
+                qDebug() << "Противник промазал, смена хода!";
+                model_->switchStep();
+//                return;
+            }
+        }
+
+        update();
+    }
+    else
+    {
+        qDebug() << "Wrong request";
+        return;
     }
 }
 
@@ -588,7 +663,10 @@ static QString convertBinFieldToState(const QString& fieldStr)
 
 void MainWindow::handleGenerateRequest()    // GENERATE:<fieldBin>
 {
-    if (model_->getState() != ST_PLACING_SHIPS)
+    ModelState state = model_->getState() ;
+
+    if (state == ST_MAKING_STEP ||
+        state == ST_WAITING_STEP  )
         return;
 
     QStringList message_request = QString::fromUtf8(data_).split(":");
@@ -820,21 +898,6 @@ void MainWindow::stopClient(QString msg)
     this->close();
 }
 
-void MainWindow::on_switchButton_clicked()
-{
-    // эта кнопка чисто для дебага
-
-    if (model_->getState() == ST_GAME_NSTARTED ||
-        model_->getState() == ST_GAME_FINISHED   )
-        return;
-
-    if (model_->getState() == ST_MAKING_STEP)
-        model_->updateState(ST_PLACING_SHIPS);
-
-    else if (model_->getState() == ST_PLACING_SHIPS)
-        model_->updateState(ST_MAKING_STEP);
-}
-
 void MainWindow::startGame(QString enemy_login, int gameId)
 {
     model_->startGame(enemy_login, gameId);
@@ -859,8 +922,8 @@ void MainWindow::finishGame()
     ui->enemyGameLoginLabel->clear();
 
     ui->gameExitButton->setVisible(     false);
-//    ui->applyFieldButton->setVisible(   false);
-//    ui->generateFieldButton->setVisible(false);
+    ui->applyFieldButton->setVisible(   false);
+    ui->generateFieldButton->setVisible(true );
 
     // TODO: ...
 }
@@ -894,36 +957,31 @@ void MainWindow::on_gameExitButton_clicked()
     socket_->write(((QString)"GAME:" + QString::number(gameId) + ":FINISH").toUtf8());  // GAME:<gameId:FINISH
 }
 
+//void MainWindow::on_checkButton_clicked()
+//{
+//    qDebug() << "My field: " << model_->getMyFieldStr();
 
-void MainWindow::on_startButton_clicked()
-{
-    model_->updateState(ST_PLACING_SHIPS);
-}
+//    bool is_correct = model_->isMyFieldCorrect();
 
+//    QString result_msg = "Result of check: ";
+//    if (is_correct)
+//        result_msg += "CORRECT";
+//    else
+//        result_msg += "INCORRECT";
 
-void MainWindow::on_checkButton_clicked()
-{
-    qDebug() << "My field: " << model_->getMyFieldStr();
-
-    bool is_correct = model_->isMyFieldCorrect();
-
-    QString result_msg = "Result of check: ";
-    if (is_correct)
-        result_msg += "CORRECT";
-    else
-        result_msg += "INCORRECT";
-
-    QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
-    qDebug() << "Result of check: " << is_correct;
-}
+//    QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
+//    qDebug() << "Result of check: " << is_correct;
+//}
 
 
 void MainWindow::on_generateFieldButton_clicked()
 {
-    if (model_->getState() != ST_PLACING_SHIPS)
+    ModelState state = model_->getState();
+    if (state == ST_MAKING_STEP ||
+        state == ST_WAITING_STEP    )
         return;
 
-    QString message = "GAME:" + QString::number(model_->getGameId()) + ":" + login_ + ":GENERATE";
+    QString message = "GENERATE:";
     socket_->write(message.toUtf8());
 
 //    model_->generateMyField();
@@ -946,12 +1004,6 @@ void MainWindow::on_applyFieldButton_clicked()
     socket_->write(message.toUtf8());
 
     qDebug() << message;
-}
-
-
-void MainWindow::on_generateButton_clicked()
-{
-    model_->generateMyField();
 }
 
 

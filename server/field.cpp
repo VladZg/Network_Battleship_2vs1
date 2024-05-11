@@ -23,9 +23,13 @@ Field::Field(QString field) :
 
 Cell Field::getCell(int x, int y)
 {
+    qDebug() << "Field::getCell";
+
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
     {
+        qDebug() << "HERE: " + QString::number(width_*y+x);
         return field_[width_*y+x];
+//        return CELL_SHIP;
     }
 
     qDebug() << "Wrong cell indexes";
@@ -83,6 +87,12 @@ void Field::setField(QString field)
 void Field::clear()
 {
     field_.fill(CELL_EMPTY, area_);
+}
+
+bool Field::isCellEmpty(int x, int y)
+{
+    qDebug() << "Field::isCellEmpty";
+    return getCell(x, y) == CELL_EMPTY;
 }
 
 bool Field::isCorrect() const  // check if ship placement is correct

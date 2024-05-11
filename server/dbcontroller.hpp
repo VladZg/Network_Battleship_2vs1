@@ -20,6 +20,7 @@ public:
     void createTable(QString tableName, QString tableFormat);
 
     void printTable(const QString& tableName);
+    int tableLen(const QString& tableName);
     void clearDatabase();
 
     QString getRandomField();

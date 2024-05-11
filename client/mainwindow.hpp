@@ -71,6 +71,7 @@ public:
     void sendMessage();
     void connectToGame(const QString& enemy_login);
     void handleMessageRequest();
+    void handleShotRequest();
     void handleUsersRequest();
     void handlePingRequest();
     void handleExitRequest();
@@ -101,20 +102,9 @@ private slots:
     void on_messageRecieversOptionList_itemSelectionChanged();
     void createTextBrowser(QListWidgetItem* user);
 
-    void on_switchButton_clicked();
-
     void on_gameExitButton_clicked();
-
-    void on_startButton_clicked();
-
-    void on_checkButton_clicked();
-
     void on_generateFieldButton_clicked();
-
     void on_applyFieldButton_clicked();
-
-    void on_generateButton_clicked();
-
     void on_clearButton_clicked();
 
 private:

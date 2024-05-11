@@ -25,6 +25,7 @@ public:
     void setField(QString field);
 //    void setField(QVector<Cell> field);
     void clear();
+    bool isCellEmpty(int x, int y);
 
     bool isCorrect() const;
     void generate();
