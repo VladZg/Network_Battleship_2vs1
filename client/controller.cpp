@@ -48,7 +48,11 @@ QPoint getFieldCoord(const QPoint& pos, Field::Owner owner)
 
 void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 {
-    if(model_->getState() == ST_PLACING_SHIPS)
+    ModelState state = model_->getState();
+
+    if(state == ST_PLACING_SHIPS ||
+       state == ST_GAME_NSTARTED ||
+       state == ST_WAITING_PLACING )
     {
         QPoint point = getFieldCoord(pos, Field::MY_FIELD);
 

@@ -226,42 +226,6 @@
      <string>...</string>
     </property>
    </widget>
-   <widget class="QWidget" name="formLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>380</y>
-      <width>201</width>
-      <height>86</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="debugButtonsLayout">
-     <item row="2" column="1">
-      <widget class="QPushButton" name="applyFieldButton">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(143, 240, 164);</string>
-       </property>
-       <property name="text">
-        <string>Подтвердить</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="generateFieldButton">
-       <property name="text">
-        <string>Сгенерировать</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="clearButton">
-       <property name="text">
-        <string>очистить</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QLabel" name="isCorrectLabel">
     <property name="geometry">
      <rect>
@@ -274,6 +238,49 @@
     <property name="text">
      <string/>
     </property>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>380</y>
+      <width>194</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout_2">
+     <item row="4" column="0" colspan="2">
+      <widget class="QPushButton" name="applyFieldButton">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(143, 240, 164);</string>
+       </property>
+       <property name="text">
+        <string>Подтвердить</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="clearButton">
+       <property name="text">
+        <string>очистить</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QPushButton" name="generateFieldButton">
+       <property name="text">
+        <string>Сгенерировать</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="checkButton">
+       <property name="text">
+        <string>проверить</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
