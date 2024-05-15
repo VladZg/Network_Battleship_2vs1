@@ -18,10 +18,14 @@ public:
         ST_DISCONNECTED = 0,
         ST_CONNECTED       ,
         ST_AUTHORIZED      ,
-        ST_READY           ,
-        ST_WAITING_STEP    ,
-        ST_MAKING_STEP     ,
         // more
+    };
+
+    enum Readiness
+    {
+        ST_NREADY       = 0,
+        ST_READY           ,
+        ST_PLAYING         ,
     };
 
     void setLogin(const QString& login);
@@ -35,6 +39,7 @@ public:
 public:
     QTcpSocket*  socket_;
     ClientStatus status_;
+    Readiness readiness_;
     ClientIterator enemy_;
     QString login_;
 

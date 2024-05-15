@@ -108,10 +108,25 @@ private slots:
     void on_clearButton_clicked();
     void on_checkButton_clicked();
 
+    void on_isReadyCheckBox_stateChanged(int arg1);
+
 private:
     QListWidget* receiversListWidget;    // user from the list who we want to send the message
     QStackedWidget* receiverBrowserStackedWidget;  // browser (chat) with this user
     QMap<QListWidgetItem*, QTextBrowser*> browserMap;   // map of the user logins and chats with them
+
+public:
+    enum Readiness
+    {
+        ST_NREADY       = 0,
+        ST_READY           ,
+        ST_PLAYING         ,
+    };
+
+    void updateReadiness(MainWindow::Readiness readiness);
+
+private:
+    Readiness readiness_;
 
 private:
     Ui::MainWindow* ui;

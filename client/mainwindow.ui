@@ -321,6 +321,19 @@
      <string/>
     </property>
    </widget>
+   <widget class="QCheckBox" name="isReadyCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>450</y>
+      <width>131</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>не авторизован</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

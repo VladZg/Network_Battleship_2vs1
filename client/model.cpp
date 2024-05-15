@@ -91,16 +91,30 @@ ModelState Model::getState() const
 
 void Model::updateState(ModelState state)
 {
+    if (state == ST_GAME_NSTARTED)
+        qDebug() << "state updated to ST_GAME_NSTARTED";
+    else if (state == ST_PLACING_SHIPS)
+        qDebug() << "state updated to ST_PLACING_SHIPS";
+    else if (state == ST_WAITING_PLACING)
+        qDebug() << "state updated to ST_WAITING_PLACING";
+    else if (state == ST_MAKING_STEP)
+        qDebug() << "state updated to ST_MAKING_STEP";
+    else if (state == ST_WAITING_STEP)
+        qDebug() << "state updated to ST_WAITING_STEP";
+    else if (state == ST_GAME_FINISHED)
+        qDebug() << "state updated to ST_GAME_FINISHED";
+    else {}
+
     state_ = state;
 }
 
 void Model::switchStep()
 {
     if (state_ == ST_MAKING_STEP)
-        state_ = ST_WAITING_STEP;
+        updateState(ST_WAITING_STEP);
 
     else if (state_ == ST_WAITING_STEP)
-        state_ = ST_MAKING_STEP;
+        updateState(ST_MAKING_STEP);
 }
 
 void Model::setLogin(const QString& login)
@@ -146,6 +160,8 @@ void Model::finishGame()
 
 void Model::startFight()
 {
+    qDebug() << "HERE!!!!!!!";
+
     if (amIStarted_)
     {
         updateState(ST_MAKING_STEP);

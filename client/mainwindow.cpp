@@ -39,6 +39,12 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->clearButton->setVisible(false);
     ui->applyIsOkLabel->setVisible(false);
     ui->applyIsNotOkLabel->setVisible(false);
+//    ui->isReadyCheckBox->setVisible(false);
+
+    ui->isReadyCheckBox->setStyleSheet("QCheckBox { color: black; }"
+                                   "QCheckBox::indicator { background-color: red; }");
+    ui->isReadyCheckBox->setText("не авторизован");
+    ui->isReadyCheckBox->setEnabled(false);
 
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
@@ -192,6 +198,10 @@ void MainWindow::authenticateUser()
 
             // TODO: get list of users from server
             usersListUpdate();
+
+            updateReadiness(ST_NREADY);
+            ui->isReadyCheckBox->setVisible(true);
+            ui->isReadyCheckBox->setEnabled(true);
         }
 
          else // didn't authorized
@@ -434,7 +444,7 @@ void MainWindow::handleUsersRequest()
 {
 //    qDebug() << "HANDLE";
 
-    QStringList users_list = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of users (login:status) from the request
+    QStringList users_list = QString::fromUtf8(data_.trimmed().mid(6)).split(" ", Qt::SkipEmptyParts); // getting list of users (login:status:readiness) from the request
     QString cur_login = "";
 
     QListWidgetItem* cur_user = ui->messageRecieversOptionList->currentItem();
@@ -453,9 +463,26 @@ void MainWindow::handleUsersRequest()
         QStringList user_info = user.split(":");
         QString login = user_info[0];
         int status = user_info[1].toInt();
+        int readiness = user_info[2].toInt();
 
         QAction* userToChoose = ui->usersList->addAction(login);
-        userToChoose->setIcon(QIcon(":images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+
+        if (readiness == 0)    // ST_NREADY
+        {
+            userToChoose->setIcon(QIcon(":/images/st_nready.jpg"));
+        }
+        else if (readiness == 1)   // ST_READY
+        {
+            userToChoose->setIcon(QIcon(":/images/st_ready.png"));
+        }
+        else if (readiness == 2)   // ST_PLAYING
+        {
+            userToChoose->setIcon(QIcon(":/images/st_playing.jpeg"));
+        }
+        else
+        {
+            qDebug() << "unknown status";
+        }
 
 //        for (QAction *action : ui->readyPlayersList->actions()) // delete from the ui->readyPlayersList
 //        {
@@ -463,12 +490,12 @@ void MainWindow::handleUsersRequest()
 //                ui->readyPlayersList->removeAction(action);
 //        }
 
-        if (status == 1 && login != login_) // == ST_READY
+        if (status == 1 && readiness == 1 && login != login_) // == ST_AUTHORIZED && == ST_READY
         {
             QAction* userToPlayWith = userToChoose; // ui->readyPlayersList->addAction(userToChoose->text());
-            userToPlayWith->setIcon(QIcon(":images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+//            userToPlayWith->setIcon(QIcon(":/images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
 
-//            userToChoose->setEnabled(true);
+            userToChoose->setEnabled(true);
             QObject::connect(userToPlayWith, &QAction::triggered, [this, userToChoose]()
             {
                 QString enemy_login = userToChoose->text();
@@ -480,9 +507,15 @@ void MainWindow::handleUsersRequest()
             });
         }
 
+        else if (login == login_)
+        {
+            userToChoose->setEnabled(false);
+//              userToChoose->setCheckable(false);
+        }
+
         else
         {
-//            userToChoose->setEnabled(false);
+
         }
 
         ui->messageRecieversOptionList->addItem(login);
@@ -922,7 +955,7 @@ void MainWindow::startGame(QString enemy_login, int gameId)
     ui->gameExitButton->setVisible(     true);
     ui->applyFieldButton->setVisible(   true);
     ui->generateFieldButton->setVisible(true);
-    ui->checkButton->setVisible(true );
+    ui->isReadyCheckBox->setEnabled(false);
 
     ui->checkButton->setEnabled(true);
     ui->generateFieldButton->setEnabled(true);
@@ -930,6 +963,9 @@ void MainWindow::startGame(QString enemy_login, int gameId)
     ui->clearButton->setEnabled(true);
 
     ui->applyFieldButton->setStyleSheet("");
+
+    updateReadiness(ST_PLAYING);
+
     // TODO: ...
 }
 
@@ -948,6 +984,7 @@ void MainWindow::finishGame()
     ui->clearButton->setVisible(true);
     ui->applyIsNotOkLabel->setVisible(false);
     ui->applyIsOkLabel->setVisible(false);
+    ui->isReadyCheckBox->setEnabled(true);
 
     ui->generateFieldButton->setEnabled(true);
     ui->checkButton->setEnabled(true);
@@ -955,12 +992,15 @@ void MainWindow::finishGame()
 
     ui->whooseStepLabel->setVisible(false);
 
+    updateReadiness(ST_NREADY);
+
     // TODO: ...
 }
 
 void MainWindow::startFight()
 {
     model_->startFight();
+    qDebug() << "Fight started!";
 
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
@@ -1091,4 +1131,51 @@ void MainWindow::on_checkButton_clicked()
 
     QMessageBox::information(this, "IS CORRECT? INFO", result_msg);
     qDebug() << "Result of check: " << is_correct;
+}
+
+void MainWindow::on_isReadyCheckBox_stateChanged(int state)
+{
+    if (state == Qt::Checked)
+    {
+        updateReadiness(ST_READY);
+    }
+    else if (state == Qt::Unchecked)
+    {
+        updateReadiness(ST_NREADY);
+    }
+}
+
+void MainWindow::updateReadiness(MainWindow::Readiness readiness)
+{
+    if (readiness == ST_NREADY)
+    {
+        qDebug() << "user is not ready!";
+        ui->isReadyCheckBox->setStyleSheet("QCheckBox { color: black; }"
+                                       "QCheckBox::indicator { background-color: yellow; }");
+        ui->isReadyCheckBox->setText("не готов");
+    }
+    else if (readiness == ST_READY)
+    {
+        qDebug() << "user is ready!";
+        ui->isReadyCheckBox->setStyleSheet("QCheckBox { color: black; }"
+                                       "QCheckBox::indicator { background-color: green; }");
+        ui->isReadyCheckBox->setText("готов");
+    }
+    else if (readiness == ST_PLAYING)
+    {
+        qDebug() << "user is in a game!";
+        ui->isReadyCheckBox->setStyleSheet("QCheckBox { color: black; }"
+                                       "QCheckBox::indicator { background-color: blue; }");
+        ui->isReadyCheckBox->setText("в игре");
+    }
+    else
+    {
+
+    }
+
+    readiness_ = readiness;
+
+    QString message = "READINESS:" + QString::number(readiness_);
+    socket_->write(message.toUtf8());
+    qDebug() << message;
 }

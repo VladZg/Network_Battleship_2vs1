@@ -95,6 +95,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
     client.socket_ = new QTcpSocket(this);
     client.socket_->setSocketDescriptor(socketDescriptor);
     client.status_ = Client::ST_CONNECTED;
+    client.readiness_ = Client::ST_NREADY;
 //    client.playingWith = clients_.end();
     int clientId = client.socket_->socketDescriptor();
 
@@ -238,6 +239,20 @@ void Server::handleData(const QByteArray& data, int clientId)
     else if (request.startsWith("USERS:"))
     {
         handleUsersRequest();
+    }
+
+    else if (request.startsWith("READINESS:"))
+    {
+//        handleReadinessRequest();
+        qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
+        ClientsIterator cit = clients_.find(cId);
+
+        QStringList message_request = request.split(":");
+        Client::Readiness readiness = (Client::Readiness) message_request[1].toInt();
+
+        cit->readiness_ = readiness;
+
+        handleUsersRequest();   // TODO: delete it Later and write a function that dont delete all chats
     }
 
     else if (request.startsWith("CONNECTION:"))
@@ -452,11 +467,11 @@ void Server::handleUsersRequest()
 
     foreach (const Client& client, clients_)
     {
-        QString user_str = client.login_ + ":" + QString::number(client.status_); // <login>:<status>
+        QString user_str = client.login_ + ":" + QString::number(client.status_) + ":" + QString::number(client.readiness_); // <login>:<status>:<readiness>
         users_list.append(user_str);
     }
 
-    const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1> <login2>:<status2> ...
+    const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1>:<readiness1> <login2>:<status2>:<readiness2> ...
 
     foreach (const Client& client, clients_)
     {
@@ -465,6 +480,11 @@ void Server::handleUsersRequest()
     }
 
     PRINT(answer)
+}
+
+void Server::handleReadinessRequest()
+{
+
 }
 
 void Server::handleConnectionRequest()
