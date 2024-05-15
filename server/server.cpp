@@ -38,7 +38,7 @@ Server::~Server()
 
 }
 
-#define DB_NAME "./data.db"
+#define DB_PATH "data.db"
 
 void Server::startServer(QTextBrowser* textBrowser)
 {
@@ -49,7 +49,8 @@ void Server::startServer(QTextBrowser* textBrowser)
         return;
     }
 
-    dbController_.connectDatabase(DB_NAME);
+    dbController_.connectDatabase(DB_PATH);
+    dbController_.printTable("Fields");
 
     browser = textBrowser;
 //    qInstallMessageHandler([this](QtMsgType type, const QMessageLogContext& context, const QString& msg) {qDebug(msg.toUtf8()); browser->append(msg); });
@@ -703,7 +704,7 @@ void Server::testDB()
 {
     dbController_.createTable("Fields", "field_text TEXT");
 
-    const QString &fileName = "../server/placements.txt";
+    const QString &fileName = ":/placements.txt";
 
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -714,7 +715,7 @@ void Server::testDB()
     QTextStream in(&file);
     while (!in.atEnd()) {
         QString line = in.readLine();
-//        qDebug() << line << "@";
+        qDebug() << line << "@";
         dbController_.addNewPlacement(line);
     }
 
