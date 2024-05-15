@@ -37,6 +37,8 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->fieldsLabel->setVisible(false);
     ui->checkButton->setVisible(false);
     ui->clearButton->setVisible(false);
+    ui->applyIsOkLabel->setVisible(false);
+    ui->applyIsNotOkLabel->setVisible(false);
 
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
@@ -172,7 +174,7 @@ void MainWindow::authenticateUser()
 //            QString login = login_entered.trimmed();
 //            ui->usersList->addAction(login);
 
-            ui->loginLabel->setStyleSheet("background-color: green;\n color: white;");
+            ui->loginLabel->setStyleSheet("background-color: rgb(143, 240, 164);");
 
             qDebug() << "loggining confirmed!";
 
@@ -183,6 +185,8 @@ void MainWindow::authenticateUser()
             ui->generateFieldButton->setVisible(true);
             ui->fieldsLabel->setVisible(true);
             ui->checkButton->setVisible(true);
+            ui->applyIsNotOkLabel->setVisible(true);
+            ui->applyIsOkLabel->setVisible(false);
 
             model_->setLogin(login_);
 
@@ -392,6 +396,7 @@ void MainWindow::handleShotRequest()
             {
                 qDebug() << "Вы промазали, смена хода!";
                 model_->switchStep();
+                ui->whooseStepLabel->setText("Ход соперника");
             }
         }
         else if (model_->getState() == ST_WAITING_STEP)
@@ -403,6 +408,7 @@ void MainWindow::handleShotRequest()
             {
                 qDebug() << "Противник промазал, смена хода!";
                 model_->switchStep();
+                ui->whooseStepLabel->setText("Ваш ход");
 //                return;
             }
         }
@@ -676,8 +682,13 @@ void MainWindow::handleGenerateRequest()    // GENERATE:<fieldBin>
     if (message_request.size() < 2)
     {
         qDebug() << "Wrong answer from server";
+        ui->applyIsOkLabel->setVisible(false);
+        ui->applyIsNotOkLabel->setVisible(true);
         return;
     }
+
+    ui->applyIsOkLabel->setVisible(true);
+    ui->applyIsNotOkLabel->setVisible(false);
 
     QString fieldBinStr = message_request[1];
     qDebug() << "Server generated a field: " << fieldBinStr;
@@ -845,7 +856,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event)
     QPoint pos = event->pos();
     pos.setY(pos.y() - ui->fieldsLabel->y());
     pos.setX(pos.x() - ui->fieldsLabel->x());
-    controller_->onMousePressed(pos, event);
+    controller_->onMousePressed(pos, event, ui->applyIsOkLabel, ui->applyIsNotOkLabel, ui->applyFieldButton);
 
     qDebug() << "Clicked on: " << pos;
 
@@ -913,6 +924,12 @@ void MainWindow::startGame(QString enemy_login, int gameId)
     ui->generateFieldButton->setVisible(true);
     ui->checkButton->setVisible(true );
 
+    ui->checkButton->setEnabled(true);
+    ui->generateFieldButton->setEnabled(true);
+    ui->applyFieldButton->setEnabled(true);
+    ui->clearButton->setEnabled(true);
+
+    ui->applyFieldButton->setStyleSheet("");
     // TODO: ...
 }
 
@@ -928,7 +945,15 @@ void MainWindow::finishGame()
     ui->applyFieldButton->setVisible(   false);
     ui->generateFieldButton->setVisible(true );
     ui->checkButton->setVisible(true );
+    ui->clearButton->setVisible(true);
+    ui->applyIsNotOkLabel->setVisible(false);
+    ui->applyIsOkLabel->setVisible(false);
 
+    ui->generateFieldButton->setEnabled(true);
+    ui->checkButton->setEnabled(true);
+    ui->clearButton->setEnabled(true);
+
+    ui->whooseStepLabel->setVisible(false);
 
     // TODO: ...
 }
@@ -940,6 +965,19 @@ void MainWindow::startFight()
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
     ui->checkButton->setVisible(false);
+    ui->clearButton->setVisible(false);
+    ui->applyIsOkLabel->setVisible(false);
+    ui->applyIsNotOkLabel->setVisible(false);
+    ui->whooseStepLabel->setVisible(true);
+
+    if (model_->getStartedFlag())   // if I started the game
+    {
+        ui->whooseStepLabel->setText("Ваш ход");
+    }
+    else
+    {
+        ui->whooseStepLabel->setText("Ход соперника");
+    }
 }
 
 void MainWindow::on_gameExitButton_clicked()
@@ -960,7 +998,10 @@ void MainWindow::on_gameExitButton_clicked()
     qDebug() << "You want to stop the current game";
 
     int gameId = model_->getGameId(); // TODO: get gameId;
-    socket_->write(((QString)"GAME:" + QString::number(gameId) + ":FINISH").toUtf8());  // GAME:<gameId:FINISH
+    QString message = "GAME:" + QString::number(gameId) + ":FINISH";
+
+    socket_->write(message.toUtf8());  // GAME:<gameId:FINISH
+    qDebug() << message;
 }
 
 //void MainWindow::on_checkButton_clicked()
@@ -983,8 +1024,9 @@ void MainWindow::on_gameExitButton_clicked()
 void MainWindow::on_generateFieldButton_clicked()
 {
     ModelState state = model_->getState();
-    if (state == ST_MAKING_STEP ||
-        state == ST_WAITING_STEP    )
+    if (state == ST_MAKING_STEP  ||
+        state == ST_WAITING_STEP ||
+        state == ST_WAITING_PLACING)
         return;
 
     QString message = "GENERATE:";
@@ -1001,6 +1043,7 @@ void MainWindow::on_applyFieldButton_clicked()
 //        model_->updateState(ST_WAITING_PLACING);
         qDebug() << "Incorrect ship placing";
         QMessageBox::warning(this, "Ship placing warning", "Расстановка кораблей некорректна! Поменяйте её");
+        ui->applyFieldButton->setStyleSheet("");
         return;
     }
 
@@ -1008,16 +1051,27 @@ void MainWindow::on_applyFieldButton_clicked()
 
     QString message = "GAME:" + QString::number(model_->getGameId()) + ":" + login_ + ":FIELD:" + model_->getMyFieldStr();
     socket_->write(message.toUtf8());
-
     qDebug() << message;
+
+    model_->updateState(ST_WAITING_PLACING);
+    ui->applyFieldButton->setStyleSheet("background-color: rgb(143, 240, 164);");
+
+    ui->checkButton->setEnabled(false);
+    ui->generateFieldButton->setEnabled(false);
+    ui->applyFieldButton->setEnabled(false);
+    ui->clearButton->setEnabled(false);
+
+    ui->applyIsOkLabel->setVisible(true);
+    ui->applyIsNotOkLabel->setVisible(false);
 }
 
 
 void MainWindow::on_clearButton_clicked()
 {
     ModelState state = model_->getState();
-    if (state == ST_MAKING_STEP ||
-        state == ST_WAITING_STEP    )
+    if (state == ST_MAKING_STEP  ||
+        state == ST_WAITING_STEP ||
+        state == ST_WAITING_PLACING)
         return;
 
     model_->clearMyField();

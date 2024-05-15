@@ -51,6 +51,9 @@ public:
     void switchStep();
 
     void setStartedFlag(bool val);
+    bool getStartedFlag();
+    void setEnemyLogin(QString login);
+    QString getEnemyLogin();
 
     void generateMyField();
 
@@ -66,6 +69,7 @@ private:
     bool amIStarted_;
     ModelState state_;
     QString login_;
+    QString enemyLogin_;
     int gameId_;
 };
 

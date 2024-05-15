@@ -38,7 +38,7 @@ class Controller: public QWidget
 public:
     Controller(Model* model, QTcpSocket* socket);
     ~Controller();
-    void onMousePressed(const QPoint& position, QMouseEvent* event);
+    void onMousePressed(const QPoint& position, QMouseEvent* event, QLabel* applyIsOkLabel, QLabel* applyIsNotOkLabel, QPushButton* applyFieldButton);
 
 private:
     QTcpSocket* socket_;

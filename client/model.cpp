@@ -128,6 +128,7 @@ bool Model::isMyFieldCorrect() const
 void Model::startGame(QString enemy_login, int gameId)
 {
     gameId_ = gameId;
+    enemyLogin_ = enemy_login;
     // ToDO: ...
 
     updateState(ST_PLACING_SHIPS);
@@ -168,4 +169,19 @@ void Model::generateMyField()
 void Model::setStartedFlag(bool val)
 {
     amIStarted_ = val;
+}
+
+bool Model::getStartedFlag()
+{
+    return amIStarted_;
+}
+
+void Model::setEnemyLogin(QString login)
+{
+    enemyLogin_ = login;
+}
+
+QString Model::getEnemyLogin()
+{
+    return enemyLogin_;
 }

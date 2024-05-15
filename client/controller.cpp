@@ -46,13 +46,14 @@ QPoint getFieldCoord(const QPoint& pos, Field::Owner owner)
     return res;
 }
 
-void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
+void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event, QLabel* applyIsOkLabel, QLabel* applyIsNotOkLabel, QPushButton* applyFieldButton)
 {
     ModelState state = model_->getState();
 
     if(state == ST_PLACING_SHIPS ||
-       state == ST_GAME_NSTARTED ||
-       state == ST_WAITING_PLACING )
+       state == ST_GAME_NSTARTED   )
+//                                 ||
+//       state == ST_WAITING_PLACING )
     {
         QPoint point = getFieldCoord(pos, Field::MY_FIELD);
 
@@ -80,18 +81,23 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event)
 
 //        if (model_->getState() == ST_PLACING_SHIPS)
 //        {
-//            if (model_->isMyFieldCorrect())
-//            {
-//                isCorrectLabel->setText("корректная расстановка");
-//            }
-//            else
-
-//            {
-//                isCorrectLabel->setText("некорректная расстановка");
-//            }
+            if (model_->isMyFieldCorrect())
+            {
+                qDebug() << "Placement is correct";
+                applyIsOkLabel->setVisible(true);
+                applyIsNotOkLabel->setVisible(false);
+            }
+            else
+            {
+                qDebug() << "Placement is incorrect";
+                applyIsOkLabel->setVisible(false);
+                applyIsNotOkLabel->setVisible(true);
+                // incorrect placement
+            }
 //        }
 
         qDebug() << "field after click: " << model_->getMyFieldStr();
+//        applyFieldButton->setStyleSheet("background-color: gray;");
 
         return;
     }

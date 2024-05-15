@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>896</width>
-    <height>510</height>
+    <height>528</height>
    </rect>
   </property>
   <property name="font">
@@ -226,50 +226,20 @@
      <string>...</string>
     </property>
    </widget>
-   <widget class="QLabel" name="isCorrectLabel">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>370</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
    <widget class="QWidget" name="formLayoutWidget_3">
     <property name="geometry">
      <rect>
       <x>230</x>
       <y>380</y>
       <width>194</width>
-      <height>81</height>
+      <height>98</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_2">
-     <item row="4" column="0" colspan="2">
-      <widget class="QPushButton" name="applyFieldButton">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(143, 240, 164);</string>
-       </property>
-       <property name="text">
-        <string>Подтвердить</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QPushButton" name="clearButton">
        <property name="text">
         <string>очистить</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0" colspan="2">
-      <widget class="QPushButton" name="generateFieldButton">
-       <property name="text">
-        <string>Сгенерировать</string>
        </property>
       </widget>
      </item>
@@ -280,7 +250,76 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QPushButton" name="generateFieldButton">
+       <property name="text">
+        <string>Сгенерировать</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" colspan="2">
+      <widget class="QPushButton" name="applyFieldButton">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Подтвердить</string>
+       </property>
+      </widget>
+     </item>
     </layout>
+   </widget>
+   <widget class="QLabel" name="applyIsOkLabel">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>390</y>
+      <width>21</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">image: url(:/images/ok.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="applyIsNotOkLabel">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>390</y>
+      <width>21</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">image: url(:/images/damaged.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="whooseStepLabel">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>430</y>
+      <width>211</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

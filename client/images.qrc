@@ -8,5 +8,6 @@
         <file>images/killed.png</file>
         <file>images/damaged.png</file>
         <file>images/flag.png</file>
+        <file>images/ok.png</file>
     </qresource>
 </RCC>
