@@ -197,7 +197,7 @@ void MainWindow::authenticateUser()
             model_->setLogin(login_);
 
             // TODO: get list of users from server
-            usersListUpdate();
+//            usersListUpdate();
 
             updateReadiness(ST_NREADY);
             ui->isReadyCheckBox->setVisible(true);
@@ -435,9 +435,9 @@ void MainWindow::handleShotRequest()
 void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
     socket_->write(((QString)"USERS:").toUtf8());
-    socket_->waitForReadyRead(500);
+//    socket_->waitForReadyRead(500);
 
-    handleUsersRequest();
+//    handleUsersRequest();
 }
 
 void MainWindow::handleUsersRequest()

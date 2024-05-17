@@ -156,6 +156,10 @@ void Model::finishGame()
     // TODO:
 
     updateState(ST_GAME_FINISHED);
+
+    //
+
+    updateState(ST_GAME_NSTARTED);
 }
 
 void Model::startFight()
