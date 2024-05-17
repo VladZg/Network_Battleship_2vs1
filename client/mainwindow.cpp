@@ -35,6 +35,14 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->chatWidget->setLayout(chatWidgetLayout);
     ui->messageRecieversOptionsListWidget->setLayout(receiverListWidgetLayout);
 
+    ui->updateButton->setVisible(false);
+    ui->messageEdit->setVisible(false);
+    ui->chatWidget->setVisible(false);
+    ui->messageRecieversOptionList->setVisible(false);
+    ui->updateButton->setVisible(false);
+    ui->sendMessageButton->setVisible(false);
+    ui->menubar->setVisible(false);
+
     ui->gameExitButton->setVisible(false);
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
@@ -193,6 +201,22 @@ void MainWindow::authenticateUser()
             ui->connectToServerButton->setText("Вы успешно авторизованы!");
             ui->connectToServerButton->setEnabled(false);   // turn the button off
 
+            ui->updateButton->setVisible(true);
+            ui->messageEdit->setVisible(true);
+            ui->chatWidget->setVisible(true);
+            ui->messageRecieversOptionList->setVisible(true);
+            ui->updateButton->setVisible(true);
+            ui->sendMessageButton->setVisible(true);
+            ui->menubar->setVisible(true);
+
+//            ui->authLayout->
+//            ui->authLayout->(500, 500);
+//            QPoint newPos = ui->loginLabel->geometry().topLeft() + QPoint(300, 300);
+//            ui->loginLabel->setGeometry(QRect(newPos, ui->authLayout->geometry().size()));
+//            ui->loginLabel->setCursorPosition();
+//            ui->authLayout->setParent(ui->centralwidget);
+//            ui->authLayout->setGeometry(QRect(0,0,100,200)); //move(500,500);
+
             ui->clearButton->setVisible(true);
             ui->generateFieldButton->setVisible(true);
             ui->fieldsLabel->setVisible(true);
@@ -251,6 +275,14 @@ void MainWindow::on_receiveData()
 
 void MainWindow::handleData()
 {
+    if (data_.startsWith("CONNECTION:"))
+    {
+        handleConnectionRequest();
+    }
+
+    if (connectionState_ != ST_AUTHORIZED)
+        return;
+
     if (data_.startsWith("MESSAGE:"))
     {
         handleMessageRequest();
@@ -269,11 +301,6 @@ void MainWindow::handleData()
     else if(data_.startsWith("PING:"))
     {
         handlePingRequest();
-    }
-
-    else if (data_.startsWith("CONNECTION:"))
-    {
-        handleConnectionRequest();
     }
 
     else if (data_.startsWith("GAME:"))
