@@ -108,8 +108,8 @@ private slots:
     void on_applyFieldButton_clicked();
     void on_clearButton_clicked();
     void on_checkButton_clicked();
-
     void on_isReadyCheckBox_stateChanged(int arg1);
+    void on_volumeSlider_actionTriggered(int action);
 
 private:
     QListWidget* receiversListWidget;    // user from the list who we want to send the message
@@ -128,9 +128,6 @@ public:
 
 private:
     Readiness readiness_;
-
-private:
-    QMediaPlayer* player_;
 
 private:
     Ui::MainWindow* ui;

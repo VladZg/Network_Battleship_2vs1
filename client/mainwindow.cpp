@@ -11,6 +11,9 @@
 #include <QPaintEngine>
 #include <iostream>
 #include <QMediaPlayer>
+#include <QMediaContent>
+
+#define CLICK_SOUND controller_->playSound("click");
 
 MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     : QMainWindow(parent)
@@ -47,11 +50,6 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->isReadyCheckBox->setText("не авторизован");
     ui->isReadyCheckBox->setEnabled(false);
 
-    player_ = new QMediaPlayer;
-    player_->setMedia(QUrl::fromLocalFile(":/sounds/background.mp3"));
-    player_->setVolume(50);
-    player_->play();
-
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
     socket_ = new QTcpSocket(this);
@@ -85,8 +83,6 @@ MainWindow::~MainWindow()
 {
     connectionStateUpdate(ST_DISCONNECTED);
 
-    player_->stop();
-    delete player_;
     delete model_;
     delete controller_;
     delete ui;
@@ -118,6 +114,8 @@ void MainWindow::connectionStateUpdate(ClientConnectionState new_state)
 
 void MainWindow::on_connectToServerButton_clicked()    // connection+authorization button
 {
+    CLICK_SOUND
+
     if (connectionState_ == ST_DISCONNECTED)
     {
         qDebug() << "Connect button pushed";
@@ -370,6 +368,7 @@ void MainWindow::handleMessageRequest()
 
     if (ui->messageRecieversOptionList->currentItem() != sender)   // if message to not a current chat then we set a flag to unchecked (then change the color)
     {
+        controller_->playSound("new_msg");
         sender->setBackground(QBrush(QColor("green")));
         sender->setForeground(QBrush(QColor("white")));
         sender->setData(Qt::UserRole, true); // new flag means about new message not read yet
@@ -412,14 +411,14 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
-                controller_->playMissSound();
+                controller_->playSound("miss");
                 qDebug() << "Вы промазали, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ход соперника");
             }
             else if (status == CELL_DAMAGED)
             {
-                controller_->playHitSound();
+                controller_->playSound("hit");
                 qDebug() << "Вы попали! Продолжайте ход";
             }
         }
@@ -430,7 +429,7 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
-                controller_->playMissSound();
+                controller_->playSound("miss");
                 qDebug() << "Противник промазал, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ваш ход");
@@ -438,7 +437,7 @@ void MainWindow::handleShotRequest()
             }
             else if (status == CELL_DAMAGED)
             {
-                controller_->playHitSound();
+                controller_->playSound("hit");
                 qDebug() << "Противник попал и продолжает ход";
             }
         }
@@ -520,6 +519,7 @@ void MainWindow::handleUsersRequest()
             {
                 QString enemy_login = userToChoose->text();
 
+                CLICK_SOUND
                 qDebug() << "try to connect to the user " << enemy_login;
                 // TODO: handler
 
@@ -772,6 +772,7 @@ void MainWindow::updateAll()
 
 void MainWindow::on_updateButton_clicked()
 {
+    CLICK_SOUND
     updateAll();
 }
 
@@ -827,6 +828,7 @@ void MainWindow::sendMessage()
 
 void MainWindow::on_sendMessageButton_clicked()
 {
+    CLICK_SOUND
     sendMessage();
 }
 
@@ -1042,6 +1044,7 @@ void MainWindow::startFight()
 
 void MainWindow::on_gameExitButton_clicked()
 {
+    CLICK_SOUND
     if (model_->getState() == ST_GAME_NSTARTED ||
         model_->getState() == ST_GAME_FINISHED   )
         return;
@@ -1083,6 +1086,7 @@ void MainWindow::on_gameExitButton_clicked()
 
 void MainWindow::on_generateFieldButton_clicked()
 {
+    CLICK_SOUND
     ModelState state = model_->getState();
     if (state == ST_MAKING_STEP  ||
         state == ST_WAITING_STEP ||
@@ -1098,6 +1102,7 @@ void MainWindow::on_generateFieldButton_clicked()
 
 void MainWindow::on_applyFieldButton_clicked()
 {
+    CLICK_SOUND
     if (!model_->isMyFieldCorrect())
     {
 //        model_->updateState(ST_WAITING_PLACING);
@@ -1128,6 +1133,7 @@ void MainWindow::on_applyFieldButton_clicked()
 
 void MainWindow::on_clearButton_clicked()
 {
+    CLICK_SOUND
     ModelState state = model_->getState();
     if (state == ST_MAKING_STEP  ||
         state == ST_WAITING_STEP ||
@@ -1139,6 +1145,7 @@ void MainWindow::on_clearButton_clicked()
 
 void MainWindow::on_checkButton_clicked()
 {
+    CLICK_SOUND
     qDebug() << "My field: " << model_->getMyFieldStr();
 
     bool is_correct = model_->isMyFieldCorrect();
@@ -1155,6 +1162,8 @@ void MainWindow::on_checkButton_clicked()
 
 void MainWindow::on_isReadyCheckBox_stateChanged(int state)
 {
+    CLICK_SOUND
+
     if (state == Qt::Checked)
     {
         updateReadiness(ST_READY);
@@ -1199,3 +1208,12 @@ void MainWindow::updateReadiness(MainWindow::Readiness readiness)
     socket_->write(message.toUtf8());
     qDebug() << message;
 }
+
+void MainWindow::on_volumeSlider_actionTriggered(int action)
+{
+//    qDebug() << (ui->volumeSlider->value();
+    int volume = (ui->volumeSlider->value()-5) % 101; // * 100.0) / ui->volumeSlider->maximum();
+    qDebug() << "volume is " << volume << "%";
+    controller_->updateVolume(volume);
+}
+

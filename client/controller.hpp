@@ -8,6 +8,8 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QFile>
+#include <QMediaPlayer>
+#include <QMap>
 #include "config.hpp"
 #include "constants.hpp"
 #include "model.hpp"
@@ -41,14 +43,27 @@ public:
     ~Controller();
     void onMousePressed(const QPoint& position, QMouseEvent* event, QLabel* applyIsOkLabel, QLabel* applyIsNotOkLabel, QPushButton* applyFieldButton);
 
-    void playMissSound();
-    void playHitSound();
+//    void playMissSound();
+//    void playHitSound();
+//    void playClickSound();
+//    void playNewMessageSound();
+    void playSound(QString sound_name);
+    void updateVolume(int volume);
+    void loadSounds();
+
+public:
+    int volume_;
 
 private:
+    void on_mediaStatusChanged(QMediaPlayer::MediaStatus status);
+
+private:
+    bool isLoaded_;
     QTcpSocket* socket_;
     Model* model_;
-    PlaySound* hitSound;
-    PlaySound* missSound;
+//    QMediaPlayer* soundPlayer_;
+    QMediaPlayer* backgroundMusicPlayer_;
+    QMap<QString, PlaySound*> sounds_;
 //    QHostAddress serverAddress;
 //    quint16 serverPort;
 //    bool connectionError;

@@ -3,16 +3,31 @@
 
 Controller::Controller(Model* model, QTcpSocket* socket):
     model_(model),
-    socket_(socket)
+    socket_(socket),
+    volume_(50),
+    isLoaded_(false)
 {
-    hitSound  = new PlaySound(":/sounds/hit.wav" , this);
-    missSound = new PlaySound(":/sounds/miss.wav", this);
+    backgroundMusicPlayer_ = new QMediaPlayer;
+    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/background.mp3"));
+    backgroundMusicPlayer_->setVolume(volume_);
+    backgroundMusicPlayer_->play();
+    connect(backgroundMusicPlayer_, &QMediaPlayer::mediaStatusChanged, this, &Controller::on_mediaStatusChanged);
+
+//    clickSound  = new PlaySound(":/sounds/click.wav", this);
+//    hitSound    = new PlaySound(":/sounds/hit.wav" , this);
+//    missSound   = new PlaySound(":/sounds/miss.wav", this);
+//    newMsgSound =  new PlaySound(":/sounds/new_msg.wav", this);
+//    soundPlayer_ = new QMediaPlayer;
+//    soundPlayer_->setVolume(volume_);
+    loadSounds();
 }
 
 Controller::~Controller()
 {
-    delete hitSound;
-    delete missSound;
+    backgroundMusicPlayer_->stop();
+    delete backgroundMusicPlayer_;
+//    for() sounds_;
+//    delete soundPlayer_;
 }
 
 QPoint getFieldCoord(const QPoint& pos, Field::Owner owner)
@@ -193,12 +208,86 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event, QLabel* a
 
 }
 
-void Controller::playMissSound()
+//void Controller::playMissSound()
+//{
+//    qDebug() << "miss sound";
+////    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/miss.wav"));
+////    backgroundMusicPlayer_->setVolume(volume_);
+////    backgroundMusicPlayer_->play();
+//}
+
+//void Controller::playHitSound()
+//{
+//    qDebug() << "hit sound";
+////    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/hit.wav"));
+////    backgroundMusicPlayer_->setVolume(volume_);
+////    backgroundMusicPlayer_->play();
+//}
+
+//void Controller::playClickSound()
+//{
+//    qDebug() << "click sound";
+////    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/click.wav"));
+////    backgroundMusicPlayer_->setVolume(volume_);
+////    backgroundMusicPlayer_->play();
+//}
+
+//void Controller::playNewMessageSound()
+//{
+//    qDebug() << "new message sound";
+
+//    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/new_msg.wav"));
+//    backgroundMusicPlayer_->setVolume(volume_);
+//    backgroundMusicPlayer_->play();
+//}
+
+#define LOAD_SOUND_WAV(name_str) sounds_.insert(name_str, new PlaySound(":" SOUNDS_DIRECTORY_PATH name_str ".wav")); \
+                                 qDebug() << name_str ".wav is loaded";
+
+void Controller::loadSounds()
 {
-    missSound->play();
+    if (isLoaded_)
+        return;
+
+    LOAD_SOUND_WAV("click"  )
+    LOAD_SOUND_WAV("hit"    )
+    LOAD_SOUND_WAV("miss"   )
+    LOAD_SOUND_WAV("new_msg")
+
+    isLoaded_ = true;
 }
 
-void Controller::playHitSound()
+#undef LOAD_SOUND_WAV
+
+void Controller::playSound(QString sound_name)
 {
-    hitSound->play();
+    qDebug() << "Play sound: " << sound_name;
+
+    QMap<QString, PlaySound*>::iterator sndIt = sounds_.find(sound_name);
+
+    if(sndIt == sounds_.end())
+        throw 1;
+
+    sndIt.value()->play();
+}
+
+void Controller::updateVolume(int volume)
+{
+    if (volume < 0)
+        volume = 0;
+
+    volume_ = volume;
+    backgroundMusicPlayer_->setVolume(volume_);
+//    soundPlayer_->setVolume(volume_);
+}
+
+void Controller::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
+{
+//    qDebug() << "end of the player_";
+
+    if (status == QMediaPlayer::EndOfMedia)
+    {
+        backgroundMusicPlayer_->setPosition(0);
+        backgroundMusicPlayer_->play();
+    }
 }
