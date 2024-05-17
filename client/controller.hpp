@@ -11,6 +11,7 @@
 #include "config.hpp"
 #include "constants.hpp"
 #include "model.hpp"
+#include "util/PlaySound.h"
 
 enum GameResult
 {
@@ -40,9 +41,14 @@ public:
     ~Controller();
     void onMousePressed(const QPoint& position, QMouseEvent* event, QLabel* applyIsOkLabel, QLabel* applyIsNotOkLabel, QPushButton* applyFieldButton);
 
+    void playMissSound();
+    void playHitSound();
+
 private:
     QTcpSocket* socket_;
     Model* model_;
+    PlaySound* hitSound;
+    PlaySound* missSound;
 //    QHostAddress serverAddress;
 //    quint16 serverPort;
 //    bool connectionError;

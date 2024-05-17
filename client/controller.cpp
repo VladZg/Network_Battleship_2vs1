@@ -5,12 +5,14 @@ Controller::Controller(Model* model, QTcpSocket* socket):
     model_(model),
     socket_(socket)
 {
-
+    hitSound  = new PlaySound(":/sounds/hit.wav" , this);
+    missSound = new PlaySound(":/sounds/miss.wav", this);
 }
 
 Controller::~Controller()
 {
-
+    delete hitSound;
+    delete missSound;
 }
 
 QPoint getFieldCoord(const QPoint& pos, Field::Owner owner)
@@ -189,4 +191,14 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event, QLabel* a
         }
     }
 
+}
+
+void Controller::playMissSound()
+{
+    missSound->play();
+}
+
+void Controller::playHitSound()
+{
+    hitSound->play();
 }

@@ -1,6 +1,6 @@
 QT += core gui network
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += multimedia
 
 CONFIG += c++11
 
@@ -27,6 +27,21 @@ HEADERS += \
     mainwindow.hpp \
     model.hpp
 
+# PlaySound utility
+HEADERS += util/PlaySound.h
+SOURCES += util/PlaySound.cpp
+
+CONFIG( unix ) {
+    LIBS += -lasound
+    SOURCES += util/PlaySound_nix.cpp
+    HEADERS += util/PlaySound_nix.h
+}
+
+CONFIG( windows ) {
+    SOURCES += util/PlaySound_win.cpp
+    HEADERS += util/PlaySound_win.h
+}
+
 FORMS += \
     mainwindow.ui
 
@@ -36,4 +51,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    images.qrc
+    images.qrc \
+    sounds.qrc

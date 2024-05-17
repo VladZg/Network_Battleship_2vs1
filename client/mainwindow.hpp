@@ -14,6 +14,7 @@
 #include <QTextBrowser>
 #include <QStackedWidget>
 #include <QPainter>
+#include <QMediaPlayer>
 #include "config.hpp"
 #include "constants.hpp"
 #include "field.hpp"
@@ -127,6 +128,9 @@ public:
 
 private:
     Readiness readiness_;
+
+private:
+    QMediaPlayer* player_;
 
 private:
     Ui::MainWindow* ui;

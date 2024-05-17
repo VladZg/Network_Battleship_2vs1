@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QPaintEngine>
 #include <iostream>
+#include <QMediaPlayer>
 
 MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     : QMainWindow(parent)
@@ -46,6 +47,11 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     ui->isReadyCheckBox->setText("не авторизован");
     ui->isReadyCheckBox->setEnabled(false);
 
+    player_ = new QMediaPlayer;
+    player_->setMedia(QUrl::fromLocalFile(":/sounds/background.mp3"));
+    player_->setVolume(50);
+    player_->play();
+
     connect(ui->messageRecieversOptionList, SIGNAL(itemSelectionChanged()), this, SLOT(on_messageRecieversOptionList_itemSelectionChanged()));
 
     socket_ = new QTcpSocket(this);
@@ -79,6 +85,8 @@ MainWindow::~MainWindow()
 {
     connectionStateUpdate(ST_DISCONNECTED);
 
+    player_->stop();
+    delete player_;
     delete model_;
     delete controller_;
     delete ui;
@@ -404,9 +412,15 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
+                controller_->playMissSound();
                 qDebug() << "Вы промазали, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ход соперника");
+            }
+            else if (status == CELL_DAMAGED)
+            {
+                controller_->playHitSound();
+                qDebug() << "Вы попали! Продолжайте ход";
             }
         }
         else if (model_->getState() == ST_WAITING_STEP)
@@ -416,10 +430,16 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
+                controller_->playMissSound();
                 qDebug() << "Противник промазал, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ваш ход");
 //                return;
+            }
+            else if (status == CELL_DAMAGED)
+            {
+                controller_->playHitSound();
+                qDebug() << "Противник попал и продолжает ход";
             }
         }
 
