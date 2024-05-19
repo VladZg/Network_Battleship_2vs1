@@ -144,9 +144,10 @@ void MainWindow::connectUser()
 {
     socket_->connectToHost(ip_, port_);
 
-    if (!socket_->waitForConnected(200))
+    if (!socket_->waitForConnected(1000))
     {
         qDebug() << "Cannot connect";
+        qDebug() << socket_->error();
         return;
     }
 
@@ -535,6 +536,7 @@ void MainWindow::updateUsers(QStringList users_list)
         {
           qDebug() << "user i to remove: " << i << " " << ui->usersList->actions()[i];
           ui->usersList->actions().removeAt(i);
+          delete ui->usersList->actions().at(i);
           ui->messageRecieversOptionList->takeItem(i);
           break;
         }
@@ -542,6 +544,9 @@ void MainWindow::updateUsers(QStringList users_list)
     }
 
     qDebug() << "users_:" << users_;
+
+    ui->usersList->update();
+    ui->messageRecieversOptionList->update();
 }
 
 void MainWindow::updateChats()
