@@ -11,7 +11,7 @@
 #include <QPaintEngine>
 #include <iostream>
 #include <QMediaPlayer>
-#include <QMediaContent>
+#include <QtMultimedia>
 
 #define CLICK_SOUND controller_->playSound("click");
 

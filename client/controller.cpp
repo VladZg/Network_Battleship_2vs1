@@ -7,27 +7,19 @@ Controller::Controller(Model* model, QTcpSocket* socket):
     volume_(50),
     isLoaded_(false)
 {
-    backgroundMusicPlayer_ = new QMediaPlayer;
-    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/background.mp3"));
-    backgroundMusicPlayer_->setVolume(volume_);
-    backgroundMusicPlayer_->play();
-    connect(backgroundMusicPlayer_, &QMediaPlayer::mediaStatusChanged, this, &Controller::on_mediaStatusChanged);
+//    backgroundMusicPlayer_ = new QMediaPlayer;
+//    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/background.mp3"));
+//    backgroundMusicPlayer_->setVolume(volume_);
+//    backgroundMusicPlayer_->play();
+//    connect(backgroundMusicPlayer_, &QMediaPlayer::mediaStatusChanged, this, &Controller::on_mediaStatusChanged);
 
-//    clickSound  = new PlaySound(":/sounds/click.wav", this);
-//    hitSound    = new PlaySound(":/sounds/hit.wav" , this);
-//    missSound   = new PlaySound(":/sounds/miss.wav", this);
-//    newMsgSound =  new PlaySound(":/sounds/new_msg.wav", this);
-//    soundPlayer_ = new QMediaPlayer;
-//    soundPlayer_->setVolume(volume_);
     loadSounds();
 }
 
 Controller::~Controller()
 {
-    backgroundMusicPlayer_->stop();
-    delete backgroundMusicPlayer_;
-//    for() sounds_;
-//    delete soundPlayer_;
+//    backgroundMusicPlayer_->stop();
+//    delete backgroundMusicPlayer_;
 }
 
 QPoint getFieldCoord(const QPoint& pos, Field::Owner owner)
@@ -211,25 +203,25 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event, QLabel* a
 //void Controller::playMissSound()
 //{
 //    qDebug() << "miss sound";
-////    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/miss.wav"));
-////    backgroundMusicPlayer_->setVolume(volume_);
-////    backgroundMusicPlayer_->play();
+//    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/miss.wav"));
+//    backgroundMusicPlayer_->setVolume(volume_);
+//    backgroundMusicPlayer_->play();
 //}
 
 //void Controller::playHitSound()
 //{
 //    qDebug() << "hit sound";
-////    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/hit.wav"));
-////    backgroundMusicPlayer_->setVolume(volume_);
-////    backgroundMusicPlayer_->play();
+//    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/hit.wav"));
+//    backgroundMusicPlayer_->setVolume(volume_);
+//    backgroundMusicPlayer_->play();
 //}
 
 //void Controller::playClickSound()
 //{
 //    qDebug() << "click sound";
-////    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/click.wav"));
-////    backgroundMusicPlayer_->setVolume(volume_);
-////    backgroundMusicPlayer_->play();
+//    backgroundMusicPlayer_->setMedia(QUrl("qrc:/sounds/click.wav"));
+//    backgroundMusicPlayer_->setVolume(volume_);
+//    backgroundMusicPlayer_->play();
 //}
 
 //void Controller::playNewMessageSound()
@@ -277,7 +269,7 @@ void Controller::updateVolume(int volume)
         volume = 0;
 
     volume_ = volume;
-    backgroundMusicPlayer_->setVolume(volume_);
+//    backgroundMusicPlayer_->setVolume(volume_);
 //    soundPlayer_->setVolume(volume_);
 }
 
@@ -287,7 +279,7 @@ void Controller::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
     if (status == QMediaPlayer::EndOfMedia)
     {
-        backgroundMusicPlayer_->setPosition(0);
-        backgroundMusicPlayer_->play();
+//        backgroundMusicPlayer_->setPosition(0);
+//        backgroundMusicPlayer_->play();
     }
 }

@@ -8,6 +8,7 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QFile>
+#include <QtMultimedia>
 #include <QMediaPlayer>
 #include <QMap>
 #include "config.hpp"
@@ -62,7 +63,7 @@ private:
     QTcpSocket* socket_;
     Model* model_;
 //    QMediaPlayer* soundPlayer_;
-    QMediaPlayer* backgroundMusicPlayer_;
+//    QMediaSource* backgroundMusicPlayer_;
     QMap<QString, PlaySound*> sounds_;
 //    QHostAddress serverAddress;
 //    quint16 serverPort;
