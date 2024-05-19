@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>sounds/hit.wav</file>
-        <file>sounds/miss.wav</file>
-        <file>sounds/background.mp3</file>
-        <file>sounds/click.wav</file>
-        <file>sounds/new_msg.wav</file>
-    </qresource>
-</RCC>

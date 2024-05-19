@@ -1,8 +1,0 @@
-#ifndef CONFIG_H
-#define CONFIG_H
-
-#define FIELD_WIDTH_DEFAULT     10
-#define FIELD_HEIGHT_DEFAULT    10
-#define DEFAULT_SEARCH_INTERVAL 3000
-
-#endif // CONFIG_H
