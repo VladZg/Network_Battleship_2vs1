@@ -34,9 +34,11 @@ public:
     void updateState(ClientStatus state);
 
     void initField();
-    void initField(QString field);
+    void initField(QString field, QString fieldState);
     QString getFieldStr();
     bool isCellEmpty(int x, int y);
+    bool isKilled(int x, int y);
+    void setCellState(int x, int y, Field::CellState state);
 
 public:
     QTcpSocket*  socket_;

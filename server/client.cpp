@@ -37,9 +37,10 @@ void Client::initField()
     field_ = new Field();
 }
 
-void Client::initField(QString field)
+void Client::initField(QString field, QString fieldState)
 {
-    field_ = new Field(field);
+    field_ = new Field(field, fieldState);
+    field_->initFieldDraw();
 }
 
 QString Client::getFieldStr()
@@ -54,4 +55,14 @@ bool Client::isCellEmpty(int x, int y)
 {
     qDebug() << "Client::isCellEmpty";
     return field_->isCellEmpty(x, y);
+}
+
+bool Client::isKilled(int x, int y)
+{
+    return field_->isKilled(x, y);
+}
+
+void Client::setCellState(int x, int y, Field::CellState state)
+{
+    return field_->setCellState(x, y, state);
 }

@@ -368,14 +368,18 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 if (is_ClientStarted)
                 {
+                    gIt->setClientStartedFieldState(fieldStr);
+
                     gIt->setClientStartedField(fieldBinStr);
-                    gIt->getClientStartedIt()->initField(fieldBinStr);
+                    gIt->getClientStartedIt()->initField(fieldBinStr, fieldStr);
                     qDebug() << "Started client field setted!";
                 }
                 else
                 {
+                    gIt->setClientAcceptedFieldState(fieldStr);
+
                     gIt->setClientAcceptedField(fieldBinStr);
-                    gIt->getClientAcceptedIt()->initField(fieldBinStr);
+                    gIt->getClientAcceptedIt()->initField(fieldBinStr, fieldStr);
                     qDebug() << "Accepted client field setted!";
                 }
 
@@ -409,6 +413,13 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 if (!enemyIt->isCellEmpty(x, y))
                 {
+//                    if(enemyIt->isKilled(x, y))
+//                    {
+//                        enemyIt->setCellState(x, y, Field::CellState::);
+//                    }
+
+
+
                     qDebug() << "Попадание!";
                     message += "DAMAGED";
                 }
