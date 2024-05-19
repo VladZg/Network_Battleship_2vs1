@@ -226,6 +226,7 @@ void Server::handleData(const QByteArray& data, int clientId)
 
             cit->socket_->write(((QString)"AUTH:SUCCESS").toUtf8());
             cit->socket_->flush();
+            cit->updateState(Client::ST_AUTHORIZED);
 //            cit->socket_->flush();
             PRINT("AUTH SUCCESS!!!")
             PRINT("Send client connection status - YES")
@@ -236,6 +237,8 @@ void Server::handleData(const QByteArray& data, int clientId)
 
             cit->socket_->write(((QString)"AUTH:UNSUCCESS").toUtf8());
             cit->socket_->flush();
+            cit->updateState(Client::ST_CONNECTED);
+
             PRINT("Send client connection status - YES")
         }
     }
@@ -243,6 +246,11 @@ void Server::handleData(const QByteArray& data, int clientId)
     else if (request.startsWith("USERS:"))
     {
         handleUsersRequest();
+    }
+
+    else if (request.startsWith("UPDATE:"))
+    {
+        handleUpdateRequest();
     }
 
     else if (request.startsWith("READINESS:"))
@@ -477,8 +485,11 @@ void Server::handleUsersRequest()
 
     foreach (const Client& client, clients_)
     {
-        QString user_str = client.login_ + ":" + QString::number(client.status_) + ":" + QString::number(client.readiness_); // <login>:<status>:<readiness>
-        users_list.append(user_str);
+        if (client.isAuthorized())
+        {
+            QString user_str = client.login_ + ":" + QString::number(client.status_) + ":" + QString::number(client.readiness_); // <login>:<status>:<readiness>
+            users_list.append(user_str);
+        }
     }
 
     const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1>:<readiness1> <login2>:<status2>:<readiness2> ...
@@ -489,6 +500,30 @@ void Server::handleUsersRequest()
         client.socket_->flush();
 //        client.socket_->flush();
     }
+
+    PRINT(answer)
+}
+
+void Server::handleUpdateRequest()
+{
+    QList<QString> users_list;
+
+    foreach (const Client& client, clients_)
+    {
+        if (client.isAuthorized())
+        {
+            QString user_str = client.login_ + ":" + QString::number(client.status_) + ":" + QString::number(client.readiness_); // <login>:<status>:<readiness>
+            users_list.append(user_str);
+        }
+    }
+
+    const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1>:<readiness1> <login2>:<status2>:<readiness2> ...
+
+
+    qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
+    ClientsIterator cit = clients_.find(cId);
+    cit->socket_->write(answer); // sending to all clients list of all user logins
+    cit->socket_->flush();
 
     PRINT(answer)
 }
@@ -518,8 +553,10 @@ void Server::handleExitRequest()
     if (clients_.find(cId)==clients_.end() && logins_.find(cId)==logins_.end())
         PRINT("User " + login + " is really deleted")
 
+    handleUsersRequest();
+
     // TODO: send to users message about this client has disconnected
-    sendMessageToAll("EXIT:" + login);
+//    sendMessageToAll(":" + login);
 }
 
 void Server::handleFieldRequest()

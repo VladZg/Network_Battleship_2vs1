@@ -46,6 +46,8 @@ public:
     void updateAll();
     void exitFromServer();
 
+    QStringList users_;
+
 private:
     ClientConnectionState connectionState_;
     QString ip_;
@@ -68,7 +70,8 @@ public:
     void connectUser();
     void authenticateUser();
     void handleData();
-    void usersListUpdate();
+    void makeUsersRequest();
+    void updateUsers(QStringList users_list);
     void sendMessage();
     void connectToGame(const QString& enemy_login);
     void handleMessageRequest();

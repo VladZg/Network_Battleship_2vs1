@@ -39,6 +39,7 @@ public:
     void handleData(const QByteArray& data, int clientId);
     void clientDisconnect(ClientsIterator& cit);
     void handleUsersRequest();
+    void handleUpdateRequest();
     void handleReadinessRequest();
     void handleConnectionRequest();
     void handleExitRequest();

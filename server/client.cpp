@@ -17,6 +17,16 @@ QString Client::getLogin()
     return login_;
 }
 
+bool Client::isAuthorized() const
+{
+    return status_ == ST_AUTHORIZED;
+}
+
+void Client::updateState(ClientStatus state)
+{
+    status_ = state;
+}
+
 void Client::setLogin(const QString& login)
 {
     login_ = login;

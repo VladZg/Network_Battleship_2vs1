@@ -30,6 +30,8 @@ public:
 
     void setLogin(const QString& login);
     QString getLogin();
+    bool isAuthorized() const;
+    void updateState(ClientStatus state);
 
     void initField();
     void initField(QString field);

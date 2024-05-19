@@ -226,8 +226,10 @@ void MainWindow::authenticateUser()
 
             model_->setLogin(login_);
 
+            ui->messageRecieversOptionList->addItem("all");
+
             // TODO: get list of users from server
-//            usersListUpdate();
+//            makeUsersRequest();
 
             updateReadiness(ST_NREADY);
             ui->isReadyCheckBox->setVisible(true);
@@ -320,6 +322,7 @@ void MainWindow::handleData()
 
     else if(data_.startsWith("STOP:"))
     {
+
         stopClient("Server stopped... Closing the app");
     }
 
@@ -478,12 +481,83 @@ void MainWindow::handleShotRequest()
     }
 }
 
-void MainWindow::usersListUpdate() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
+void MainWindow::makeUsersRequest() // requests list of users and add connected/remove disconnected them in usersList and in messageRecieversOptionList
 {
     socket_->write(((QString)"USERS:").toUtf8());
 //    socket_->waitForReadyRead(500);
 
 //    handleUsersRequest();
+}
+
+void MainWindow::updateUsers(QStringList users_list)
+{
+//    ui->messageRecieversOptionList->addItem("all");
+
+    users_.clear();
+    users_.append("all");
+
+    // update users to users_list
+    for (int i = 0; i < users_list.size(); ++i)
+    {
+      QStringList parts = users_list[i].split(":");
+      if (parts.size() > 0)
+      {
+        users_.append(parts[0]);
+      }
+    }
+
+    QHash<QString, bool> usersHash;
+    for (int i = 0; i < ui->messageRecieversOptionList->count(); ++i)
+    {
+      usersHash.insert(ui->messageRecieversOptionList->item(i)->text(), true);
+    }
+
+    // Перебрать users и обновить ui->usersList
+    for (int i = 0; i < users_.size(); ++i)
+    {
+      if (usersHash.contains(users_[i]))
+      {
+        usersHash.remove(users_[i]);
+      }
+      else
+      {
+        ui->usersList->addAction(users_[i]);
+        ui->messageRecieversOptionList->addItem(users_[i]);
+      }
+    }
+
+    // Удалить оставшиеся элементы из ui->usersList
+    for (auto it = usersHash.begin(); it != usersHash.end(); ++it)
+    {
+      for (int i = 0; i < ui->messageRecieversOptionList->count(); ++i)
+      {
+        if (ui->messageRecieversOptionList->item(i)->text() == it.key())
+        {
+          qDebug() << "user i to remove: " << i << " " << ui->usersList->actions()[i];
+          ui->usersList->actions().removeAt(i);
+          ui->messageRecieversOptionList->takeItem(i);
+          break;
+        }
+      }
+    }
+
+    qDebug() << "users_:" << users_;
+}
+
+void MainWindow::updateChats()
+{
+    for (int i = 0; i < ui->messageRecieversOptionList->count(); ++i)
+    {
+        QListWidgetItem* receiver = ui->messageRecieversOptionList->item(i);
+        QTextBrowser* chat = browserMap.value(receiver);
+
+        if (!chat)
+        {
+            createTextBrowser(receiver);
+        }
+    }
+
+    // TODO: add remove chats function
 }
 
 void MainWindow::handleUsersRequest()
@@ -497,88 +571,75 @@ void MainWindow::handleUsersRequest()
     if (cur_user)
         cur_login = cur_user->text();
 
-    ui->usersList->clear();
-    ui->messageRecieversOptionList->clear();
+    updateUsers(users_list);
+    updateChats();
 
-    ui->messageRecieversOptionList->addItem("all");
     int cur_row_index = 0;
     int new_cur_row_index = cur_row_index;
+    int i = 0;
 
-    foreach (const QString& user, users_list)
-    {
-        QStringList user_info = user.split(":");
-        QString login = user_info[0];
-        int status = user_info[1].toInt();
-        int readiness = user_info[2].toInt();
+//    QList<QAction*> usersListActions = ui->usersList->actions();
 
-        QAction* userToChoose = ui->usersList->addAction(login);
+//    foreach (QAction* userToChoose, ui->usersList->actions())
+//    {
+//        QStringList user_info = users_list[i++].split(":");
+//        QString login = user_info[0];
+//        int status = user_info[1].toInt();
+//        int readiness = user_info[2].toInt();
 
-        if (readiness == 0)    // ST_NREADY
-        {
-            userToChoose->setIcon(QIcon(":/images/st_nready.jpg"));
-        }
-        else if (readiness == 1)   // ST_READY
-        {
-            userToChoose->setIcon(QIcon(":/images/st_ready.png"));
-        }
-        else if (readiness == 2)   // ST_PLAYING
-        {
-            userToChoose->setIcon(QIcon(":/images/st_playing.jpeg"));
-        }
-        else
-        {
-            qDebug() << "unknown status";
-        }
-
-//        for (QAction *action : ui->readyPlayersList->actions()) // delete from the ui->readyPlayersList
+//        if (readiness == 0)    // ST_NREADY
 //        {
-//            if (action->text() == login)
-//                ui->readyPlayersList->removeAction(action);
+//            userToChoose->setIcon(QIcon(":/images/st_nready.jpg"));
+//        }
+//        else if (readiness == 1)   // ST_READY
+//        {
+//            userToChoose->setIcon(QIcon(":/images/st_ready.png"));
+//        }
+//        else if (readiness == 2)   // ST_PLAYING
+//        {
+//            userToChoose->setIcon(QIcon(":/images/st_playing.jpeg"));
+//        }
+//        else
+//        {
+//            qDebug() << "unknown status";
 //        }
 
-        if (status == 1 && readiness == 1 && login != login_) // == ST_AUTHORIZED && == ST_READY
-        {
-            QAction* userToPlayWith = userToChoose; // ui->readyPlayersList->addAction(userToChoose->text());
-//            userToPlayWith->setIcon(QIcon(":/images/kill.png")); // setIconText(user_info[1]);    // TODO: set background color depending on status
+//        if (status == 1 && readiness == 1 && login != login_) // == ST_AUTHORIZED && == ST_READY
+//        {
+//            QAction* userToPlayWith = userToChoose; // ui->readyPlayersList->addAction(userToChoose->text());
 
-            userToChoose->setEnabled(true);
-            QObject::connect(userToPlayWith, &QAction::triggered, [this, userToChoose]()
-            {
-                QString enemy_login = userToChoose->text();
+//            userToChoose->setEnabled(true);
+//            QObject::connect(userToPlayWith, &QAction::triggered, [this, userToChoose]()
+//            {
+//                QString enemy_login = userToChoose->text();
 
-                CLICK_SOUND
-                qDebug() << "try to connect to the user " << enemy_login;
-                // TODO: handler
+//                CLICK_SOUND
+//                qDebug() << "try to connect to the user " << enemy_login;
+//                // TODO: handler
 
-                connectToGame(enemy_login);
-            });
-        }
+//                connectToGame(enemy_login);
+//            });
+//        }
 
-        else if (login == login_)
-        {
-            userToChoose->setEnabled(false);
-//              userToChoose->setCheckable(false);
-        }
+//        else if (login == login_)
+//        {
+//            userToChoose->setEnabled(false);
+//        }
 
-        else
-        {
+//        else
+//        {
 
-        }
+//        }
 
-        ui->messageRecieversOptionList->addItem(login);
-        cur_row_index++;
+//        cur_row_index++;
 
-        qDebug() << "User " << login;
+//        qDebug() << "User " << login;
 
-        if (cur_login == login)
-            new_cur_row_index = cur_row_index;
+//        if (cur_login == login)
+//            new_cur_row_index = cur_row_index;
+//    }
 
-//        // TODO: add smarter user chats update, because char now are removed and then created again
-    }
-
-    ui->messageRecieversOptionList->setCurrentRow(new_cur_row_index);   // set message to all at default
-
-//    updateChats();
+//    ui->messageRecieversOptionList->setCurrentRow(new_cur_row_index);   // set message to all at default
 }
 
 void MainWindow::handleExitRequest()
@@ -793,7 +854,7 @@ void MainWindow::screenUpdate()
 void MainWindow::updateAll()
 {
     connectionStateUpdate(connectionState_);
-    usersListUpdate();
+    makeUsersRequest();
     screenUpdate();
 }
 
@@ -801,6 +862,7 @@ void MainWindow::on_updateButton_clicked()
 {
     CLICK_SOUND
     updateAll();
+//    socket_->write(((QString)"UPDATE:").toUtf8());
 }
 
 void MainWindow::sendMessage()
@@ -863,22 +925,6 @@ void MainWindow::connectToGame(const QString& enemy_login)
 {
     socket_->write(((QString)"CONNECTION:" + enemy_login).toUtf8());
     qDebug() << "CONNECTION:" << enemy_login;
-}
-
-void MainWindow::updateChats()
-{
-    QList<QListWidgetItem*> receiversList;
-    foreach (QListWidgetItem* receiver, receiversList)
-    {
-        QTextBrowser* chat = browserMap.value(receiver);
-
-        if (!chat)
-        {
-            createTextBrowser(receiver);
-        }
-    }
-
-    // TODO: add remove chats function
 }
 
 void MainWindow::on_messageRecieversOptionList_itemSelectionChanged()
