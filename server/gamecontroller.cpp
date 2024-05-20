@@ -1,11 +1,15 @@
 #include "gamecontroller.hpp"
 
 GameController::GameController(int gameId, ClientsIterator clientStarted, ClientsIterator clientAccepted) :
-    clientStarted_(clientStarted)   ,
-    clientAccepted_(clientAccepted) ,
-    gameId_(gameId)                 ,
-    state_(ST_PLACING)              ,
-    nPlaced_(0)
+    clientStarted_(clientStarted)                       ,
+    clientAccepted_(clientAccepted)                     ,
+    // clientStartedField_(clientStarted->getField())      ,
+    // clientAcceptedField_(clientAccepted_->getField())   ,
+    gameId_(gameId)                                     ,
+    state_(ST_PLACING)                                  ,
+    nPlaced_(0)                                         ,
+    nDecks_(4*1+3*3+2*3+1*4)                            ,
+    nDamaged_(0)
 {
 
 }
@@ -31,6 +35,11 @@ int GameController::getGameId()
     return gameId_;
 }
 
+bool GameController::checkGameFinish()
+{
+    return nDamaged_ == nDecks_;
+}
+
 GameController::GameState GameController::getState()
 {
     return state_;
@@ -39,6 +48,11 @@ GameController::GameState GameController::getState()
 void GameController::incNPlaced()
 {
     nPlaced_++;
+}
+
+void GameController::incNDamaged()
+{
+    nDamaged_++;
 }
 
 int GameController::getNPlaced()

@@ -6,6 +6,7 @@
 //#include <QtSerialPort/QSerialPort>
 #include <vector>
 #include <QTextBrowser>
+#include <QLabel>
 #include "client.hpp"
 #include "gamecontroller.hpp"
 #include "dbcontroller.hpp"

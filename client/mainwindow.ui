@@ -353,6 +353,19 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
+   <widget class="QLabel" name="scoreLabel">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>30</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

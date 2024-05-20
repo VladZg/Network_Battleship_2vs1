@@ -26,6 +26,8 @@ public:
 
     void incNPlaced();
     int getNPlaced();
+    void incNDamaged();
+    bool checkGameFinish();
 
     void setClientStartedField(QString field);
     void setClientAcceptedField(QString field);
@@ -36,6 +38,8 @@ private:
     int gameId_;
     GameState state_;
     int nPlaced_;
+    int nDamaged_;
+    int nDecks_;
 
     ClientsIterator clientStarted_;     // client who started  the game
     ClientsIterator clientAccepted_;    // client who accepted the game

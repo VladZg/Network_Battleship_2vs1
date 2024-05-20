@@ -423,17 +423,25 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 if (!enemyIt->isCellEmpty(x, y))
                 {
-                    qDebug() << "HERE1";
+                //    gIt->incNDamaged();
+
+//                    qDebug() << "HERE1";
                     if(enemyIt->isKilled(x, y))
                     {
-                        // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
-                        message += "KILLED"; // временно
+                        message += "KILLED"; // эта строчка временно
                         qDebug() << "Убит!";
-//                        return;
+                        // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
+
+                        // bool isGameFinished = gIt->checkGameFinish();
+                        // if (isGameFinished)
+                        // {
+                            // qDebug() << "all ships killed! game finished!";
+                            // finishGame(gameId);
+                        // }
                     }
                     else
                     {
-                        qDebug() << "HERE2";
+                    //    qDebug() << "HERE2";
                         // else    // DAMAGED
                         enemyIt->setCellDraw(x, y, Field::CellDraw::CELL_DAMAGED);
                         qDebug() << "Попадание!";
@@ -442,7 +450,7 @@ void Server::handleData(const QByteArray& data, int clientId)
                 }
                 else    // DOT
                 {
-                    qDebug() << "HERE3";
+//                    qDebug() << "HERE3";
                     enemyIt->setCellDraw(x, y, Field::CellDraw::CELL_DOT);
                     qDebug() << "Промах!";
                     message += "DOT";

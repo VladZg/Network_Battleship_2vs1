@@ -62,6 +62,8 @@ QString MainWindow::getServerStateStr()
             return QString("STOPPED");
         }
     }
+
+    return "NONE";
 }
 
 void MainWindow::on_testDatabaseButton_clicked()
