@@ -126,16 +126,23 @@ void Server::on_receiveData()
 {
     socket_ = (QTcpSocket*)sender();
     data_ = socket_->readAll();
-    PRINT("client" + QString::number(socket_->socketDescriptor()) + ": " + data_)
-    handleData(data_, socket_->socketDescriptor());
+
+    QList<QByteArray> dataArr = data_.split('@');
+    for (int i = 0; i < dataArr.size()-1; i++)
+    {
+        data_ = dataArr[i];
+        qDebug() << "DATA: " << data_;
+        PRINT("client" + QString::number(socket_->socketDescriptor()) + ": " + data_)
+        handleData(data_, socket_->socketDescriptor());
+    }
 }
 
 void Server::sendMessageToAll(const QString& message)
 {
     for (ClientsIterator receiver_it = clients_.begin(); receiver_it != clients_.end(); ++receiver_it)
     {
-        receiver_it->socket_->write(message.toUtf8());
-        receiver_it->socket_->flush();
+        receiver_it->socket_->write((message+"@").toUtf8());
+//        receiver_it->socket_->flush();
         PRINT(message + " to " + receiver_it->login_)
     }
 }
@@ -203,8 +210,8 @@ void Server::handleData(const QByteArray& data, int clientId)
 
             ClientsIterator receiver_it = clients_.find(receiver_socketDescriptor);
             QString message_answer = "MESSAGE:" + sender_login + ":" + message;
-            receiver_it->socket_->write(message_answer.toUtf8());
-            receiver_it->socket_->flush();
+            receiver_it->socket_->write((message_answer+"@").toUtf8());
+//            receiver_it->socket_->flush();
 
             PRINT(message_answer)
         }
@@ -224,8 +231,8 @@ void Server::handleData(const QByteArray& data, int clientId)
             logins_.insert(cit->socket_->socketDescriptor(), login);
             cit->setLogin(login);
 
-            cit->socket_->write(((QString)"AUTH:SUCCESS").toUtf8());
-            cit->socket_->flush();
+            cit->socket_->write(((QString)"AUTH:SUCCESS" + "@").toUtf8());
+//            cit->socket_->flush();
             cit->updateState(Client::ST_AUTHORIZED);
 //            cit->socket_->flush();
             PRINT("AUTH SUCCESS!!!")
@@ -235,7 +242,7 @@ void Server::handleData(const QByteArray& data, int clientId)
         {
             PRINT("AUTH UNSUCCESS... Already have " + login + " login")
 
-            cit->socket_->write(((QString)"AUTH:UNSUCCESS").toUtf8());
+            cit->socket_->write(((QString)"AUTH:UNSUCCESS" + "@").toUtf8());
             cit->socket_->flush();
             cit->updateState(Client::ST_CONNECTED);
 
@@ -300,8 +307,8 @@ void Server::handleData(const QByteArray& data, int clientId)
             else
                 qDebug() << "Wrong request";
 
-            receiver_it->socket_->write(message_answer.toUtf8());
-            receiver_it->socket_->flush();
+            receiver_it->socket_->write((message_answer+"@").toUtf8());
+//            receiver_it->socket_->flush();
             qDebug() << message_answer << " to " << receiver_login;
 
             PRINT(message_answer)
@@ -384,10 +391,10 @@ void Server::handleData(const QByteArray& data, int clientId)
                 if (gIt->getNPlaced() == 2)
                 {
                     QString message = "GAME:FIGHT";
-                    gIt->getClientAcceptedIt()->socket_->write(message.toUtf8());
-                    gIt->getClientAcceptedIt()->socket_->flush();
-                    gIt->getClientStartedIt()->socket_->write(message.toUtf8());
-                    gIt->getClientStartedIt()->socket_->flush();
+                    gIt->getClientAcceptedIt()->socket_->write((message+"@").toUtf8());
+//                    gIt->getClientAcceptedIt()->socket_->flush();
+                    gIt->getClientStartedIt()->socket_->write((message+"@").toUtf8());
+//                    gIt->getClientStartedIt()->socket_->flush();
 
                     qDebug() << "GAME:FIGHT";
                 }
@@ -420,10 +427,10 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 message += ":" + QString::number(x) + ":" + QString::number(y);
 
-                gIt->getClientStartedIt()->socket_->write(((QString)message).toUtf8());
-                gIt->getClientStartedIt()->socket_->flush();
-                gIt->getClientAcceptedIt()->socket_->write(((QString)message).toUtf8());
-                gIt->getClientAcceptedIt()->socket_->flush();
+                gIt->getClientStartedIt()->socket_->write(((QString)(message+"@")).toUtf8());
+//                gIt->getClientStartedIt()->socket_->flush();
+                gIt->getClientAcceptedIt()->socket_->write(((QString)(message+"@")).toUtf8());
+//                gIt->getClientAcceptedIt()->socket_->flush();
             }
             else
             {
@@ -456,8 +463,8 @@ void Server::handleData(const QByteArray& data, int clientId)
             return;
         }
 
-        cit->socket_->write(message.toUtf8());
-        cit->socket_->flush();
+        cit->socket_->write((message+"@").toUtf8());
+//        cit->socket_->flush();
         qDebug() << "Client's" + cit->login_ + "field generated and sended!";
     }
 
@@ -496,9 +503,12 @@ void Server::handleUsersRequest()
 
     foreach (const Client& client, clients_)
     {
-        client.socket_->write(answer); // sending to all clients list of all user logins
-        client.socket_->flush();
-//        client.socket_->flush();
+        if (client.isAuthorized())
+        {
+            client.socket_->write((((QString)answer)+"@").toUtf8()); // sending to all clients list of all user logins
+//            client.socket_->write(((QString)"\n").toUtf8()); // sending to all clients list of all user logins
+            client.socket_->flush();
+        }
     }
 
     PRINT(answer)
@@ -522,7 +532,7 @@ void Server::handleUpdateRequest()
 
     qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
     ClientsIterator cit = clients_.find(cId);
-    cit->socket_->write(answer); // sending to all clients list of all user logins
+    cit->socket_->write(((QString)answer+"@").toUtf8()); // sending to all clients list of all user logins
     cit->socket_->flush();
 
     PRINT(answer)
@@ -703,10 +713,13 @@ void Server::startGame(QString login_started, QString login_accepted)
     QString message1 = "GAME:START:" + login_accepted + ":" + QString::number(gameId);
     QString message2 = "GAME:START:" + login_started + ":" + QString::number(gameId);
 
-    c1It->socket_->write(message1.toUtf8());
-    c1It->socket_->flush();
-    c2It->socket_->write(message2.toUtf8());
-    c2It->socket_->flush();
+//    c1It->readiness_ = Client::ST_PLAYING;
+//    c2It->readiness_ = Client::ST_PLAYING;
+
+    c1It->socket_->write((message1+"@").toUtf8());
+//    c1It->socket_->flush();
+    c2It->socket_->write((message2+"@").toUtf8());
+//    c2It->socket_->flush();
 
     qDebug() << message1;
     qDebug() << message2;
@@ -752,10 +765,13 @@ void Server::finishGame(int gameId)
         PRINT("Stop game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
     }
 
-    c1It->socket_->write(message.toUtf8());
-    c1It->socket_->flush();
-    c2It->socket_->write(message.toUtf8());
-    c2It->socket_->flush();
+//    c1It->readiness_ = Client::ST_NREADY;
+//    c2It->readiness_ = Client::ST_NREADY;
+
+    c1It->socket_->write((message+"@").toUtf8());
+//    c1It->socket_->flush();
+    c2It->socket_->write((message+"@").toUtf8());
+//    c2It->socket_->flush();
 
     PRINT(message + " to " + login1)
     PRINT(message + " to " + login2)

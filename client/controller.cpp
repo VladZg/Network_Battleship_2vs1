@@ -128,7 +128,7 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event, QLabel* a
 
             QString shotMessage = "GAME:" + QString::number(model_->getGameId()) + ":" + model_->getLogin() + ":" + "SHOT:" + QString::number(point.x()) + ":" + QString::number(point.y()); // GAME:<gameId>:<my_login>:SHOT:<x>:<y>
 
-            socket_->write(shotMessage.toUtf8());
+            socket_->write((shotMessage+"@").toUtf8());
             qDebug() << shotMessage;
         }
         else if (event->button() == Qt::RightButton)

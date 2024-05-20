@@ -85,6 +85,8 @@ public:
     void updateChats();
     void stopClient(QString msg);
 
+    void setIconStatus(QAction* userToChoose, int readiness);
+
     void startFight();
     void startGame(QString enemy_login, int gameId);
     void finishGame();
