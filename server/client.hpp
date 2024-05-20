@@ -29,6 +29,7 @@ public:
     };
 
     void setLogin(const QString& login);
+    void setFieldDraw(QVector<Field::CellDraw> field);
     QString getLogin();
     Field getField();
     bool isAuthorized() const;

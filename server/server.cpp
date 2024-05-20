@@ -424,9 +424,9 @@ void Server::handleData(const QByteArray& data, int clientId)
                 if (!enemyIt->isCellEmpty(x, y))
                 {
                     qDebug() << "HERE1";
-                    if(enemyIt->isKilled(x, y))
+                    if(enemyIt->isKilled(x, y)) // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
                     {
-                        // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
+                        drawKilledShip(enemyIt, x, y);
                         message += "KILLED"; // временно
                         qDebug() << "Убит!";
 //                        return;
@@ -506,10 +506,164 @@ void Server::handleData(const QByteArray& data, int clientId)
     // TODO: add more handlers
 }
 
+void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
+{
+    qDebug() << "Drawing killed ship...!";
+
+    // Получаем поле клиента, у которого нужно сделать отрисовку убитого корабля
+    Field field = cIt->getField();
+    QVector<Field::CellState> fieldState = field.getFieldState();
+    QVector<Field::CellDraw> fieldDraw   = field.getFieldDraw();
+    int width_  = field.getWidth();
+    int height_ = field.getHeight();
+
+    // По традиции создаём поля State и Draw размером 12x12. Делаем их пустыми
+    QVector<Field::CellState> fieldStateWithBorders((width_+2)*(height_+2));
+    QVector<Field::CellDraw> fieldDrawWithBorders((width_+2)*(height_+2));
+    fieldStateWithBorders.fill(Field::CL_ST_EMPTY);
+    fieldDrawWithBorders.fill(Field::CELL_EMPTY);
+
+    // Копируем в них поля State и Draw размерами 10x10
+    for(int i = 0; i < height_; i++)
+    {
+        for(int j = 0; j < width_; j++)
+        {
+            fieldStateWithBorders[(width_+2)*(i+1)+(j+1)] = fieldState[width_*i+j];
+        }
+    }
+
+    for(int i = 0; i < height_; i++)
+    {
+        for(int j = 0; j < width_; j++)
+        {
+            fieldDrawWithBorders[(width_+2)*(i+1)+(j+1)] = fieldDraw[width_*i+j];
+        }
+    }
+
+    // Переводим координаты клетки, в которую попали, из пространства 10x10 в пространство 12x12
+    int damagedCell = (width_+2)*(y+1)+(x+1);
+
+    // Сам алгоритм отрисовки клеток убитого корабля
+    switch(fieldStateWithBorders[damagedCell])
+    {
+        case(Field::CellState::CL_ST_CENTER):
+        {
+            for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < 3; ++cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+            }
+        }
+
+        case(Field::CellState::CL_ST_TOP):
+        {
+            int lenght = 0;
+            for(; fieldStateWithBorders[damagedCell + lenght * (width_ + 2)] != Field::CellState::CL_ST_EMPTY; lenght++) {}
+
+            for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < 3; ++cell, ++cnt)
+            {
+                for(int tmpCell = cell, tmpCnt = 0; tmpCnt < lenght + 2; tmpCell += width_ + 2, tmpCnt++)
+                {
+                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
+                }
+            }
+        }
+
+        case(Field::CellState::CL_ST_LEFT):
+        {
+            int lenght = 0;
+            for(; fieldStateWithBorders[damagedCell + lenght] != Field::CellState::CL_ST_EMPTY; lenght++) {}
+
+            for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < lenght + 2; ++cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+            }
+        }
+
+        case(Field::CellState::CL_ST_BOTTOM):
+        {
+            int lenght = 0;
+            for(; fieldStateWithBorders[damagedCell - lenght * (width_ + 2)] != Field::CellState::CL_ST_EMPTY; lenght++) {}
+
+            for(int cell = damagedCell + (width_ + 2) - 1, cnt = 0; cnt < 3; ++cell, ++cnt)
+            {
+                for(int tmpCell = cell, tmpCnt = 0; tmpCnt < lenght + 2; tmpCell -= width_ + 2, tmpCnt++)
+                {
+                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
+                }
+            }
+        }
+
+        case(Field::CellState::CL_ST_VMIDDLE):
+        {
+            for(; fieldStateWithBorders[damagedCell] != Field::CellState::CL_ST_EMPTY; damagedCell -= width_ + 2) {}
+
+            int lenght = 0;
+            for(; fieldStateWithBorders[damagedCell + lenght * (width_ + 2)] != Field::CellState::CL_ST_EMPTY; lenght++) {}
+
+            for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < 3; ++cell, ++cnt)
+            {
+                for(int tmpCell = cell, tmpCnt = 0; tmpCnt < lenght + 2; tmpCell += width_ + 2, tmpCnt++)
+                {
+                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
+                }
+            }
+        }
+
+        case(Field::CellState::CL_ST_HMIDDLE):
+        {
+            for(; fieldStateWithBorders[damagedCell] != Field::CellState::CL_ST_EMPTY; damagedCell--) {}
+
+            int lenght = 0;
+            for(; fieldStateWithBorders[damagedCell + lenght] != Field::CellState::CL_ST_EMPTY; lenght++) {}
+
+            for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < lenght + 2; ++cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+            }
+        }
+
+        case(Field::CellState::CL_ST_RIGHT):
+        {
+            int lenght = 0;
+            for(; fieldStateWithBorders[damagedCell - lenght] != Field::CellState::CL_ST_EMPTY; lenght++) {}
+
+            for(int cell = damagedCell - (width_ + 2) + 1, cnt = 0; cnt < lenght + 2; --cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+            }
+        }
+
+        default:
+        {
+            qDebug() << "From function drawKilledShip: unknown cell state!";
+        }
+    }
+
+    // Переводим отрисованное поле из 12x12 в 10x10
+    for(int i = 0; i < height_; i++)
+    {
+        for(int j = 0; j < width_; j++)
+        {
+            fieldDraw[width_*i+j]  = fieldDrawWithBorders[(width_+2)*(i+1)+(j+1)];
+        }
+    }
+
+    cIt->setFieldDraw(fieldDraw);
+}
+
 //void handleMessageRequest(ClientsIterator cit)
 //{
 
 //}
+
 
 void Server::handleUsersRequest()
 {
