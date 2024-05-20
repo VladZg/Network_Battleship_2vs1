@@ -426,7 +426,7 @@ void Server::handleData(const QByteArray& data, int clientId)
                 //    gIt->incNDamaged();
 
 //                    qDebug() << "HERE1";
-                    if(enemyIt->isKilled(x, y)) // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
+                    if(enemyIt->isKilled(x, y)) // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку drawKilledShip(enemyIt, x, y);
                     {
                         drawKilledShip(enemyIt, x, y);
                         message += "KILLED"; // временно
