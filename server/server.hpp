@@ -47,6 +47,7 @@ public:
     void handleFieldRequest();
     void sendMessageToAll(const QString& message);
     void removeDisconnectedClients();
+    void drawKilledShip(ClientsIterator cIt, int x, int y);
 
     void startGame(QString login1, QString login2);
     void finishGame(int gameId);

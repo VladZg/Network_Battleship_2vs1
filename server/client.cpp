@@ -17,6 +17,11 @@ Field Client::getField()
     return *field_;
 }
 
+void Client::setFieldDraw(QVector<Field::CellDraw> field)
+{
+    field_->setFieldDraw(field);
+}
+
 QString Client::getLogin()
 {
     return login_;

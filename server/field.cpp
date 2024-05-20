@@ -58,6 +58,16 @@ Cell Field::getCell(int x, int y)
     return Cell::CELL_EMPTY;
 }
 
+int Field::getWidth()
+{
+    return width_;
+}
+
+int Field::getHeight()
+{
+    return height_;
+}
+
 void Field::setCell(int x, int y, Cell cell)
 {
     if(x >= 0 && y >= 0 && x < width_ && y < height_)
@@ -123,6 +133,16 @@ QString Field::getFieldDrawStr()
     return result;
 }
 
+QVector<Field::CellState> Field::getFieldState()
+{
+    return fieldState_;
+}
+
+QVector<Field::CellDraw> Field::getFieldDraw()
+{
+    return fieldDraw_;
+}
+
 void Field::setField(QString field)
 {
     field_.clear();
@@ -165,7 +185,7 @@ void Field::setFieldState(QString field)
     {
         if (cell_it->digitValue() < (int)CL_ST_EMPTY || cell_it->digitValue() > (int)CL_ST_UNDEFINED)
         {
-            qDebug() << "setField(str): wrong string!";
+            qDebug() << "setFieldState(str): wrong string!";
             fieldState_.clear();
             return;
         }
@@ -174,13 +194,10 @@ void Field::setFieldState(QString field)
     }
 }
 
-//void Field::setField(QVector<Cell> field)
-//{
-//    if (field.size() != area_)
-//        return;
-
-//    field_ = field;
-//}
+void Field::setFieldDraw(QVector<Field::CellDraw> field)
+{
+    fieldDraw_ = field;
+}
 
 void Field::clear()
 {
@@ -483,4 +500,9 @@ void Field::initFieldState()
 
     qDebug() << "inited fieldState_:" ;
     printField(fieldState_);
+}
+
+QVector<Cell> Field::getField()
+{
+    return field_;
 }

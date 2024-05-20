@@ -44,24 +44,30 @@ public:
     };
 
     Cell getCell(int x, int y);
-    void setCell(int x, int y, Cell cell);
+    QVector<Cell> getField();
+    int getWidth();
+    int getHeight();
     QString getFieldStr();
     QString getFieldStateStr();
     QString getFieldDrawStr();
+    QVector<CellState> getFieldState();
+    QVector<CellDraw> getFieldDraw();
+
+    void setCell(int x, int y, Cell cell);
     void setField(QString field);
-//    void setField(QVector<Cell> field);
-    void clear();
-    bool isCellEmpty(int x, int y);
-    void setFieldState(QString field);
-//    void setFiledDraw(QString field);
-    void initFieldDraw();
     void setCellState(int x, int y, CellState state);
     void setCellDraw(int x, int y, CellDraw state);
+    void setFieldState(QString field);
+    void setFieldDraw(QVector<Field::CellDraw> field);
+
+    void clear();
+    void generate();
+    void initFieldDraw();
     void initFieldState();
 
+    bool isCellEmpty(int x, int y);
     bool isCorrect() const;
     bool isKilled(int x, int y);
-    void generate();
 
 private:
     int width_;
