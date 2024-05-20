@@ -29,6 +29,8 @@ public:
 
     void setClientStartedField(QString field);
     void setClientAcceptedField(QString field);
+    void setClientStartedFieldState(QString field);
+    void setClientAcceptedFieldState(QString field);
 
 private:
     int gameId_;

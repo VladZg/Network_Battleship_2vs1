@@ -60,3 +60,13 @@ void GameController::setClientAcceptedField(QString field)
 {
     clientAcceptedField_.setField(field);
 }
+
+void GameController::setClientStartedFieldState(QString field)
+{
+    clientStartedField_.setFieldState(field);
+}
+
+void GameController::setClientAcceptedFieldState(QString field)
+{
+    clientAcceptedField_.setFieldState(field);
+}

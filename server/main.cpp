@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QApplication server(argc, argv);
 
-    MainWindow window(30000);
+    MainWindow window(50000);
 //    DBWindow dbWindow;
 
 //    dbWindow.show();
