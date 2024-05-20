@@ -156,7 +156,7 @@ static QString convertFieldToBin(const QString& fieldStr)
         if (it->digitValue() == 0)
             fieldStrBin += QString::number((int)CELL_EMPTY);
 
-        else if (it->digitValue() < 9)
+        else if (it->digitValue() > 0 && it->digitValue() < 9)
             fieldStrBin += QString::number((int)CELL_SHIP);
 
         else
@@ -375,18 +375,16 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 if (is_ClientStarted)
                 {
-                    gIt->setClientStartedFieldState(fieldStr);
-
-                    gIt->setClientStartedField(fieldBinStr);
-                    gIt->getClientStartedIt()->initField(fieldBinStr, fieldStr);
+//                    gIt->setClientStartedFieldState(fieldStr);
+//                    gIt->setClientStartedField(fieldBinStr);
+                    gIt->getClientStartedIt()->initField(fieldBinStr);
                     qDebug() << "Started client field setted!";
                 }
                 else
                 {
-                    gIt->setClientAcceptedFieldState(fieldStr);
-
-                    gIt->setClientAcceptedField(fieldBinStr);
-                    gIt->getClientAcceptedIt()->initField(fieldBinStr, fieldStr);
+//                    gIt->setClientAcceptedFieldState(fieldStr);
+//                    gIt->setClientAcceptedField(fieldBinStr);
+                    gIt->getClientAcceptedIt()->initField(fieldBinStr);
                     qDebug() << "Accepted client field setted!";
                 }
 
@@ -413,6 +411,11 @@ void Server::handleData(const QByteArray& data, int clientId)
                 if (is_ClientStarted)
                     enemyIt = gIt->getClientAcceptedIt();
 
+                Field f = enemyIt->getField();
+                qDebug() << "bin  : " << f.getFieldStr();
+                qDebug() << "state: " << f.getFieldStateStr();
+                qDebug() << "draw : " << f.getFieldDrawStr();
+
                 QString enemyLogin = enemyIt->login_;
                 qDebug() << login + " -> " + enemyLogin +  ": SHOT (" + QString::number(x) + "," + QString::number(y) + ")";
 
@@ -420,18 +423,27 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 if (!enemyIt->isCellEmpty(x, y))
                 {
-//                    if(enemyIt->isKilled(x, y))
-//                    {
-//                        enemyIt->setCellState(x, y, Field::CellState::);
-//                    }
-
-
-
-                    qDebug() << "Попадание!";
-                    message += "DAMAGED";
+                    qDebug() << "HERE1";
+                    if(enemyIt->isKilled(x, y))
+                    {
+                        // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
+                        message += "KILLED"; // временно
+                        qDebug() << "Убит!";
+//                        return;
+                    }
+                    else
+                    {
+                        qDebug() << "HERE2";
+                        // else    // DAMAGED
+                        enemyIt->setCellDraw(x, y, Field::CellDraw::CELL_DAMAGED);
+                        qDebug() << "Попадание!";
+                        message += "DAMAGED";
+                    }
                 }
-                else
+                else    // DOT
                 {
+                    qDebug() << "HERE3";
+                    enemyIt->setCellDraw(x, y, Field::CellDraw::CELL_DOT);
                     qDebug() << "Промах!";
                     message += "DOT";
                 }
@@ -462,7 +474,9 @@ void Server::handleData(const QByteArray& data, int clientId)
     {
         Field field = Field(dbController_.getRandomField());
 //        field.generate();
-        qDebug() << "Generated field: " << field.getFieldStr();
+        qDebug() << "Generated field_ : " << field.getFieldStr();
+        qDebug() << "Generated fieldState_: " << field.getFieldStateStr();
+        qDebug() << "Generated fieldDraw_: "<< field.getFieldDrawStr();
         QString message = "GENERATE:" + field.getFieldStr();
 
         qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect

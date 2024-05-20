@@ -84,8 +84,8 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     connect(socket_, SIGNAL(readyRead())   , this, SLOT(on_receiveData())     );  // when new network data comes, sockReady slot runs
     connect(socket_, SIGNAL(disconnected()), this, SLOT(on_sockDisconnect()));  // when socket disconnected, sockDisconnect slot runs
 
-//    timerId_ = startTimer(2000);
-    connectUser();
+    timerId_ = startTimer(2000);
+//    connectUser();
 }
 
 MainWindow::~MainWindow()

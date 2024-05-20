@@ -16,6 +16,7 @@ class Field
 {
 public:
     Field();
+    Field(QString field);
     Field(QString field, QString fieldState);
     ~Field();
 
@@ -45,6 +46,8 @@ public:
     Cell getCell(int x, int y);
     void setCell(int x, int y, Cell cell);
     QString getFieldStr();
+    QString getFieldStateStr();
+    QString getFieldDrawStr();
     void setField(QString field);
 //    void setField(QVector<Cell> field);
     void clear();
@@ -53,7 +56,8 @@ public:
 //    void setFiledDraw(QString field);
     void initFieldDraw();
     void setCellState(int x, int y, CellState state);
-    void setDrawState(int x, int y, CellDraw state);
+    void setCellDraw(int x, int y, CellDraw state);
+    void initFieldState();
 
     bool isCorrect() const;
     bool isKilled(int x, int y);

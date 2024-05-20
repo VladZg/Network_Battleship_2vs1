@@ -1,7 +1,7 @@
 #include "client.hpp"
 
 Client::Client() :
-    field_(NULL)
+    field_()
 {
 
 }
@@ -10,6 +10,11 @@ Client::~Client()
 {
     if (field_)
         delete field_;
+}
+
+Field Client::getField()
+{
+    return *field_;
 }
 
 QString Client::getLogin()
@@ -35,6 +40,13 @@ void Client::setLogin(const QString& login)
 void Client::initField()
 {
     field_ = new Field();
+    field_->initFieldDraw();
+}
+
+void Client::initField(QString field)
+{
+    field_ = new Field(field);
+    field_->initFieldDraw();
 }
 
 void Client::initField(QString field, QString fieldState)
@@ -65,4 +77,9 @@ bool Client::isKilled(int x, int y)
 void Client::setCellState(int x, int y, Field::CellState state)
 {
     return field_->setCellState(x, y, state);
+}
+
+void Client::setCellDraw(int x, int y, Field::CellDraw state)
+{
+    return field_->setCellDraw(x, y, state);
 }

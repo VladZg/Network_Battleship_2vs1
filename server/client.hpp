@@ -30,15 +30,18 @@ public:
 
     void setLogin(const QString& login);
     QString getLogin();
+    Field getField();
     bool isAuthorized() const;
     void updateState(ClientStatus state);
 
     void initField();
+    void initField(QString field);
     void initField(QString field, QString fieldState);
     QString getFieldStr();
     bool isCellEmpty(int x, int y);
     bool isKilled(int x, int y);
     void setCellState(int x, int y, Field::CellState state);
+    void setCellDraw(int x, int y, Field::CellDraw state);
 
 public:
     QTcpSocket*  socket_;
