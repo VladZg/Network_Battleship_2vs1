@@ -228,7 +228,7 @@ void MainWindow::authenticateUser()
 
             model_->setLogin(login_);
 
-//            ui->messageRecieversOptionList->addItem("all");
+            ui->messageRecieversOptionList->addItem("all");
 
             // TODO: get list of users from server
 //            makeUsersRequest();
@@ -505,7 +505,7 @@ void MainWindow::updateUsers(QStringList users_list)
 
 //    ui->usersList->clear();
     users_.clear();
-//    users_.append("all");
+    users_.append("all");
 
     // update users to users_list
     for (int i = 0; i < users_list.size(); ++i)
@@ -540,16 +540,26 @@ void MainWindow::updateUsers(QStringList users_list)
     // Удалить оставшиеся элементы из ui->usersList
     for (auto it = usersHash.begin(); it != usersHash.end(); ++it)
     {
-      for (int i = 0; i < ui->messageRecieversOptionList->count(); ++i)
+        qDebug() << "void updateUsers(): <---here1";
+
+      for (int i = 1; i < ui->messageRecieversOptionList->count(); ++i)
       {
+          qDebug() << "void updateUsers(): <---here2";
+
         if (ui->messageRecieversOptionList->item(i)->text() == it.key())
         {
-          qDebug() << "user i to remove: " << i << " " << ui->usersList->actions()[i];
-          ui->usersList->actions().removeAt(i);
-          QAction* userAction = ui->usersList->actions().at(i);
+          qDebug() << "user i to remove: " << i-1 << " " << ui->usersList->actions()[i-1];
+          ui->usersList->actions().removeAt(i-1);
+          QAction* userAction = ui->usersList->actions().at(i-1);
           delete userAction;
+
+          qDebug() << "void updateUsers(): <---here3";
+
           QListWidgetItem* userItem = ui->messageRecieversOptionList->takeItem(i);
           delete userItem;
+
+          qDebug() << "void updateUsers(): <---here4";
+
           break;
         }
       }
@@ -1067,7 +1077,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::exitFromServer()
 {
-    socket_->write(("EXIT:" + (QString)"@").toUtf8());    // send server message about user disconnect
+    socket_->write(((QString)"EXIT:@").toUtf8());    // send server message about user disconnect
 //    socket_->flush();
     qDebug() << "EXIT:";
 

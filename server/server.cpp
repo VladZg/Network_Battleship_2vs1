@@ -499,19 +499,19 @@ void Server::handleUsersRequest()
         }
     }
 
-    const char* answer = ("USERS:" + users_list.join(" ")).toUtf8();    // USERS:<login1>:<status1>:<readiness1> <login2>:<status2>:<readiness2> ...
+    QString answer = "USERS:" + users_list.join(" ");    // USERS:<login1>:<status1>:<readiness1> <login2>:<status2>:<readiness2> ...
 
     foreach (const Client& client, clients_)
     {
         if (client.isAuthorized())
         {
-            client.socket_->write((((QString)answer)+"@").toUtf8()); // sending to all clients list of all user logins
+            client.socket_->write(((answer+"@").toUtf8())); // sending to all clients list of all user logins
 //            client.socket_->write(((QString)"\n").toUtf8()); // sending to all clients list of all user logins
             client.socket_->flush();
+
+            PRINT("to " + client.login_ + " : " + answer)
         }
     }
-
-    PRINT(answer)
 }
 
 void Server::handleUpdateRequest()
@@ -554,11 +554,14 @@ void Server::handleExitRequest()
     qintptr cId = ((QTcpSocket*)sender())->socketDescriptor();    // descriptor of client to disconnect
     ClientsIterator cit = clients_.find(cId);
 
+    qDebug() << "sender: " << cit->login_;
+
     QString login = cit->login_;
 
     clientDisconnect(cit);
-    clients_.remove(cId);
+    clients_.erase(cit);
     logins_.remove(cId);
+    qDebug() << login + " removed from clients_ and logins_";
 
     if (clients_.find(cId)==clients_.end() && logins_.find(cId)==logins_.end())
         PRINT("User " + login + " is really deleted")
@@ -576,13 +579,13 @@ void Server::handleFieldRequest()
 
 void Server::clientDisconnect(ClientsIterator& cit)
 {
-    socket_ = cit->socket_;
+//    socket_ = cit->socket_;
 
     cit->socket_->disconnectFromHost();
     cit->status_ = Client::ST_DISCONNECTED;
     cit->socket_->close();
 
-    PRINT("User" + cit->login_ + "is disconnected")
+    PRINT("User " + cit->login_ + " is disconnected")
 }
 
 void Server::on_sockConnect()
