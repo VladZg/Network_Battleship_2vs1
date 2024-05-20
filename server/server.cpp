@@ -563,6 +563,8 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                 fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
                 fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
             }
+
+            break;
         }
 
         case(Field::CellState::CL_ST_TOP):
@@ -577,6 +579,8 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                     fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
                 }
             }
+
+            break;
         }
 
         case(Field::CellState::CL_ST_LEFT):
@@ -590,6 +594,8 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                 fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
                 fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
             }
+
+            break;
         }
 
         case(Field::CellState::CL_ST_BOTTOM):
@@ -604,6 +610,8 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                     fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
                 }
             }
+
+            break;
         }
 
         case(Field::CellState::CL_ST_VMIDDLE):
@@ -620,6 +628,8 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                     fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
                 }
             }
+
+            break;
         }
 
         case(Field::CellState::CL_ST_HMIDDLE):
@@ -635,6 +645,8 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                 fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
                 fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
             }
+
+            break;
         }
 
         case(Field::CellState::CL_ST_RIGHT):
@@ -648,11 +660,14 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
                 fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
                 fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
             }
+
+            break;
         }
 
         default:
         {
             qDebug() << "From function drawKilledShip: unknown cell state!";
+            break;
         }
     }
 
