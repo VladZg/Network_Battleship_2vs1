@@ -515,6 +515,23 @@ void Server::handleData(const QByteArray& data, int clientId)
     // TODO: add more handlers
 }
 
+void printField(const QVector<Field::CellDraw>& field)
+{
+    int width = sqrt(field.size());
+    int height = width;
+
+    QDebug debugOut = qDebug();
+    debugOut << "\n";
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+           debugOut << (int)(field[i*width+j]) << " ";
+        }
+        debugOut << "\n";
+    }
+}
+
 void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
 {
     qDebug() << "Drawing killed ship...!";
@@ -559,11 +576,12 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
         {
             for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < 3; ++cell, ++cnt)
             {
-                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_DOT;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
             }
 
+            fieldDrawWithBorders[damagedCell] = Field::CellDraw::CELL_KILLED;
             break;
         }
 
@@ -576,10 +594,14 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
             {
                 for(int tmpCell = cell, tmpCnt = 0; tmpCnt < lenght + 2; tmpCell += width_ + 2, tmpCnt++)
                 {
-                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
+                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_DOT;
                 }
             }
 
+            for(int cell = damagedCell, cnt = 0; cnt < lenght; cell += width_ + 2, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+            }
             break;
         }
 
@@ -590,11 +612,15 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
 
             for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < lenght + 2; ++cell, ++cnt)
             {
-                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_DOT;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
             }
 
+            for(int cell = damagedCell, cnt = 0; cnt < lenght; ++cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+            }
             break;
         }
 
@@ -607,10 +633,14 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
             {
                 for(int tmpCell = cell, tmpCnt = 0; tmpCnt < lenght + 2; tmpCell -= width_ + 2, tmpCnt++)
                 {
-                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
+                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_DOT;
                 }
             }
 
+            for(int cell = damagedCell, cnt = 0; cnt < lenght; cell -= width_ + 2, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+            }
             break;
         }
 
@@ -625,10 +655,14 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
             {
                 for(int tmpCell = cell, tmpCnt = 0; tmpCnt < lenght + 2; tmpCell += width_ + 2, tmpCnt++)
                 {
-                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_KILLED;
+                    fieldDrawWithBorders[tmpCell] = Field::CellDraw::CELL_DOT;
                 }
             }
 
+            for(int cell = damagedCell, cnt = 0; cnt < lenght; cell += width_ + 2, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+            }
             break;
         }
 
@@ -642,10 +676,14 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
             for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < lenght + 2; ++cell, ++cnt)
             {
                 fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
             }
 
+            for(int cell = damagedCell, cnt = 0; cnt < lenght; ++cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+            }
             break;
         }
 
@@ -657,10 +695,14 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
             for(int cell = damagedCell - (width_ + 2) + 1, cnt = 0; cnt < lenght + 2; --cell, ++cnt)
             {
                 fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
-                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
+                fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
             }
 
+            for(int cell = damagedCell, cnt = 0; cnt < lenght; --cell, ++cnt)
+            {
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+            }
             break;
         }
 
@@ -681,7 +723,11 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
     }
 
     cIt->setFieldDraw(fieldDraw);
+
+//    printField(fieldDraw);
 }
+
+
 
 //void handleMessageRequest(ClientsIterator cit)
 //{
