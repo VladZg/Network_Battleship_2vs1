@@ -381,13 +381,14 @@
      <string>Пользователи</string>
     </property>
    </widget>
-   <widget class="QMenu" name="readyPlayersList">
+   <widget class="QMenu" name="utilsList">
     <property name="title">
-     <string>Играть</string>
+     <string>Меню</string>
     </property>
+    <addaction name="openFightHistoryAction"/>
    </widget>
    <addaction name="usersList"/>
-   <addaction name="readyPlayersList"/>
+   <addaction name="utilsList"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">
@@ -404,6 +405,11 @@
 color: rgb(220, 138, 221);</string>
    </property>
   </widget>
+  <action name="openFightHistoryAction">
+   <property name="text">
+    <string>История сражений</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

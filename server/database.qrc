@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>data.db</file>
         <file>placements.txt</file>
     </qresource>
 </RCC>

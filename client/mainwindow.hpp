@@ -20,6 +20,7 @@
 #include "field.hpp"
 #include "model.hpp"
 #include "controller.hpp"
+#include "fightshistorywindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -46,6 +47,8 @@ public:
     void updateAll();
     void exitFromServer();
 
+//    FightsHistoryWindow fightsHistoryWindow_;
+    QDialog fightsHistoryWindow_;
     QStringList users_;
 
 private:
@@ -79,6 +82,7 @@ public:
     void handleUsersRequest();
     void handlePingRequest();
     void handleFieldRequest();
+    void handleHistoryUpdateRequest();
     void handleExitRequest();
     void handleConnectionRequest();
     void handleGameRequest();
@@ -103,6 +107,7 @@ public slots:
     void on_sockDisconnect();
     void on_sockError(QAbstractSocket::SocketError error);
     void on_userToChose_triggered();
+    void on_openFightHistoryAction_triggered();
 
 private slots:
     void on_connectToServerButton_clicked();

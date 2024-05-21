@@ -31,7 +31,6 @@ HEADERS += \
     mainwindow.hpp \
     server.hpp
 
-
 FORMS += \
     mainwindow.ui \
     dbwindow.ui
@@ -46,5 +45,5 @@ RESOURCES += \
     images.qrc
 
 DISTFILES += \
-    data.db \
-    placements.txt
+    placements.txt  \
+    data.db

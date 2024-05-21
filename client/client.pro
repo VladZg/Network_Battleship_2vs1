@@ -1,4 +1,4 @@
-QT += core gui network
+QT += core gui network sql
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 QT += multimedia
 
@@ -13,6 +13,7 @@ TARGET = client
 SOURCES += \
     controller.cpp \
     field.cpp \
+    fightshistorywindow.cpp \
     images.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -23,6 +24,7 @@ HEADERS += \
     constants.hpp \
     controller.hpp \
     field.hpp \
+    fightshistorywindow.h \
     images.hpp \
     mainwindow.hpp \
     model.hpp
@@ -43,6 +45,7 @@ CONFIG( windows ) {
 }
 
 FORMS += \
+    fightshistorywindow.ui \
     mainwindow.ui
 
 # Default rules for deployment.

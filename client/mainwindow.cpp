@@ -1,6 +1,7 @@
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include "images.hpp"
+#include "fightshistorywindow.h"
 #include <QMessageBox>
 #include <QWidget>
 #include <QGraphicsView>
@@ -12,6 +13,7 @@
 #include <iostream>
 #include <QMediaPlayer>
 #include <QtMultimedia>
+#include <QDialog>
 
 #define CLICK_SOUND controller_->playSound("click");
 
@@ -20,6 +22,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     , ip_(ip)
     , port_(port)
     , ui(new Ui::MainWindow)
+    , fightsHistoryWindow_(QDialog(this))
 {
     ui->setupUi(this);
 
@@ -73,9 +76,10 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     graphicsView->setScene(graphicsScene);
     graphicsView->setParent(ui->fieldsLabel);
 
-//    ui->fieldsWidget-
-//    graphicsView->s
-//    widget->setGraphicsDevice(graphicsDevice);
+    fightsHistoryWindow_.setFixedSize(500, 450);
+    fightsHistoryWindow_.setWindowTitle("История сражений");
+    fightsHistoryWindow_.setEnabled(false);
+    connect(ui->openFightHistoryAction, SIGNAL(triggered), this, SLOT(on_openFightHistoryAction_triggered()));
 
     connectionStateUpdate(ST_DISCONNECTED);
 
@@ -262,6 +266,16 @@ void MainWindow::on_sockError(QAbstractSocket::SocketError error)
     qDebug() << "Socket error " << error;
 }
 
+void MainWindow::on_openFightHistoryAction_triggered()
+{
+    qDebug() << "show fight history window";
+    fightsHistoryWindow_.setEnabled(true);
+    fightsHistoryWindow_.show();
+    fightsHistoryWindow_.activateWindow();
+    fightsHistoryWindow_.raise();
+    fightsHistoryWindow_.exec();
+}
+
 void MainWindow::on_userToChose_triggered()
 {
     qDebug() << "Send request to ..." ; // TODO
@@ -340,6 +354,10 @@ void MainWindow::handleData()
         stopClient("Server stopped... Closing the app");
     }
 
+    else if (data_.startsWith("HISTORY:UPDATE:"))
+    {
+        handleHistoryUpdateRequest();
+    }
     else
     {
 
@@ -739,6 +757,11 @@ void MainWindow::handleFieldRequest()
     {
         qDebug() << "Wrong request";
     }
+}
+
+void MainWindow::handleHistoryUpdateRequest()
+{
+
 }
 
 void MainWindow::handleExitRequest()
