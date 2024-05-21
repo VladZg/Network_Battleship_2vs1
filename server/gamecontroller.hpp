@@ -23,6 +23,7 @@ public:
     ClientsIterator getClientAcceptedIt();
     int getGameId();
     GameState getState();
+    void updateState(GameController::GameState state);
 
     void incNPlaced();
     int getNPlaced();
@@ -33,6 +34,9 @@ public:
     void setClientAcceptedField(QString field);
     void setClientStartedFieldState(QString field);
     void setClientAcceptedFieldState(QString field);
+
+public:
+    QString winnerLogin_;
 
 private:
     int gameId_;

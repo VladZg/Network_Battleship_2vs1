@@ -851,15 +851,36 @@ void MainWindow::handleConnectionRequest()
 void MainWindow::handleGameRequest()
 {
     QStringList message_request = QString::fromUtf8(data_).split(":");
+    qDebug() << message_request;
+
+    if (message_request.size() == 3)
+    {
+        if (message_request[1] == "FINISH") // GAME:FINISH:<login>
+        {
+            QString winnerLogin = message_request[2];
+
+            if (winnerLogin == login_)
+            {
+                QString message = "Вы победили!";
+                QMessageBox::information(this, "Information!", message);
+                finishGame();
+            }
+            else if (winnerLogin == model_->getEnemyLogin())
+            {
+                QString message = "Игрок " + winnerLogin + " победил!";
+                QMessageBox::information(this, "Information!", message);
+                finishGame();
+            }
+            else
+            {
+                qDebug() << "Wrong request!";
+            }
+        }
+    }
 
     if (message_request.size() == 2)
     {
-        if (message_request[1] == "FINISH") // GAME:FINISH
-        {
-            finishGame();
-        }
-
-        else if (message_request[1] == "STOP") // GAME:STOP
+        if (message_request[1] == "STOP") // GAME:STOP
         {
             QMessageBox::information(this, "Information!", "Игра остановлена одним из пользователей...");
             finishGame();
@@ -867,6 +888,7 @@ void MainWindow::handleGameRequest()
 
         else if (message_request[1] == "FIGHT") // GAME:FIGHT
         {
+            qDebug() << "Starting fight?";
             startFight();
         }
 

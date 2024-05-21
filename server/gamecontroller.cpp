@@ -6,10 +6,11 @@ GameController::GameController(int gameId, ClientsIterator clientStarted, Client
     // clientStartedField_(clientStarted->getField())      ,
     // clientAcceptedField_(clientAccepted_->getField())   ,
     gameId_(gameId)                                     ,
-    state_(ST_PLACING)                                  ,
+    state_(ST_NSTARTED)                                 ,
     nPlaced_(0)                                         ,
-    nDecks_(4*1+3*3+2*3+1*4)                            ,
-    nDamaged_(0)
+    nDecks_(4*1+3*2+2*3+1*4)                            ,
+    nDamaged_(0)                                        ,
+    winnerLogin_()
 {
 
 }
@@ -40,6 +41,12 @@ bool GameController::checkGameFinish()
     return nDamaged_ == nDecks_;
 }
 
+void GameController::updateState(GameController::GameState state)
+{
+    state_ = state;
+    qDebug() << "game" << gameId_ << " state updated to " << state_;
+}
+
 GameController::GameState GameController::getState()
 {
     return state_;
@@ -53,6 +60,7 @@ void GameController::incNPlaced()
 void GameController::incNDamaged()
 {
     nDamaged_++;
+    qDebug() << "Increased nDamaged: " << nDamaged_;
 }
 
 int GameController::getNPlaced()

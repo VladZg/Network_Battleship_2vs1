@@ -398,6 +398,7 @@ void Server::handleData(const QByteArray& data, int clientId)
                     gIt->getClientStartedIt()->socket_->write((message+"@").toUtf8());
 //                    gIt->getClientStartedIt()->socket_->flush();
 
+                    gIt->updateState(GameController::GameState::ST_STARTED_STEP);
                     qDebug() << "GAME:FIGHT";
                 }
             }
@@ -406,10 +407,14 @@ void Server::handleData(const QByteArray& data, int clientId)
                 int x = message_request[4].toInt();
                 int y = message_request[5].toInt();
 
+//                ClientsIterator shooterIt = gIt->getClientAcceptedIt();
                 ClientsIterator enemyIt = gIt->getClientStartedIt();
 
                 if (is_ClientStarted)
+                {
                     enemyIt = gIt->getClientAcceptedIt();
+//                    shooterIt = gIt->getClientStartedIt();
+                }
 
                 Field f = enemyIt->getField();
                 qDebug() << "bin  : " << f.getFieldStr();
@@ -423,7 +428,7 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 if (!enemyIt->isCellEmpty(x, y))
                 {
-                //    gIt->incNDamaged();
+                    gIt->incNDamaged();
 
 //                    qDebug() << "HERE1";
                     if(enemyIt->isKilled(x, y)) // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку drawKilledShip(enemyIt, x, y);
@@ -434,12 +439,15 @@ void Server::handleData(const QByteArray& data, int clientId)
                         drawKilledShip(enemyIt, x, y);
                         sendFieldDrawToUsers(enemyIt);
 
-                        // bool isGameFinished = gIt->checkGameFinish();
-                        // if (isGameFinished)
-                        // {
-                            // qDebug() << "all ships killed! game finished!";
-                            // finishGame(gameId);
-                        // }
+                         bool isGameFinished = gIt->checkGameFinish();
+                         if (isGameFinished)
+                         {
+                             gIt->updateState(GameController::GameState::ST_FINISHED);
+                             gIt->winnerLogin_ = enemyIt->enemy_->getLogin();
+                             qDebug() << "all ships killed! game finished!";
+                             finishGame(gameId);
+                             // end timer and push to database
+                         }
 //                        return;
                     }
                     else
@@ -457,6 +465,15 @@ void Server::handleData(const QByteArray& data, int clientId)
                     enemyIt->setCellDraw(x, y, Field::CellDraw::CELL_DOT);
                     qDebug() << "Промах!";
                     message += "DOT";
+
+                    if (is_ClientStarted)
+                    {
+                        gIt->updateState(GameController::GameState::ST_ACCEPTED_STEP);
+                    }
+                    else
+                    {
+                        gIt->updateState(GameController::GameState::ST_STARTED_STEP);
+                    }
                 }
 
                 message += ":" + QString::number(x) + ":" + QString::number(y);
@@ -986,6 +1003,9 @@ void Server::startGame(QString login_started, QString login_accepted)
     c2It->socket_->write((message2+"@").toUtf8());
 //    c2It->socket_->flush();
 
+    gameController.updateState(GameController::GameState::ST_PLACING);
+    // start timer
+
     qDebug() << message1;
     qDebug() << message2;
     PRINT("Start game " + login_started + " vs " + login_accepted + " with gameId=" + QString::number(gameId))
@@ -996,7 +1016,7 @@ void Server::finishGame(int gameId)
     GamesIterator gameIt = games_.find(gameId);
 
     qDebug() << "We have now " + QString::number(games_.size()) + " active games";
-    qDebug() << "Boo";
+//    qDebug() << "Boo";
     for (GamesIterator git = games_.begin(); git != games_.end(); ++git)
     {
         PRINT("game " + QString::number(git->getGameId()) + " " + git->getClientStartedIt()->login_ + " vs " + git->getClientAcceptedIt()->login_)
@@ -1018,10 +1038,16 @@ void Server::finishGame(int gameId)
 
     QString message = "GAME:";
 
-    // TODO: проверка на то, были ли уже результаты игры, и если игра прервана пользователем, то отправляем GAME:STOP:<>...
+    // проверка на то, что игра закончилась, и если игра прервана пользователем, то отправляем GAME:STOP:<>...
     if (gameIt->getState() == GameController::ST_FINISHED)
     {
-        message += "FINISH";
+        if (gameIt->winnerLogin_ == "")
+        {
+            qDebug() << "Game " << gameId << " has no winner yet...";
+            return;
+        }
+
+        message += "FINISH:" + gameIt->winnerLogin_;
         PRINT("Finish game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
     }
     else
