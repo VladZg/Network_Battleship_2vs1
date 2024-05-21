@@ -442,7 +442,8 @@ void MainWindow::handleShotRequest()
         }
         else if (shotResult == "KILLED")
         {
-            status = CELL_KILLED;                controller_->playSound("hit");
+            status = CELL_KILLED;
+            controller_->playSound("you_hit");
             qDebug() << "Вы подорвали корабль противника! Продолжайте ход";
         }
         else
@@ -457,19 +458,19 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
-                controller_->playSound("miss");
+                controller_->playSound("you_miss");
                 qDebug() << "Вы промазали, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ход соперника");
             }
             else if (status == CELL_DAMAGED)
             {
-                controller_->playSound("hit");
+                controller_->playSound("you_hit");
                 qDebug() << "Вы попали! Продолжайте ход";
             }
             else if (status == CELL_KILLED)
             {
-                controller_->playSound("hit");
+                controller_->playSound("you_kill");
                 qDebug() << "Вы подорвали корабль противника! Продолжайте ход";
             }
             else
@@ -484,7 +485,7 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
-                controller_->playSound("miss");
+                controller_->playSound("enemy_miss");
                 qDebug() << "Противник промазал, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ваш ход");
@@ -492,13 +493,13 @@ void MainWindow::handleShotRequest()
             }
             else if (status == CELL_DAMAGED)
             {
-                controller_->playSound("hit");
+                controller_->playSound("enemy_hit");
                 qDebug() << "Противник попал и продолжает ход";
             }
-            else if (status == CELL_DAMAGED)
+            else if (status == CELL_KILLED)
             {
-                controller_->playSound("hit");
-                qDebug() << "Вы попали! Продолжайте ход";
+                controller_->playSound("enemy_kill");
+                qDebug() << "Противник попал и уничтожил ваш корабль! Его ход";
             }
         }
 

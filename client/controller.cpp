@@ -244,10 +244,13 @@ void Controller::loadSounds()
         return;
 
     LOAD_SOUND_WAV("click"  )
-    LOAD_SOUND_WAV("hit"    )
-    LOAD_SOUND_WAV("miss"   )
+    LOAD_SOUND_WAV("you_hit"    )
+    LOAD_SOUND_WAV("enemy_hit"   )
+    LOAD_SOUND_WAV("you_miss"    )
+    LOAD_SOUND_WAV("enemy_miss"   )
+    LOAD_SOUND_WAV("you_kill"    )
+    LOAD_SOUND_WAV("enemy_kill"   )
     LOAD_SOUND_WAV("new_msg")
-
     isLoaded_ = true;
 }
 

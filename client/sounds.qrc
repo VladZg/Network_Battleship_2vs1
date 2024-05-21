@@ -5,5 +5,11 @@
         <file>sounds/background.mp3</file>
         <file>sounds/click.wav</file>
         <file>sounds/new_msg.wav</file>
+        <file>sounds/you_miss.wav</file>
+        <file>sounds/you_kill.wav</file>
+        <file>sounds/you_hit.wav</file>
+        <file>sounds/enemy_miss.wav</file>
+        <file>sounds/enemy_kill.wav</file>
+        <file>sounds/enemy_hit.wav</file>
     </qresource>
 </RCC>
