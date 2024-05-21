@@ -2,9 +2,12 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QDebug>
+#include <cstdlib>
+#include <ctime>
 
 DBController::DBController(QWidget* parent) : QDialog(parent)
 {
+    srand(time(nullptr));
 }
 
 DBController::~DBController()
@@ -62,7 +65,7 @@ QString DBController::getRandomField()
         return "";
     }
 
-    int randomIndex = rand() % nFields;
+    int randomIndex = rand() % (nFields);
 
     // Запрос на получение случайной записи из таблицы
     query_->exec(QString("SELECT field_text FROM Fields LIMIT 1 OFFSET %1").arg(randomIndex));
