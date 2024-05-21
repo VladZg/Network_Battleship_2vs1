@@ -52,6 +52,7 @@ public:
     void setStateCell(int index_bordered, CellState cell);
     QString getStateFieldStr() const;
     QString getDrawFieldStr() const;
+    QVector<CellDraw> getDrawField() const;
 
     void setStateField(QString field);
     void setDrawField(QString field);
@@ -66,6 +67,7 @@ public:
 
     int getWidth() const;
     int getHeight() const;
+    int getArea() const;
 
     bool isCorrect();
     bool CheckDiagonalCollisions(const QVector<CellState>& fieldStateWithBorders);
@@ -82,5 +84,7 @@ private:
     QVector<CellState> fieldState_;
     QVector<CellDraw> fieldDraw_;
 };
+
+QVector<CellDraw> fieldDrawFromStr(QString fieldDrawStr);
 
 #endif // FIELD_H

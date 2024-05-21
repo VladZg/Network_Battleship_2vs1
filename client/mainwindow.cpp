@@ -304,6 +304,11 @@ void MainWindow::handleData()
         handleUsersRequest();
     }
 
+    else if (data_.startsWith("FIELD:"))
+    {
+        handleFieldRequest();
+    }
+
     else if(data_.startsWith("SHOT:"))
     {
         handleShotRequest();
@@ -437,7 +442,8 @@ void MainWindow::handleShotRequest()
         }
         else if (shotResult == "KILLED")
         {
-            status = CELL_KILLED;
+            status = CELL_KILLED;                controller_->playSound("hit");
+            qDebug() << "Вы подорвали корабль противника! Продолжайте ход";
         }
         else
         {
@@ -461,6 +467,15 @@ void MainWindow::handleShotRequest()
                 controller_->playSound("hit");
                 qDebug() << "Вы попали! Продолжайте ход";
             }
+            else if (status == CELL_KILLED)
+            {
+                controller_->playSound("hit");
+                qDebug() << "Вы подорвали корабль противника! Продолжайте ход";
+            }
+            else
+            {
+
+            }
         }
         else if (model_->getState() == ST_WAITING_STEP)
         {
@@ -479,6 +494,11 @@ void MainWindow::handleShotRequest()
             {
                 controller_->playSound("hit");
                 qDebug() << "Противник попал и продолжает ход";
+            }
+            else if (status == CELL_DAMAGED)
+            {
+                controller_->playSound("hit");
+                qDebug() << "Вы попали! Продолжайте ход";
             }
         }
 
@@ -687,6 +707,37 @@ void MainWindow::handleUsersRequest()
     }
 
 //    ui->messageRecieversOptionList->setCurrentRow(new_cur_row_index);   // set message to all at default
+}
+
+void MainWindow::handleFieldRequest()
+{
+    QStringList message_request = QString::fromUtf8(data_).split(":");
+
+    if (message_request.size() < 4 || message_request[1] != "UPDATE")
+    {
+        qDebug() << "wrong request";
+        return;
+    }
+
+    QString fieldDrawStr = message_request[3];
+//    qDebug() << "fieldDrawStr = " << fieldDrawStr;
+
+    if (message_request[2] == "MY")
+    {
+        qDebug() << "Update my field: " << message_request[3];
+//        qDebug() << "MYYYY";
+        updateMyFieldDraw(fieldDrawStr);
+    }
+    else if (message_request[2] == "ENEMY")
+    {
+        qDebug() << "Update enemy field: " << message_request[3];
+//        qDebug() << "ENEMYYY";
+        updateEnemyFieldDraw(fieldDrawStr);
+    }
+    else
+    {
+        qDebug() << "Wrong request";
+    }
 }
 
 void MainWindow::handleExitRequest()
@@ -1347,3 +1398,14 @@ void MainWindow::on_volumeSlider_actionTriggered(int action)
     controller_->updateVolume(volume);
 }
 
+void MainWindow::updateMyFieldDraw(QString fieldDrawStr)
+{
+    QVector<CellDraw> fieldDraw = fieldDrawFromStr(fieldDrawStr);
+    model_->updateMyFieldDraw(fieldDraw);
+}
+
+void MainWindow::updateEnemyFieldDraw(QString fieldDrawStr)
+{
+    QVector<CellDraw> fieldDraw = fieldDrawFromStr(fieldDrawStr);
+    model_->updateEnemyFieldDraw(fieldDraw);
+}

@@ -432,7 +432,7 @@ void Server::handleData(const QByteArray& data, int clientId)
                         qDebug() << "Убит!";
 
                         drawKilledShip(enemyIt, x, y);
-                        sendFieldDrawToUser(enemyIt);
+                        sendFieldDrawToUsers(enemyIt);
 
                         // bool isGameFinished = gIt->checkGameFinish();
                         // if (isGameFinished)
@@ -517,9 +517,10 @@ void Server::handleData(const QByteArray& data, int clientId)
     // TODO: add more handlers
 }
 
-void Server::sendFieldDrawToUser(ClientsIterator cIt)
+void Server::sendFieldDrawToUsers(ClientsIterator cIt)
 {
-    cIt->socket_->write(("FIELD:UPDATE:" + cIt->getField().getFieldDrawStr() + "@").toUtf8());
+    cIt->socket_->write(("FIELD:UPDATE:MY:" + cIt->getField().getFieldDrawStr() + "@").toUtf8());
+    cIt->enemy_->socket_->write(("FIELD:UPDATE:ENEMY:" + cIt->getField().getFieldDrawStr() + "@").toUtf8());
 }
 
 void printField(const QVector<Field::CellDraw>& field)
@@ -653,7 +654,7 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
 
         case(Field::CellState::CL_ST_VMIDDLE):
         {
-            for(; fieldStateWithBorders[damagedCell] != Field::CellState::CL_ST_EMPTY; damagedCell -= width_ + 2) {}
+            for(; fieldStateWithBorders[damagedCell] != Field::CellState::CL_ST_EMPTY; damagedCell -= (width_+2)) {}
 
             int lenght = 0;
             for(; fieldStateWithBorders[damagedCell + lenght * (width_ + 2)] != Field::CellState::CL_ST_EMPTY; lenght++) {}
@@ -682,7 +683,7 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
 
             for(int cell = damagedCell - (width_ + 2) - 1, cnt = 0; cnt < lenght + 2; ++cell, ++cnt)
             {
-                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_DOT;
                 fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
                 fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
             }
@@ -701,7 +702,7 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
 
             for(int cell = damagedCell - (width_ + 2) + 1, cnt = 0; cnt < lenght + 2; --cell, ++cnt)
             {
-                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_KILLED;
+                fieldDrawWithBorders[cell] = Field::CellDraw::CELL_DOT;
                 fieldDrawWithBorders[cell + 1 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
                 fieldDrawWithBorders[cell + 2 * (width_ + 2)] = Field::CellDraw::CELL_DOT;
             }
@@ -957,6 +958,9 @@ void Server::startGame(QString login_started, QString login_accepted)
 {
     ClientsIterator c1It = findClient(login_started);
     ClientsIterator c2It = findClient(login_accepted);
+
+    c1It->enemy_ = c2It;
+    c2It->enemy_ = c1It;
 
     static int gameId = 0;
     gameId++;   // get gameId

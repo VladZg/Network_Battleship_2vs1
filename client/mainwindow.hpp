@@ -78,12 +78,16 @@ public:
     void handleShotRequest();
     void handleUsersRequest();
     void handlePingRequest();
+    void handleFieldRequest();
     void handleExitRequest();
     void handleConnectionRequest();
     void handleGameRequest();
     void handleGenerateRequest();
     void updateChats();
     void stopClient(QString msg);
+
+    void updateMyFieldDraw(QString fieldDrawStr);
+    void updateEnemyFieldDraw(QString fieldDrawStr);
 
     void setIconStatus(QAction* userToChoose, int readiness);
 

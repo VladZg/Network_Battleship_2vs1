@@ -110,6 +110,36 @@ QString Field::getDrawFieldStr() const
     return result;
 }
 
+QVector<CellDraw> Field::getDrawField() const
+{
+    return fieldDraw_;
+}
+
+QVector<CellDraw> fieldDrawFromStr(QString fieldDrawStr)
+{
+    QVector<CellDraw> fieldDraw;
+
+    if (fieldDrawStr.size() < FIELD_WIDTH_DEFAULT*FIELD_HEIGHT_DEFAULT)
+    {
+        qDebug() << "Wrong fieldDrawStr size";
+        return fieldDraw;
+    }
+
+    for(QString::iterator cell_it = fieldDrawStr.begin(); cell_it != fieldDrawStr.end(); ++cell_it)
+    {
+        if (cell_it->digitValue() < (int)CellDraw::CELL_EMPTY || cell_it->digitValue() > (int)CellDraw::CELL_MARK)
+        {
+            qDebug() << "fieldDrawFromStr(str): wrong string!";
+            fieldDraw.clear();
+            break;
+        }
+
+        fieldDraw.push_back((CellDraw)cell_it->digitValue());
+    }
+
+    return fieldDraw;
+}
+
 void Field::setStateField(QString field)
 {
     fieldState_.clear();
@@ -160,6 +190,8 @@ void Field::setDrawField(QVector<CellDraw> field)
     if (field.size() != area_)
         return;
 
+    qDebug() << "setDrawField: " << getDrawFieldStr();
+
     fieldDraw_ = field;
 }
 
@@ -193,6 +225,11 @@ int Field::getWidth() const
 int Field::getHeight() const
 {
     return height_;
+}
+
+int Field::getArea() const
+{
+    return area_;
 }
 
 QImage Field::getFieldImage()

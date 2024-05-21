@@ -89,6 +89,34 @@ ModelState Model::getState() const
     return state_;
 }
 
+void Model::updateMyFieldDraw(QVector<CellDraw>& field)
+{
+//    QVector<CellDraw> updatedField;
+    myField_->setDrawField(field);
+}
+
+void Model::updateEnemyFieldDraw(QVector<CellDraw>& field)
+{
+    QVector<CellDraw> updatedField = enemyField_->getDrawField();
+    int area = updatedField.size();
+
+    for (int i = 0; i < area; i++)
+    {
+//        CellDraw resultingCell;
+
+        if (field[i] == CellDraw::CELL_DAMAGED ||
+            field[i] == CellDraw::CELL_DOT     ||
+            field[i] == CellDraw::CELL_KILLED    )
+        {
+            updatedField[i] = field[i];
+        }
+
+//        updatedField.push_back(resultingCell);
+    }
+
+    enemyField_->setDrawField(updatedField);
+}
+
 void Model::updateState(ModelState state)
 {
     if (state == ST_GAME_NSTARTED)

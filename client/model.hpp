@@ -48,6 +48,9 @@ public:
     bool isMyFieldCorrect() const;
     void clearMyField();
 
+    void updateMyFieldDraw(QVector<CellDraw>& field);
+    void updateEnemyFieldDraw(QVector<CellDraw>& field);
+
     void switchStep();
 
     void setStartedFlag(bool val);
