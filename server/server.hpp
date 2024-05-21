@@ -10,6 +10,7 @@
 #include "client.hpp"
 #include "gamecontroller.hpp"
 #include "dbcontroller.hpp"
+#include <QDateTime>
 
 class Server: public QTcpServer
 {

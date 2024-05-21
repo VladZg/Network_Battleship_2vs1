@@ -6,6 +6,9 @@
 #include <qsqldatabase.h>
 #include <QSqlQuery>
 #include <QSqlTableModel>
+#include <QTimer>
+#include <QDateTime>
+#include "gamecontroller.hpp"
 
 class DBController : public QDialog
 {
@@ -24,7 +27,9 @@ public:
     void clearDatabase();
 
     QString getRandomField();
+    QString getGamesEndings();
     void addNewPlacement(QString field);
+    void addNewGameEnding(GamesIterator gameIt);
 
 private:
     QSqlDatabase db_;

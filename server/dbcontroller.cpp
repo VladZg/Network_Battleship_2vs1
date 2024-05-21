@@ -81,10 +81,98 @@ QString DBController::getRandomField()
     return randomString;
 }
 
+QStringList DBController::getGamesEndings()
+{
+    QSqlQuery query("SELECT * FROM GamesEndings");
+    QStringList list;
+
+
+    if (query.exec()) {
+        while (query.next()) {
+            const char* player1 = query.value(0).toString().toUtf8().constData();
+            const char* player2 = query.value(1).toString().toUtf8().constData();
+            const char* field_text1 = query.value(2).toString().toUtf8().constData();
+            const char* field_text2 = query.value(3).toString().toUtf8().constData();
+            const char* start_date = query.value(4).toString().toUtf8().constData();
+            const char* end_date = query.value(5).toString().toUtf8().constData();
+            const char* winner = query.value(6).toString().toUtf8().constData();
+
+            QString formattedString = QString::asprintf("%s:%s:%s:%s:%s:%s:%s$", player1, player2, field_text1, field_text2, start_date, end_date, winner);
+            list.push_back(formattedString);
+        }
+    }
+
+    return list;
+}
+
 void DBController::addNewPlacement(QString field)
 {
     query_->prepare("INSERT INTO Fields (field_text) VALUES (:text)");
     query_->bindValue(":text", field);
+    query_->exec();
+}
+
+void DBController::addNewGameEnding(GamesIterator gameIt)
+{
+    // Подготавливаем запрос для вставки новой записи в таблицу GamesEndings
+    query_->prepare("INSERT INTO GamesEndings (player1, player2, field_text1, field_text2, start_date, end_date, winner)"
+                    "VALUES (:player1, :player2, :field_text1, :field_text2, :start_date, :end_date, :winner)");
+
+    // Конвертация карты из строки в формат заполненных и пустых квадратов поля 10x10
+    QString firstPlayerField  = gameIt->getClientStartedIt()->getFieldStr();
+    QString secondPlayerField = gameIt->getClientAcceptedIt()->getFieldStr();
+    int firstFieldSize  = firstPlayerField.size();
+    int secondFieldSize = secondPlayerField.size();
+
+    QString myString = QString("■").repeated(10);
+    QString formatFirstPlayerField  = QString("0").repeated(firstFieldSize);
+    QString formatSecondPlayerField = QString("0").repeated(secondFieldSize);
+
+    for(int i = 0; i < firstFieldSize; i++)
+    {
+        if(firstPlayerField[i] == '0')
+        {
+            formatFirstPlayerField[i] = QChar(0x25A1);
+        }
+
+        else if(firstPlayerField[i] == '1')
+        {
+            formatFirstPlayerField[i] = QChar(0x25A0);
+        }
+    }
+
+    for(int i = 0; i < secondFieldSize; i++)
+    {
+        if(secondPlayerField[i] == '0')
+        {
+            formatSecondPlayerField[i] = QChar(0x25A1);
+        }
+
+        else if(secondPlayerField[i] == '1')
+        {
+            formatSecondPlayerField[i] = QChar(0x25A0);
+        }
+    }
+
+    // Привязка значения к конкретному полю
+//    query_->bindValue(":player1",     gameIt->getClientStartedIt()->login_);
+//    query_->bindValue(":player2",     gameIt->getClientAcceptedIt()->login_);
+//    query_->bindValue(":field_text1", formatFirstPlayerField);
+//    query_->bindValue(":field_text2", formatSecondPlayerField);
+//    query_->bindValue(":start_date",  gameIt->startDate_.toString("yyyy-MM-dd") + gameIt->startTime_.toString("hh:mm:ss"));
+//    query_->bindValue(":end_date",    gameIt->endDate_.toString("yyyy-MM-dd") + gameIt->endTime_.toString("hh:mm:ss"));
+//    query_->bindValue(":winner",      gameIt->winnerLogin_);
+
+    // Консольный тест
+//    qDebug() << gameIt->getClientStartedIt()->login_;
+//    qDebug() << gameIt->getClientAcceptedIt()->login_;
+//    qDebug() << formatFirstPlayerField;
+//    qDebug() << formatSecondPlayerField;
+//    qDebug() << gameIt->startDate_.toString("yyyy-MM-dd") << gameIt->startTime_.toString("hh:mm:ss");
+//    qDebug() << gameIt->endDate_.toString("yyyy-MM-dd")   << gameIt->endTime_.toString("hh:mm:ss");
+//    qDebug() << gameIt->winnerLogin_;
+
+    // Выполнение подготовленного запроса
     query_->exec();
 }
 

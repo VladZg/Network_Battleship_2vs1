@@ -39,7 +39,12 @@ public:
 
 public:
     QString winnerLogin_;
+
+    QDate startDate_;
     QDateTime startTime_;
+
+    QDate endDate_;
+    QDateTime endTime_;
 
 private:
     int gameId_;

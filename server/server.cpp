@@ -64,6 +64,8 @@ void Server::startServer(QTextBrowser* textBrowser)
                                "color: rgb(255, 255, 177);");
 
     timerId_ = startTimer(DEFAULT_SEARCH_INTERVAL);
+
+    dbController_.createTable("GamesEndings", "player1 TEXT, player2 TEXT, field_text1 TEXT, field_text2 TEXT, start_date DATE, end_date DATE, winner TEXT");
 }
 
 void Server::stopServer()
@@ -990,6 +992,12 @@ void Server::startGame(QString login_started, QString login_accepted)
     gameId++;   // get gameId
 
     GameController gameController(gameId, c1It, c2It);
+
+    // start timer
+    gameController.startTime_  = QDateTime::currentDateTime();
+    gameController.startDate_ = QDate::currentDate();
+//    qDebug() << "Время начала:" << gameController.startTime_.toString("hh:mm:ss");
+
     games_.insert(gameId, gameController);
 
     if (games_.find(gameId) != games_.end())
@@ -1010,10 +1018,6 @@ void Server::startGame(QString login_started, QString login_accepted)
 
     gameController.updateState(GameController::GameState::ST_PLACING);
 
-    // start timer
-    gameController.startTime_ = QDateTime::currentDateTime();
-//    qDebug() << "Время начала:" << gameController.startTime_.toString("hh:mm:ss");
-
     qDebug() << message1;
     qDebug() << message2;
     PRINT("Start game " + login_started + " vs " + login_accepted + " with gameId=" + QString::number(gameId))
@@ -1024,7 +1028,7 @@ void Server::finishGame(int gameId)
     GamesIterator gameIt = games_.find(gameId);
 
     qDebug() << "We have now " + QString::number(games_.size()) + " active games";
-//    qDebug() << "Boo";
+
     for (GamesIterator git = games_.begin(); git != games_.end(); ++git)
     {
         PRINT("game " + QString::number(git->getGameId()) + " " + git->getClientStartedIt()->login_ + " vs " + git->getClientAcceptedIt()->login_)
@@ -1036,7 +1040,7 @@ void Server::finishGame(int gameId)
         return;
     }
 
-    ClientsIterator c1It = gameIt->getClientStartedIt();   // get from game structure
+    ClientsIterator c1It = gameIt->getClientStartedIt();    // get from game structure
     ClientsIterator c2It = gameIt->getClientAcceptedIt();   // get from game structure
 
     QString login1 = c1It->login_;
@@ -1057,6 +1061,12 @@ void Server::finishGame(int gameId)
 
         message += "FINISH:" + gameIt->winnerLogin_;
         PRINT("Finish game " + login1 + " vs " + login2 + "with gameId=" + QString::number(gameId))
+
+        // Заполняем базу данных завершившейся игрой
+        gameIt->endTime_ = QDateTime::currentDateTime();
+        gameIt->endDate_ = QDate::currentDate();
+        dbController_.addNewGameEnding(gameIt);
+        dbController_.getGamesEndings();
     }
     else
     {
@@ -1080,14 +1090,9 @@ void Server::finishGame(int gameId)
     games_.erase(gameIt);
 }
 
-//void Server::testDB(const QString &fileName)
-//{
-
 void Server::testDB()
 {
     dbController_.createTable("Fields", "field_text TEXT");
-    dbController_.createTable("GamesInfo", "player1 TEXT, player2 TEXT, field_text1 TEXT, field_text2 TEXT, start_date DATE, end_date DATE, winner TEXT");
-
 
     const QString &fileName = ":/placements.txt";
 
