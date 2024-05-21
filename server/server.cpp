@@ -655,6 +655,7 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
         case(Field::CellState::CL_ST_VMIDDLE):
         {
             for(; fieldStateWithBorders[damagedCell] != Field::CellState::CL_ST_EMPTY; damagedCell -= (width_+2)) {}
+            damagedCell += (width_+2);
 
             int lenght = 0;
             for(; fieldStateWithBorders[damagedCell + lenght * (width_ + 2)] != Field::CellState::CL_ST_EMPTY; lenght++) {}
@@ -677,6 +678,7 @@ void Server::drawKilledShip(ClientsIterator cIt, int x, int y)
         case(Field::CellState::CL_ST_HMIDDLE):
         {
             for(; fieldStateWithBorders[damagedCell] != Field::CellState::CL_ST_EMPTY; damagedCell--) {}
+            damagedCell++;
 
             int lenght = 0;
             for(; fieldStateWithBorders[damagedCell + lenght] != Field::CellState::CL_ST_EMPTY; lenght++) {}
