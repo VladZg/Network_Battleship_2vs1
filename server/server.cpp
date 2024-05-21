@@ -428,10 +428,11 @@ void Server::handleData(const QByteArray& data, int clientId)
 //                    qDebug() << "HERE1";
                     if(enemyIt->isKilled(x, y)) // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку drawKilledShip(enemyIt, x, y);
                     {
-                        drawKilledShip(enemyIt, x, y);
                         message += "KILLED"; // временно
                         qDebug() << "Убит!";
-                        // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку
+
+                        drawKilledShip(enemyIt, x, y);
+                        sendFieldDrawToUser(enemyIt);
 
                         // bool isGameFinished = gIt->checkGameFinish();
                         // if (isGameFinished)
@@ -439,6 +440,7 @@ void Server::handleData(const QByteArray& data, int clientId)
                             // qDebug() << "all ships killed! game finished!";
                             // finishGame(gameId);
                         // }
+//                        return;
                     }
                     else
                     {
@@ -513,6 +515,11 @@ void Server::handleData(const QByteArray& data, int clientId)
     }
 
     // TODO: add more handlers
+}
+
+void Server::sendFieldDrawToUser(ClientsIterator cIt)
+{
+    cIt->socket_->write(("FIELD:UPDATE:" + cIt->getField().getFieldDrawStr() + "@").toUtf8());
 }
 
 void printField(const QVector<Field::CellDraw>& field)

@@ -117,6 +117,8 @@ void Controller::onMousePressed(const QPoint& pos, QMouseEvent* event, QLabel* a
         if(point.x() == -1 || point.y() == -1)
             return;
 
+
+
         if (event->button() == Qt::LeftButton)
         {
             CellDraw cell = model_->getEnemyCell(point.x(), point.y());
