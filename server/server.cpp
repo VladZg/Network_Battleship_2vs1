@@ -426,9 +426,11 @@ void Server::handleData(const QByteArray& data, int clientId)
 
                 QString message = "SHOT:";
 
+                bool isGameFinished = false;
+
                 if (!enemyIt->isCellEmpty(x, y))
                 {
-                    gIt->incNDamaged();
+                    gIt->incNDamaged(is_ClientStarted);
 
 //                    qDebug() << "HERE1";
                     if(enemyIt->isKilled(x, y)) // TODO: drawKilledShip(x, y); <-- функция класса server, которая ещё и отправляет ответ игроку drawKilledShip(enemyIt, x, y);
@@ -439,15 +441,8 @@ void Server::handleData(const QByteArray& data, int clientId)
                         drawKilledShip(enemyIt, x, y);
                         sendFieldDrawToUsers(enemyIt);
 
-                         bool isGameFinished = gIt->checkGameFinish();
-                         if (isGameFinished)
-                         {
-                             gIt->updateState(GameController::GameState::ST_FINISHED);
-                             gIt->winnerLogin_ = enemyIt->enemy_->getLogin();
-                             qDebug() << "all ships killed! game finished!";
-                             finishGame(gameId);
-                             // end timer and push to database
-                         }
+                         isGameFinished = gIt->checkGameFinish(is_ClientStarted);
+
 //                        return;
                     }
                     else
@@ -482,6 +477,15 @@ void Server::handleData(const QByteArray& data, int clientId)
 //                gIt->getClientStartedIt()->socket_->flush();
                 gIt->getClientAcceptedIt()->socket_->write(((QString)(message+"@")).toUtf8());
 //                gIt->getClientAcceptedIt()->socket_->flush();
+
+                if (isGameFinished)
+                {
+                    gIt->updateState(GameController::GameState::ST_FINISHED);
+                    gIt->winnerLogin_ = enemyIt->enemy_->getLogin();
+                    qDebug() << "all ships killed! game finished!";
+                    finishGame(gameId);
+                    // end timer and push to database
+                }
             }
             else
             {
