@@ -476,19 +476,19 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
-                controller_->playSound("you_miss");
+                controller_->playSound("enemy_miss");
                 qDebug() << "Вы промазали, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ход соперника");
             }
             else if (status == CELL_DAMAGED)
             {
-                controller_->playSound("you_hit");
+                controller_->playSound("enemy_hit");
                 qDebug() << "Вы попали! Продолжайте ход";
             }
             else if (status == CELL_KILLED)
             {
-                controller_->playSound("you_kill");
+                controller_->playSound("enemy_kill");
                 qDebug() << "Вы подорвали корабль противника! Продолжайте ход";
             }
             else
@@ -503,7 +503,7 @@ void MainWindow::handleShotRequest()
 
             if (status == CELL_DOT)
             {
-                controller_->playSound("enemy_miss");
+                controller_->playSound("you_miss");
                 qDebug() << "Противник промазал, смена хода!";
                 model_->switchStep();
                 ui->whooseStepLabel->setText("Ваш ход");
@@ -511,12 +511,12 @@ void MainWindow::handleShotRequest()
             }
             else if (status == CELL_DAMAGED)
             {
-                controller_->playSound("enemy_hit");
+                controller_->playSound("you_hit");
                 qDebug() << "Противник попал и продолжает ход";
             }
             else if (status == CELL_KILLED)
             {
-                controller_->playSound("enemy_kill");
+                controller_->playSound("you_kill");
                 qDebug() << "Противник попал и уничтожил ваш корабль! Его ход";
             }
         }
