@@ -3,6 +3,8 @@
 
 #include "config.hpp"
 #include "client.hpp"
+#include <QTimer>
+#include <QDateTime>
 
 class GameController
 {
@@ -37,6 +39,7 @@ public:
 
 public:
     QString winnerLogin_;
+    QDateTime startTime_;
 
 private:
     int gameId_;

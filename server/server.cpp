@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QTextStream>
 
+
 //static int NUM_IND = 0;
 #define PRINT(msg) { qDebug() << msg; browser->append(msg); }
 
@@ -1008,7 +1009,10 @@ void Server::startGame(QString login_started, QString login_accepted)
 //    c2It->socket_->flush();
 
     gameController.updateState(GameController::GameState::ST_PLACING);
+
     // start timer
+    gameController.startTime_ = QDateTime::currentDateTime();
+//    qDebug() << "Время начала:" << gameController.startTime_.toString("hh:mm:ss");
 
     qDebug() << message1;
     qDebug() << message2;
@@ -1082,6 +1086,8 @@ void Server::finishGame(int gameId)
 void Server::testDB()
 {
     dbController_.createTable("Fields", "field_text TEXT");
+    dbController_.createTable("GamesInfo", "player1 TEXT, player2 TEXT, field_text1 TEXT, field_text2 TEXT, start_date DATE, end_date DATE, winner TEXT");
+
 
     const QString &fileName = ":/placements.txt";
 
@@ -1097,8 +1103,6 @@ void Server::testDB()
         qDebug() << line << "@";
         dbController_.addNewPlacement(line);
     }
-
-//    dbController_.addNewteStPlacement("1111011100111011011011010101010000000000000000000000000000000000000000000000000000000000000000000000");
 
     file.close();
 
