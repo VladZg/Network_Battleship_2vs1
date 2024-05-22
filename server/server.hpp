@@ -50,7 +50,7 @@ public:
     void removeDisconnectedClients();
     void drawKilledShip(ClientsIterator cIt, int x, int y);
     void sendFieldDrawToUsers(ClientsIterator cIt);
-    void sendGamesHistoryListToUsers(GamesIterator gIt, QStringList& gamesHistoryList);
+    void sendGamesHistoryListToUsers(QStringList& gamesHistoryList);
 
     void startGame(QString login1, QString login2);
     void finishGame(int gameId);

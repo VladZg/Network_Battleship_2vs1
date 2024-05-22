@@ -156,25 +156,26 @@ void DBController::addNewGameEnding(GamesIterator gameIt)
     }
 
     // Привязка значения к конкретному полю
-//    query_->bindValue(":player1",     gameIt->getClientStartedIt()->login_);
-//    query_->bindValue(":player2",     gameIt->getClientAcceptedIt()->login_);
-//    query_->bindValue(":field_text1", formatFirstPlayerField);
-//    query_->bindValue(":field_text2", formatSecondPlayerField);
-//    query_->bindValue(":start_date",  gameIt->startDate_.toString("yyyy-MM-dd") + gameIt->startTime_.toString("hh:mm:ss"));
-//    query_->bindValue(":end_date",    gameIt->endDate_.toString("yyyy-MM-dd") + gameIt->endTime_.toString("hh:mm:ss"));
-//    query_->bindValue(":winner",      gameIt->winnerLogin_);
+    query_->bindValue(":player1",     gameIt->getClientStartedIt()->login_);
+    query_->bindValue(":player2",     gameIt->getClientAcceptedIt()->login_);
+    query_->bindValue(":field_text1", formatFirstPlayerField);
+    query_->bindValue(":field_text2", formatSecondPlayerField);
+    query_->bindValue(":start_date",  gameIt->startDate_.toString("yyyy-MM-dd") + gameIt->startTime_.toString("hh:mm:ss"));
+    query_->bindValue(":end_date",    gameIt->endDate_.toString("yyyy-MM-dd") + gameIt->endTime_.toString("hh:mm:ss"));
+    query_->bindValue(":winner",      gameIt->winnerLogin_);
 
     // Консольный тест
-//    qDebug() << gameIt->getClientStartedIt()->login_;
-//    qDebug() << gameIt->getClientAcceptedIt()->login_;
-//    qDebug() << formatFirstPlayerField;
-//    qDebug() << formatSecondPlayerField;
-//    qDebug() << gameIt->startDate_.toString("yyyy-MM-dd") << gameIt->startTime_.toString("hh:mm:ss");
-//    qDebug() << gameIt->endDate_.toString("yyyy-MM-dd")   << gameIt->endTime_.toString("hh:mm:ss");
-//    qDebug() << gameIt->winnerLogin_;
+    qDebug() << gameIt->getClientStartedIt()->login_;
+    qDebug() << gameIt->getClientAcceptedIt()->login_;
+    qDebug() << formatFirstPlayerField;
+    qDebug() << formatSecondPlayerField;
+    qDebug() << gameIt->startDate_.toString("yyyy-MM-dd") << gameIt->startTime_.toString("hh:mm:ss");
+    qDebug() << gameIt->endDate_.toString("yyyy-MM-dd")   << gameIt->endTime_.toString("hh:mm:ss");
+    qDebug() << gameIt->winnerLogin_;
 
     // Выполнение подготовленного запроса
     query_->exec();
+    qDebug() << "New game result pushed to database!";
 }
 
 void DBController::disconnectDatabase()

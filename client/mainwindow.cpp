@@ -14,6 +14,9 @@
 #include <QMediaPlayer>
 #include <QtMultimedia>
 #include <QDialog>
+#include <QSqlTableModel>
+#include <QTableView>
+#include <QTableWidget>
 
 #define CLICK_SOUND controller_->playSound("click");
 
@@ -22,7 +25,7 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     , ip_(ip)
     , port_(port)
     , ui(new Ui::MainWindow)
-    , fightsHistoryWindow_(QDialog(this))
+    , fightsHistoryWindow_(FightsHistoryWindow(this))
 {
     ui->setupUi(this);
 
@@ -76,9 +79,6 @@ MainWindow::MainWindow(QString ip, quint16 port, QWidget *parent)
     graphicsView->setScene(graphicsScene);
     graphicsView->setParent(ui->fieldsLabel);
 
-    fightsHistoryWindow_.setFixedSize(500, 450);
-    fightsHistoryWindow_.setWindowTitle("История сражений");
-    fightsHistoryWindow_.setEnabled(false);
     connect(ui->openFightHistoryAction, SIGNAL(triggered), this, SLOT(on_openFightHistoryAction_triggered()));
 
     connectionStateUpdate(ST_DISCONNECTED);
@@ -271,6 +271,12 @@ void MainWindow::on_sockError(QAbstractSocket::SocketError error)
 void MainWindow::on_openFightHistoryAction_triggered()
 {
     qDebug() << "show fight history window";
+    socket_->write(((QString)"HISTORY:UPDATE:@").toUtf8());
+    qDebug() << "to server: HISTORY:UPDATE:";
+    socket_->waitForReadyRead(2000);
+
+    fightsHistoryWindow_.update();
+
     fightsHistoryWindow_.setEnabled(true);
     fightsHistoryWindow_.show();
     fightsHistoryWindow_.activateWindow();
@@ -763,7 +769,15 @@ void MainWindow::handleFieldRequest()
 
 void MainWindow::handleHistoryUpdateRequest()
 {
-//    QStringList message_request = QString::fromUtf8(data_);
+    QStringList gameEndingsStrList = QString::fromUtf8(data_.mid(15)).split("$$");
+//    qDebug() << gameEndingsStrList;
+
+    for (int i = 0; i < gameEndingsStrList.size(); i++)
+    {
+        qDebug() << gameEndingsStrList[i];
+    }
+
+    fightsHistoryWindow_.fillTable(gameEndingsStrList);
 }
 
 void MainWindow::handleExitRequest()
@@ -898,7 +912,7 @@ void MainWindow::handleGameRequest()
                 QString message = "Игрок " + winnerLogin + " победил!";
                 controller_->playSound("defeat_sound");
                 QMessageBox::information(this, "Information!", message);
-                controller_->playSound("defeat_sound");
+                controller_->stopSound("defeat_sound");
                 finishGame();
             }
             else
@@ -1247,8 +1261,6 @@ void MainWindow::finishGame()
 
     updateReadiness(ST_NREADY);
     controller_->playSound("field_music");
-
-    // TODO: ...
 }
 
 void MainWindow::startFight()

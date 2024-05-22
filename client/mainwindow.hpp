@@ -48,7 +48,7 @@ public:
     void exitFromServer();
 
 //    FightsHistoryWindow fightsHistoryWindow_;
-    QDialog fightsHistoryWindow_;
+    FightsHistoryWindow fightsHistoryWindow_;
     QStringList users_;
 
 private:
