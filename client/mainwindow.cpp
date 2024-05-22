@@ -763,6 +763,7 @@ void MainWindow::handleFieldRequest()
 
 void MainWindow::handleHistoryUpdateRequest()
 {
+    QStringList message_request = QString::fromUtf8(data_);
 
 }
 

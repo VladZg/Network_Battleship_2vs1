@@ -1066,7 +1066,8 @@ void Server::finishGame(int gameId)
         gameIt->endTime_ = QDateTime::currentDateTime();
         gameIt->endDate_ = QDate::currentDate();
         dbController_.addNewGameEnding(gameIt);
-        dbController_.getGamesEndings();
+        QStringList gamesHistoryList = dbController_.getGamesEndings();
+        sendGamesHistoryListToUsers(gameIt, gamesHistoryList);
     }
     else
     {
@@ -1118,4 +1119,12 @@ void Server::testDB()
 
 //    dbController_.clearDatabase();
 //    dbController_.printTable("Fields");
+}
+
+void Server::sendGamesHistoryListToUsers(GamesIterator gameIt, QStringList& gamesHistoryList)
+{
+    QString message = "HISTORY:UPDATE:" + gamesHistoryList.join("$$");
+
+    gameIt->getClientStartedIt()->socket_->write((message+"@").toUtf8());
+    gameIt->getClientAcceptedIt()->socket_->write((message+"@").toUtf8());
 }
