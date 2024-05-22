@@ -192,6 +192,8 @@ void MainWindow::authenticateUser()
             connectionStateUpdate(ST_AUTHORIZED);
             login_ = login_entered;
 
+            controller_->playSound("intro_music");
+
             ui->loginLabel->setReadOnly(true); // block loginLabel for writing after user if authorized
 
 //            QString login = login_entered.trimmed();
@@ -863,13 +865,17 @@ void MainWindow::handleGameRequest()
             if (winnerLogin == login_)
             {
                 QString message = "Вы победили!";
+                controller_->playSound("victory_sound");
                 QMessageBox::information(this, "Information!", message);
+                controller_->stopSound("victory_sound");
                 finishGame();
             }
             else if (winnerLogin == model_->getEnemyLogin())
             {
-                QString message = "Игрок " + winnerLogin + " победил!";
+                QString message = "Вы повержены игроком " + winnerLogin + " !";
+                controller_->playSound("defeat_sound");
                 QMessageBox::information(this, "Information!", message);
+                controller_->stopSound("defeat_sound");
                 finishGame();
             }
             else
@@ -1168,6 +1174,7 @@ void MainWindow::stopClient(QString msg)
 void MainWindow::startGame(QString enemy_login, int gameId)
 {
     model_->startGame(enemy_login, gameId);
+
 //    controller_->startGame(enemy_login, gameId);
 
     ui->myGameLoginLabel->setText(login_);
@@ -1187,6 +1194,8 @@ void MainWindow::startGame(QString enemy_login, int gameId)
 
     updateReadiness(ST_PLAYING);
 
+    controller_->stopSound("intro_music");
+    controller_->playSound("field_music");
     // TODO: ...
 }
 
@@ -1215,7 +1224,7 @@ void MainWindow::finishGame()
 
     updateReadiness(ST_NREADY);
 
-
+    controller_->playSound("field_music");
     // TODO: ...
 }
 

@@ -44,11 +44,8 @@ public:
     ~Controller();
     void onMousePressed(const QPoint& position, QMouseEvent* event, QLabel* applyIsOkLabel, QLabel* applyIsNotOkLabel, QPushButton* applyFieldButton);
 
-//    void playMissSound();
-//    void playHitSound();
-//    void playClickSound();
-//    void playNewMessageSound();
     void playSound(QString sound_name);
+    void stopSound(QString sound_name);
     void updateVolume(int volume);
     void loadSounds();
 
