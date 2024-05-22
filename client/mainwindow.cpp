@@ -763,8 +763,7 @@ void MainWindow::handleFieldRequest()
 
 void MainWindow::handleHistoryUpdateRequest()
 {
-    QStringList message_request = QString::fromUtf8(data_);
-
+//    QStringList message_request = QString::fromUtf8(data_);
 }
 
 void MainWindow::handleExitRequest()
@@ -896,10 +895,10 @@ void MainWindow::handleGameRequest()
             }
             else if (winnerLogin == model_->getEnemyLogin())
             {
-                QString message = "Вы повержены игроком " + winnerLogin + " !";
+                QString message = "Игрок " + winnerLogin + " победил!";
                 controller_->playSound("defeat_sound");
                 QMessageBox::information(this, "Information!", message);
-                controller_->stopSound("defeat_sound");
+                controller_->playSound("defeat_sound");
                 finishGame();
             }
             else
@@ -1198,7 +1197,6 @@ void MainWindow::stopClient(QString msg)
 void MainWindow::startGame(QString enemy_login, int gameId)
 {
     model_->startGame(enemy_login, gameId);
-
 //    controller_->startGame(enemy_login, gameId);
 
     ui->myGameLoginLabel->setText(login_);
@@ -1217,9 +1215,10 @@ void MainWindow::startGame(QString enemy_login, int gameId)
     ui->applyFieldButton->setStyleSheet("");
 
     updateReadiness(ST_PLAYING);
-
     controller_->stopSound("intro_music");
     controller_->playSound("field_music");
+
+
     // TODO: ...
 }
 
@@ -1247,8 +1246,8 @@ void MainWindow::finishGame()
     ui->whooseStepLabel->setVisible(false);
 
     updateReadiness(ST_NREADY);
-
     controller_->playSound("field_music");
+
     // TODO: ...
 }
 
@@ -1256,6 +1255,8 @@ void MainWindow::startFight()
 {
     model_->startFight();
     qDebug() << "Fight started!";
+
+    controller_->playSound("background");
 
     ui->applyFieldButton->setVisible(false);
     ui->generateFieldButton->setVisible(false);
