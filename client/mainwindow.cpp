@@ -461,7 +461,7 @@ void MainWindow::handleShotRequest()
         else if (shotResult == "KILLED")
         {
             status = CELL_KILLED;
-            controller_->playSound("you_hit");
+//            controller_->playSound("you_hit");
             qDebug() << "Вы подорвали корабль противника! Продолжайте ход";
         }
         else

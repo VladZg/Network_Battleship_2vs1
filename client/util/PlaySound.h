@@ -23,7 +23,7 @@ public:
 
 public slots:
     void play();
-    void play( const QString& fileName );
+    void play(const QString& fileName);
     void stop();
 
 private:
