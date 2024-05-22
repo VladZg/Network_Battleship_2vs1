@@ -27,7 +27,7 @@ public:
     void clearDatabase();
 
     QString getRandomField();
-    QString getGamesEndings();
+    QStringList getGamesEndings();
     void addNewPlacement(QString field);
     void addNewGameEnding(GamesIterator gameIt);
 

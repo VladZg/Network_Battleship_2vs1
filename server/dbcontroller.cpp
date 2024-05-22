@@ -86,7 +86,6 @@ QStringList DBController::getGamesEndings()
     QSqlQuery query("SELECT * FROM GamesEndings");
     QStringList list;
 
-
     if (query.exec()) {
         while (query.next()) {
             const char* player1 = query.value(0).toString().toUtf8().constData();
