@@ -242,6 +242,11 @@ void Controller::loadSounds()
 {
     if (isLoaded_)
         return;
+    LOAD_SOUND_WAV("intro_music")
+    LOAD_SOUND_WAV("background")
+    LOAD_SOUND_WAV("field_music")
+    LOAD_SOUND_WAV("victory_sound")
+    LOAD_SOUND_WAV("defeat_sound")
 
     LOAD_SOUND_WAV("click"      )
     LOAD_SOUND_WAV("you_hit"    )
@@ -266,6 +271,18 @@ void Controller::playSound(QString sound_name)
         throw 1;
 
     sndIt.value()->play();
+}
+
+void Controller::stopSound(QString sound_name)
+{
+    qDebug() << "Play sound: " << sound_name;
+
+    QMap<QString, PlaySound*>::iterator sndIt = sounds_.find(sound_name);
+
+    if(sndIt == sounds_.end())
+        throw 1;
+
+    sndIt.value()->stop();
 }
 
 void Controller::updateVolume(int volume)
