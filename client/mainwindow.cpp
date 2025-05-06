@@ -273,7 +273,7 @@ void MainWindow::on_openFightHistoryAction_triggered()
     qDebug() << "show fight history window";
     socket_->write(((QString)"HISTORY:UPDATE:@").toUtf8());
     qDebug() << "to server: HISTORY:UPDATE:";
-    socket_->waitForReadyRead(2000);
+//    socket_->waitForReadyRead(2000);
 
     fightsHistoryWindow_.update();
 
@@ -771,6 +771,12 @@ void MainWindow::handleHistoryUpdateRequest()
 {
     QStringList gameEndingsStrList = QString::fromUtf8(data_.mid(15)).split("$$");
 //    qDebug() << gameEndingsStrList;
+
+    if (gameEndingsStrList.size() == 0)
+    {
+        qDebug() << "No saved games";
+        return;
+    }
 
     for (int i = 0; i < gameEndingsStrList.size(); i++)
     {

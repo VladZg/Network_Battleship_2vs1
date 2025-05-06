@@ -98,7 +98,7 @@ QStringList DBController::getGamesEndings()
             const char* end_date = query.value(5).toString().toUtf8().constData();
             const char* winner = query.value(6).toString().toUtf8().constData();
 
-            QString formattedString = QString::asprintf("%s:%s:%s:%s:%s:%s:%s$", player1, player2, field_text1, field_text2, start_date, end_date, winner);
+            QString formattedString = QString::asprintf("%s:%s:%s:%s:%s:%s:%s", player1, player2, field_text1, field_text2, start_date, end_date, winner);
             list.push_back(formattedString);
         }
     }
